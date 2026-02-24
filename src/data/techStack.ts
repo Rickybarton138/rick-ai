@@ -1,0 +1,18 @@
+export const techStack = [
+  { name: 'Python', category: 'Backend' },
+  { name: 'TypeScript', category: 'Language' },
+  { name: 'React', category: 'Frontend' },
+  { name: 'Node.js', category: 'Backend' },
+  { name: 'FastAPI', category: 'Backend' },
+  { name: 'Vite', category: 'Tooling' },
+  { name: 'Claude AI', category: 'AI/ML' },
+  { name: 'OpenAI', category: 'AI/ML' },
+  { name: 'TensorFlow', category: 'AI/ML' },
+  { name: 'OpenCV', category: 'AI/ML' },
+  { name: 'PostgreSQL', category: 'Database' },
+  { name: 'Docker', category: 'DevOps' },
+  { name: 'Vercel', category: 'Deploy' },
+  { name: 'Railway', category: 'Deploy' },
+  { name: 'Git', category: 'Tooling' },
+  { name: 'Tailwind CSS', category: 'Frontend' },
+]
