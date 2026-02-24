@@ -1,46 +1,39 @@
-import { useCallback } from 'react'
-import Particles from '@tsparticles/react'
-import { loadSlim } from '@tsparticles/slim'
-import type { Engine } from '@tsparticles/engine'
-
 export function ParticleBackground() {
-  const particlesInit = useCallback(async (engine: Engine) => {
-    await loadSlim(engine)
-  }, [])
-
   return (
-    <Particles
-      id="tsparticles"
-      init={particlesInit}
-      options={{
-        fullScreen: false,
-        background: { color: { value: 'transparent' } },
-        fpsLimit: 60,
-        particles: {
-          color: { value: ['#7C3AED', '#06B6D4', '#22D3EE'] },
-          links: {
-            color: '#7C3AED',
-            distance: 150,
-            enable: true,
-            opacity: 0.15,
-            width: 1,
-          },
-          move: {
-            enable: true,
-            speed: 0.8,
-            direction: 'none',
-            outModes: { default: 'bounce' },
-          },
-          number: {
-            density: { enable: true, area: 1000 },
-            value: 60,
-          },
-          opacity: { value: { min: 0.1, max: 0.4 } },
-          size: { value: { min: 1, max: 3 } },
-        },
-        detectRetina: true,
-      }}
-      className="absolute inset-0 pointer-events-none"
-    />
+    <div className="absolute inset-0 pointer-events-none overflow-hidden">
+      {Array.from({ length: 40 }).map((_, i) => (
+        <div
+          key={i}
+          className="absolute rounded-full animate-float"
+          style={{
+            width: `${Math.random() * 4 + 1}px`,
+            height: `${Math.random() * 4 + 1}px`,
+            left: `${Math.random() * 100}%`,
+            top: `${Math.random() * 100}%`,
+            background: ['#7C3AED', '#06B6D4', '#22D3EE'][i % 3],
+            opacity: Math.random() * 0.4 + 0.1,
+            animationDuration: `${Math.random() * 15 + 10}s`,
+            animationDelay: `${Math.random() * 5}s`,
+          }}
+        />
+      ))}
+
+      {Array.from({ length: 8 }).map((_, i) => (
+        <div
+          key={`line-${i}`}
+          className="absolute animate-pulse-slow"
+          style={{
+            left: `${10 + i * 12}%`,
+            top: `${20 + (i % 3) * 25}%`,
+            width: `${80 + Math.random() * 120}px`,
+            height: '1px',
+            background: `linear-gradient(90deg, transparent, ${i % 2 === 0 ? 'rgba(124,58,237,0.15)' : 'rgba(6,182,212,0.15)'}, transparent)`,
+            transform: `rotate(${Math.random() * 60 - 30}deg)`,
+            animationDuration: `${3 + Math.random() * 4}s`,
+            animationDelay: `${Math.random() * 3}s`,
+          }}
+        />
+      ))}
+    </div>
   )
 }
