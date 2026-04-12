@@ -1,17 +1,35 @@
 import { useState, type FormEvent } from 'react'
 import { motion } from 'motion/react'
-import { Send, Mail, ArrowRight } from 'lucide-react'
+import { Send, Mail, ArrowRight, Loader2 } from 'lucide-react'
 import { useScrollAnimation, fadeInUp } from '../../hooks/useScrollAnimation'
-import { Button } from '../ui/Button'
 import { GradientText } from '../ui/GradientText'
 
 export function Contact() {
   const { ref, controls } = useScrollAnimation()
-  const [submitted, setSubmitted] = useState(false)
+  const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    setSubmitted(true)
+    setStatus('sending')
+
+    const form = e.currentTarget
+    const data = new FormData(form)
+
+    try {
+      const res = await fetch('https://formspree.io/f/xpwzgkpj', {
+        method: 'POST',
+        body: data,
+        headers: { Accept: 'application/json' },
+      })
+      if (res.ok) {
+        setStatus('sent')
+        form.reset()
+      } else {
+        setStatus('error')
+      }
+    } catch {
+      setStatus('error')
+    }
   }
 
   return (
@@ -40,7 +58,7 @@ export function Contact() {
           </p>
         </motion.div>
 
-        {submitted ? (
+        {status === 'sent' ? (
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -65,6 +83,7 @@ export function Contact() {
                 <label className="block text-sm font-medium text-text-secondary mb-2">Name</label>
                 <input
                   type="text"
+                  name="name"
                   required
                   placeholder="Your name"
                   className="w-full px-4 py-3 rounded-xl bg-white/5 border border-border-subtle text-text-primary placeholder:text-text-muted focus:outline-none focus:border-purple/50 focus:ring-1 focus:ring-purple/30 transition-all"
@@ -74,6 +93,7 @@ export function Contact() {
                 <label className="block text-sm font-medium text-text-secondary mb-2">Email</label>
                 <input
                   type="email"
+                  name="email"
                   required
                   placeholder="you@company.com"
                   className="w-full px-4 py-3 rounded-xl bg-white/5 border border-border-subtle text-text-primary placeholder:text-text-muted focus:outline-none focus:border-purple/50 focus:ring-1 focus:ring-purple/30 transition-all"
@@ -84,6 +104,7 @@ export function Contact() {
             <div className="mb-6">
               <label className="block text-sm font-medium text-text-secondary mb-2">Project Details</label>
               <textarea
+                name="message"
                 required
                 rows={5}
                 placeholder="Tell us about your project — what problem are you solving, and where does AI fit in?"
@@ -91,14 +112,26 @@ export function Contact() {
               />
             </div>
 
+            {status === 'error' && (
+              <p className="text-red-400 text-sm mb-4">Something went wrong. Please try again or email directly.</p>
+            )}
+
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-2 text-text-muted text-sm">
                 <Mail size={16} />
                 <span>or email <a href="mailto:rickybarton138@btinternet.com" className="text-accent hover:underline">rickybarton138@btinternet.com</a></span>
               </div>
-              <Button variant="primary" onClick={() => {}}>
-                Send Message <ArrowRight size={16} />
-              </Button>
+              <button
+                type="submit"
+                disabled={status === 'sending'}
+                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl font-semibold text-sm tracking-wide transition-all duration-300 cursor-pointer bg-gradient-to-r from-purple to-cyan text-white hover:shadow-[0_0_30px_rgba(124,58,237,0.4)] hover:scale-105 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
+              >
+                {status === 'sending' ? (
+                  <>Sending... <Loader2 size={16} className="animate-spin" /></>
+                ) : (
+                  <>Send Message <ArrowRight size={16} /></>
+                )}
+              </button>
             </div>
           </motion.form>
         )}

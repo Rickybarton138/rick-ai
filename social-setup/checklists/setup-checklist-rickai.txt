@@ -1,0 +1,50 @@
+
+╔══════════════════════════════════════════════════════════════╗
+║  RICK.AI — Complete Setup Checklist                          ║
+╚══════════════════════════════════════════════════════════════╝
+
+PHASE 1 — Account Creation (Manual + Playwright MCP)
+─────────────────────────────────────────────────────
+□ X/Twitter account created (@rick_ai_dev or similar)
+□ LinkedIn Company Page created (Rick.AI — AI Development Studio)
+□ YouTube channel created (Rick.AI)
+□ GitHub profile already active (Rickybarton138)
+□ Run: setup-orchestrator.js --brand rickai
+
+PHASE 2 — API Access Setup
+──────────────────────────
+□ X Developer Portal: Free tier app created (1,500 posts/mo)
+□ X API keys generated and tested
+□ LinkedIn Developer App created at developer.linkedin.com
+□ LinkedIn OAuth 2.0 configured (r_liteprofile, w_member_social)
+□ Google Cloud Console project created (Rick.AI Social)
+□ YouTube Data API v3 enabled
+□ YouTube OAuth credentials configured
+□ YouTube refresh token generated via OAuth flow
+□ Brave Search API key generated
+□ Airtable base created with Content Runs + Leads tables
+
+PHASE 3 — n8n Configuration
+─────────────────────────────
+□ All env variables added (see: env-template-rickai.env)
+□ Anthropic credential created in n8n
+□ X/Twitter OAuth credential created in n8n
+□ LinkedIn OAuth credential created in n8n
+□ YouTube OAuth credential created in n8n
+□ Airtable credential created in n8n
+□ Rick.AI workflow imported (rickai-workflow.n8n.json)
+□ Test run executed with manual trigger
+
+PHASE 4 — Content Assets
+─────────────────────────
+□ X profile photo uploaded (RICK.AI gradient logo, 400x400px)
+□ X banner uploaded (1500x500px — "We Build AI Apps That Ship")
+□ X bio populated with services + link to rick.ai
+□ LinkedIn company logo uploaded (300x300px)
+□ LinkedIn banner uploaded (1128x191px)
+□ LinkedIn "About" section populated
+□ YouTube channel art uploaded (2560x1440px)
+□ YouTube channel description populated
+□ First pinned tweet / LinkedIn post published
+
+ESTIMATED TIME: ~4 hours total (including API approval waits)

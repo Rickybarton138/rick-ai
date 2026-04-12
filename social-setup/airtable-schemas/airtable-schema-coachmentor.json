@@ -1,0 +1,44 @@
+{
+  "bases": [
+    {
+      "name": "CoachMentor CRM",
+      "tables": [
+        {
+          "name": "Subscribers",
+          "fields": [
+            "platform_user_id (Text) — TikTok/IG/YT/X user ID",
+            "platform (Single select: TikTok/Instagram/YouTube/X)",
+            "username (Text)",
+            "trial_started (Checkbox)",
+            "trial_started_at (Date)",
+            "converted_to_paid (Checkbox)",
+            "converted_at (Date)",
+            "intent_score (Number) — Claude classification 0-1",
+            "intent_type (Single select: Coach/Parent/Player)",
+            "dm_sent (Checkbox)",
+            "dm_sent_at (Date)",
+            "dm_followup_sent (Checkbox)",
+            "source_content_id (Text) — Which post triggered the funnel"
+          ]
+        },
+        {
+          "name": "Content Automation Runs",
+          "fields": [
+            "week_of (Date)",
+            "workflow_name (Text)",
+            "platform (Text)",
+            "content_type (Single select: Short/Reel/Thread/Post)",
+            "post_title (Text)",
+            "originality_score (Number)",
+            "confidence_score (Number)",
+            "published_at (Date & time)",
+            "views_48h (Number)",
+            "engagements_48h (Number)",
+            "funnel_triggered (Checkbox)",
+            "trials_generated (Number)"
+          ]
+        }
+      ]
+    }
+  ]
+}

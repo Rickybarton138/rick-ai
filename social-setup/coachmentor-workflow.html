@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CoachMentor — Social Agent Workflow</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #050a06;
+    --pitch: #071a0a;
+    --s1: #0c1f0f;
+    --s2: #122618;
+    --s3: #183020;
+    --border: #1e3d25;
+    --border2: #265233;
+    --text: #e8f5ea;
+    --muted: #4a7055;
+    --muted2: #6b9a75;
+    --green: #22c55e;
+    --green-d: rgba(34,197,94,0.12);
+    --green-g: rgba(34,197,94,0.05);
+    --lime: #84cc16;
+    --lime-d: rgba(132,204,22,0.12);
+    --white: #f0faf2;
+    --amber: #f59e0b;
+    --amber-d: rgba(245,158,11,0.12);
+    --purple: #a855f7;
+    --purple-d: rgba(168,85,247,0.12);
+    --blue: #38bdf8;
+    --blue-d: rgba(56,189,248,0.12);
+    --red: #f43f5e;
+    --red-d: rgba(244,63,94,0.12);
+    --orange: #fb923c;
+    --orange-d: rgba(251,146,60,0.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Pitch line texture */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 60px,
+        rgba(34,197,94,0.015) 60px,
+        rgba(34,197,94,0.015) 61px
+      );
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper { position: relative; z-index: 1; }
+
+  /* ── HEADER ── */
+  header {
+    background: linear-gradient(135deg, var(--s1) 0%, var(--pitch) 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 0 36px;
+    display: flex;
+    align-items: stretch;
+    position: sticky; top: 0; z-index: 100;
+  }
+
+  .header-brand {
+    padding: 20px 28px 20px 0;
+    border-right: 1px solid var(--border);
+    margin-right: 28px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .brand-ball {
+    width: 40px; height: 40px;
+    background: var(--white);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+    box-shadow: 0 0 20px rgba(34,197,94,0.3);
+    flex-shrink: 0;
+  }
+
+  .brand-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 1.3rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--white);
+    line-height: 1;
+  }
+  .brand-name span { color: var(--green); }
+  .brand-sub {
+    font-size: 0.6rem;
+    color: var(--muted2);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  .header-meta {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex: 1;
+  }
+
+  .meta-chip {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.65rem;
+    color: var(--muted2);
+    letter-spacing: 0.04em;
+  }
+
+  .chip-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+  }
+
+  .chip-green { background: var(--green); box-shadow: 0 0 8px var(--green); animation: blink 2s infinite; }
+  .chip-amber { background: var(--amber); }
+  .chip-blue { background: var(--blue); }
+
+  @keyframes blink {
+    0%,100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .header-stat {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--green);
+    letter-spacing: 0.02em;
+  }
+  .header-stat-lbl {
+    font-size: 0.55rem;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* ── LAYOUT ── */
+  .layout {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    min-height: calc(100vh - 81px);
+  }
+
+  /* ── CANVAS ── */
+  .canvas {
+    padding: 36px;
+    overflow-y: auto;
+    background: var(--pitch);
+  }
+
+  /* ── SECTION ── */
+  .section-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 20px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .section-label::before { content: '//'; color: var(--green); font-size: 0.65rem; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* ── WORKFLOW ROWS ── */
+  .wf-tabs {
+    display: flex;
+    gap: 2px;
+    background: var(--s2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 4px;
+    margin-bottom: 24px;
+    width: fit-content;
+  }
+
+  .wf-tab {
+    padding: 8px 18px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-radius: 7px;
+    cursor: pointer;
+    color: var(--muted2);
+    transition: all 0.2s;
+    border: none;
+    background: transparent;
+    font-family: 'Barlow Condensed', sans-serif;
+  }
+  .wf-tab:hover { color: var(--text); }
+  .wf-tab.active {
+    background: var(--green-d);
+    color: var(--green);
+    border: 1px solid rgba(34,197,94,0.3);
+  }
+
+  .wf-pane { display: none; }
+  .wf-pane.active { display: block; }
+
+  /* ── NODE CHAIN ── */
+  .node-chain {
+    position: relative;
+    padding-left: 52px;
+  }
+
+  /* Vertical connector */
+  .node-chain::before {
+    content: '';
+    position: absolute;
+    left: 16px;
+    top: 28px;
+    bottom: 28px;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--green) 0%, var(--lime) 50%, var(--amber) 100%);
+    opacity: 0.25;
+  }
+
+  .node-item {
+    background: var(--s1);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .node-item::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+  }
+
+  .node-item:hover {
+    border-color: var(--border2);
+    transform: translateX(3px);
+  }
+
+  .node-item.selected {
+    border-color: var(--green);
+    box-shadow: 0 0 20px rgba(34,197,94,0.12);
+  }
+
+  /* Node type colours */
+  .node-item.trigger::before { background: var(--green); }
+  .node-item.search::before { background: var(--blue); }
+  .node-item.ai::before { background: var(--purple); }
+  .node-item.media::before { background: var(--lime); }
+  .node-item.publish::before { background: var(--amber); }
+  .node-item.funnel::before { background: var(--orange); }
+  .node-item.cond::before { background: var(--amber); }
+
+  /* Node number bubble */
+  .node-num-bubble {
+    position: absolute;
+    left: -36px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 0.7rem;
+    border: 1px solid;
+  }
+
+  .nb-trigger { background: var(--green-d); color: var(--green); border-color: rgba(34,197,94,0.4); }
+  .nb-search { background: var(--blue-d); color: var(--blue); border-color: rgba(56,189,248,0.4); }
+  .nb-ai { background: var(--purple-d); color: var(--purple); border-color: rgba(168,85,247,0.4); }
+  .nb-media { background: var(--lime-d); color: var(--lime); border-color: rgba(132,204,22,0.4); }
+  .nb-publish { background: var(--amber-d); color: var(--amber); border-color: rgba(245,158,11,0.4); }
+  .nb-funnel { background: var(--orange-d); color: var(--orange); border-color: rgba(251,146,60,0.4); }
+  .nb-cond { background: var(--amber-d); color: var(--amber); border-color: rgba(245,158,11,0.4); }
+
+  .node-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+
+  .node-icon {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .node-meta { flex: 1; }
+
+  .node-type-lbl {
+    font-size: 0.55rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 2px;
+    font-weight: 600;
+  }
+
+  .node-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 1rem;
+    color: var(--white);
+    letter-spacing: 0.02em;
+    line-height: 1.1;
+  }
+
+  .node-status {
+    font-size: 0.58rem;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .st-live { background: var(--green-d); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+  .st-wait { background: rgba(90,112,85,0.15); color: var(--muted2); border: 1px solid var(--border); }
+  .st-active { background: var(--amber-d); color: var(--amber); border: 1px solid rgba(245,158,11,0.3); animation: activeGlow 2s infinite; }
+
+  @keyframes activeGlow {
+    0%,100% { box-shadow: none; }
+    50% { box-shadow: 0 0 10px rgba(245,158,11,0.3); }
+  }
+
+  .node-desc {
+    font-size: 0.65rem;
+    color: var(--muted2);
+    line-height: 1.6;
+    margin-bottom: 8px;
+  }
+
+  .node-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .ntag {
+    font-size: 0.55rem;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+
+  .ntag-g { background: var(--green-d); color: var(--green); }
+  .ntag-b { background: var(--blue-d); color: var(--blue); }
+  .ntag-p { background: var(--purple-d); color: var(--purple); }
+  .ntag-l { background: var(--lime-d); color: var(--lime); }
+  .ntag-a { background: var(--amber-d); color: var(--amber); }
+  .ntag-o { background: var(--orange-d); color: var(--orange); }
+  .ntag-r { background: var(--red-d); color: var(--red); }
+  .ntag-w { background: rgba(240,250,242,0.08); color: var(--white); }
+
+  /* Connector arrow */
+  .chain-arrow {
+    display: flex;
+    align-items: center;
+    height: 14px;
+    padding-left: 20px;
+    margin-bottom: 0;
+  }
+  .chain-arrow::before {
+    content: '▼';
+    font-size: 0.5rem;
+    color: var(--muted);
+  }
+
+  /* ── METRICS BAR ── */
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+
+  .metric {
+    background: var(--s1);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 12px;
+    text-align: center;
+  }
+
+  .metric-v {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 1.5rem;
+    line-height: 1;
+    margin-bottom: 3px;
+  }
+
+  .metric-l {
+    font-size: 0.55rem;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    border-left: 1px solid var(--border);
+    background: var(--s1);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .sidebar-block {
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .sidebar-heading {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 0.72rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+
+  /* Prompt display */
+  .prompt-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    font-size: 0.6rem;
+    line-height: 1.75;
+    color: var(--muted2);
+    border-left: 3px solid var(--purple);
+  }
+
+  .prompt-card .p-role { color: var(--lime); font-weight: 700; font-size: 0.58rem; letter-spacing: 0.08em; text-transform: uppercase; }
+  .prompt-card .p-key { color: var(--white); }
+  .prompt-card .p-var { color: var(--green); font-style: italic; }
+  .prompt-card .p-cond { color: var(--amber); }
+
+  /* Subscriber funnel */
+  .funnel-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .funnel-item {
+    background: var(--s2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    transition: border-color 0.2s;
+  }
+  .funnel-item:hover { border-color: var(--border2); }
+
+  .fi-num {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 1.1rem;
+    color: var(--green);
+    line-height: 1;
+    flex-shrink: 0;
+    width: 20px;
+  }
+
+  .fi-body { flex: 1; }
+  .fi-title { font-size: 0.7rem; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+  .fi-desc { font-size: 0.58rem; color: var(--muted2); line-height: 1.4; }
+
+  /* Pitch diagram */
+  .pitch-mini {
+    width: 100%;
+    height: 140px;
+    background: linear-gradient(180deg, #0a2010 0%, #082010 50%, #0a2010 100%);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+
+  /* Pitch markings */
+  .pitch-mini::before {
+    content: '';
+    position: absolute;
+    inset: 10px;
+    border: 1px solid rgba(34,197,94,0.2);
+    border-radius: 4px;
+  }
+  .pitch-mini::after {
+    content: '';
+    position: absolute;
+    left: 50%; top: 10px; bottom: 10px;
+    width: 1px;
+    background: rgba(34,197,94,0.15);
+  }
+
+  .pitch-circle {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    width: 50px; height: 50px;
+    border: 1px solid rgba(34,197,94,0.2);
+    border-radius: 50%;
+  }
+
+  .pitch-label {
+    position: absolute;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--green);
+    opacity: 0.7;
+  }
+
+  .platform-dots {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+  }
+
+  .pdot {
+    background: var(--s2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-size: 0.6rem;
+    color: var(--muted2);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .pdot-live { border-color: rgba(34,197,94,0.3); color: var(--green); }
+
+  /* Scroll styling */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  /* Animation */
+  .node-item {
+    animation: nodeReveal 0.4s ease forwards;
+    opacity: 0;
+  }
+  @keyframes nodeReveal {
+    from { opacity: 0; transform: translateX(-6px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  .node-chain .node-item:nth-child(1) { animation-delay: 0.05s; }
+  .node-chain .node-item:nth-child(2) { animation-delay: 0.1s; }
+  .node-chain .node-item:nth-child(3) { animation-delay: 0.15s; }
+  .node-chain .node-item:nth-child(4) { animation-delay: 0.2s; }
+  .node-chain .node-item:nth-child(5) { animation-delay: 0.25s; }
+  .node-chain .node-item:nth-child(6) { animation-delay: 0.3s; }
+  .node-chain .node-item:nth-child(7) { animation-delay: 0.35s; }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+<!-- HEADER -->
+<header>
+  <div class="header-brand">
+    <div class="brand-ball">⚽</div>
+    <div>
+      <div class="brand-name">Coach<span>Mentor</span></div>
+      <div class="brand-sub">Social Agent Workflow · n8n · Claude API</div>
+    </div>
+  </div>
+  <div class="header-meta">
+    <div class="meta-chip"><div class="chip-dot chip-green"></div> 4 Workflows Active</div>
+    <div class="meta-chip"><div class="chip-dot chip-amber"></div> 14 Posts/week</div>
+    <div class="meta-chip"><div class="chip-dot chip-blue"></div> £7.99/mo Subscription</div>
+    <div style="margin-left:auto;display:flex;gap:24px;padding:20px 0;">
+      <div><div class="header-stat">89%</div><div class="header-stat-lbl">Auto Rate</div></div>
+      <div><div class="header-stat">4</div><div class="header-stat-lbl">Platforms</div></div>
+      <div><div class="header-stat">3</div><div class="header-stat-lbl">n8n Workflows</div></div>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+
+<!-- ── CANVAS ── -->
+<div class="canvas">
+
+  <div class="metrics">
+    <div class="metric"><div class="metric-v" style="color:var(--green)">14</div><div class="metric-l">Posts/wk</div></div>
+    <div class="metric"><div class="metric-v" style="color:var(--lime)">3</div><div class="metric-l">YT Shorts/wk</div></div>
+    <div class="metric"><div class="metric-v" style="color:var(--blue)">5</div><div class="metric-l">TikToks/wk</div></div>
+    <div class="metric"><div class="metric-v" style="color:var(--amber)">3</div><div class="metric-l">IG Reels/wk</div></div>
+    <div class="metric"><div class="metric-v" style="color:var(--orange)">£7.99</div><div class="metric-l">Sub Price</div></div>
+    <div class="metric"><div class="metric-v" style="color:var(--purple)">7-day</div><div class="metric-l">Free Trial</div></div>
+  </div>
+
+  <!-- WORKFLOW TABS -->
+  <div class="wf-tabs">
+    <button class="wf-tab active" onclick="switchWF('content',this)">Content Engine</button>
+    <button class="wf-tab" onclick="switchWF('funnel',this)">Sub Funnel</button>
+    <button class="wf-tab" onclick="switchWF('fixture',this)">Fixture Hooks</button>
+  </div>
+
+  <!-- ─ WORKFLOW A: CONTENT ENGINE ─ -->
+  <div id="wf-content" class="wf-pane active">
+    <div class="section-label">Workflow A — Weekly Coaching Content Engine</div>
+    <div class="node-chain">
+
+      <div class="node-item trigger selected" onclick="selectNode(this, 'trigger')">
+        <div class="node-num-bubble nb-trigger">01</div>
+        <div class="node-header">
+          <div class="node-icon">⚡</div>
+          <div class="node-meta">
+            <div class="node-type-lbl">Cron Trigger</div>
+            <div class="node-title">Monday 07:00 — Weekly Kick-off</div>
+          </div>
+          <div class="node-status st-live">Active</div>
+        </div>
+        <div class="node-desc">Fires every Monday at 7am. Signals the start of CoachMentor's weekly content planning cycle. Triggers FA calendar scan and grassroots fixture lookup simultaneously.</div>
+        <div class="node-tags">
+          <span class="ntag ntag-g">n8n Cron</span>
+          <span class="ntag ntag-w">Mon 07:00</span>
+          <span class="ntag ntag-b">Parallel branches</span>
+        </div>
+      </div>
+
+      <div class="node-item search" onclick="selectNode(this, 'search')">
+        <div class="node-num-bubble nb-search">02</div>
+        <div class="node-header">
+          <div class="node-icon">🔍</div>
+          <div class="node-meta">
+            <div class="node-type-lbl">Brave Search MCP + FA API</div>
+            <div class="node-title">FA Calendar + Grassroots News Scan</div>
+          </div>
+          <div class="node-status st-live">Active</div>
+        </div>
+        <div class="node-desc">Parallel search branches: (1) FA coaching certification news, UEFA grassroots updates, coaching method trends via Brave Search. (2) Verwood Town FC fixtures from local football data. (3) "Grassroots football coaching" trending topics this week. Results merged and scored by relevance.</div>
+        <div class="node-tags">
+          <span class="ntag ntag-b">Brave Search MCP</span>
+          <span class="ntag ntag-g">FA website scrape</span>
+          <span class="ntag ntag-a">Relevance scoring</span>
+        </div>
+      </div>
+
+      <div class="node-item ai" onclick="selectNode(this, 'ai1')">
+        <div class="node-num-bubble nb-ai">03</div>
+        <div class="node-header">
+          <div class="node-icon">🧠</div>
+          <div class="node-meta">
+            <div class="node-type-lbl">Claude API — Content Planner</div>
+            <div class="node-title">Weekly Content Brief Generator</div>
+          </div>
+          <div class="node-status st-active">Running</div>
+        </div>
+        <div class="node-desc">Claude receives search results and generates a full week content brief: 3 YT Shorts scripts, 5 TikTok hooks, 3 IG Reel concepts, 3 X threads, and 2 LinkedIn posts. Each tied to the week's coaching theme. Returns structured JSON plan.</div>
+        <div class="node-tags">
+          <span class="ntag ntag-p">Claude claude-sonnet-4-6</span>
+          <span class="ntag ntag-g">JSON weekly plan</span>
+          <span class="ntag ntag-a">14 content items</span>
+        </div>
+      </div>
+
+      <div class="node-item cond" onclick="selectNode(this, 'cond')">
+        <div class="node-num-bubble nb-cond">04</div>
+        <div class="node-header">
+          <div class="node-icon">🔀</div>
+          <div class="node-meta">
+            <div class="node-type-lbl">IF Node — Copyright Check</div>
+            <div class="node-title">Original Content Verification</div>
+          </div>
+          <div class="node-status st-live">Active</div>
+        </div>
+        <div class="node-desc">Critical for CoachMentor: checks if any content references FA-owned session plans or licensed coaching materials. Claude scores each item for originality (0–1). Items below 0.8 are flagged. All content must be original coaching IP, not FA reproductions.</div>
+        <div class="node-tags">
+          <span class="ntag ntag-r">Copyright guard</span>
+          <span class="ntag ntag-a">originality ≥ 0.8</span>
+          <span class="ntag ntag-g">Auto-pass above threshold</span>
+        </div>
+      </div>
+
+      <div class="node-item media" onclick="selectNode(this, 'media')">
+        <div class="node-num-bubble nb-media">05</div>
+        <div class="node-header">
+          <div class="node-icon">🎬</div>
+          <div class="node-meta">
+            <div class="node-type-lbl">Video + Visual Assets</div>
+            <div class="node-title">Script → Visual Brief → Canva/fal.ai</div>
+          </div>
+          <div class="node-status st-wait">Queued</div>
+        </div>
+        <div class="node-desc">For each approved script: generates a visual brief (drill diagram style), creates thumbnail via Canva API with CoachMentor branding, generates b-roll prompt for fal.ai if needed. YT Shorts flagged for Verwood pitch recording — added to Ricky's recording queue in Notion.</div>
+        <div class="node-tags">
+          <span class="ntag ntag-l">Canva API</span>
+          <span class="ntag ntag-p">fal.ai b-roll</span>
+          <span class="ntag ntag-b">Notion recording queue</span>
+          <span class="ntag ntag-a">Thumbnail gen</span>
+        </div>
+      </div>
+
+      <div class="node-item publish" onclick="selectNode(this, 'publish')">
+        <div class="node-num-bubble nb-publish">06</div>
+        <div class="node-header">
+          <div class="node-icon">📤</div>
+          <div class="node-meta">
+            <div class="node-type-lbl">Multi-Platform Publish Schedule</div>
+            <div class="node-title">Platform-Optimised Distribution</div>
+          </div>
+          <div class="node-status st-wait">Scheduled</div>
+        </div>
+        <div class="node-desc">Distributes across 4 platforms on optimal windows. TikTok: Tue/Thu/Sat 6pm (training night audience). YouTube Shorts: Wed/Fri/Sun 8am (coaches planning sessions). Instagram: Mon/Wed/Fri 7pm. X threads: Mon/Thu 12pm (coaching discussion peaks).</div>
+        <div class="node-tags">
+          <span class="ntag ntag-g">TikTok API · 3/wk</span>
+          <span class="ntag ntag-l">YouTube API · 3/wk</span>
+          <span class="ntag ntag-b">IG Graph API · 3/wk</span>
+          <span class="ntag ntag-a">X API v2 · 3/wk</span>
+        </div>
+      </div>
+
+      <div class="node-item funnel" onclick="selectNode(this, 'perf')">
+        <div class="node-num-bubble nb-funnel">07</div>
+        <div class="node-header">
+          <div class="node-icon">📊</div>
+          <div class="node-meta">
+            <div class="node-type-lbl">Performance Loop + CRM</div>
+            <div class="node-title">Engagement → Trial Trigger</div>
+          </div>
+          <div class="node-status st-wait">Monitoring</div>
+        </div>
+        <div class="node-desc">48hr post-publish: checks engagement on each platform. Videos hitting >300 views trigger DM automation sequence (7-day free trial offer). High-performing content gets fed back to Claude as training signal for next week's plan. All data logged to CoachMentor subscriber CRM.</div>
+        <div class="node-tags">
+          <span class="ntag ntag-o">DM trigger: 300+ views</span>
+          <span class="ntag ntag-p">Claude feedback loop</span>
+          <span class="ntag ntag-g">Subscriber CRM log</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ─ WORKFLOW B: SUBSCRIBER FUNNEL ─ -->
+  <div id="wf-funnel" class="wf-pane">
+    <div class="section-label">Workflow B — Engagement to Subscriber Funnel</div>
+    <div class="node-chain">
+
+      <div class="node-item trigger" onclick="selectNode(this,'t2')">
+        <div class="node-num-bubble nb-trigger">01</div>
+        <div class="node-header">
+          <div class="node-icon">👁️</div>
+          <div class="node-meta">
+            <div class="node-type-lbl">Trigger — Engagement Threshold</div>
+            <div class="node-title">Video Hits 300+ Views / 3+ Comments</div>
+          </div>
+          <div class="node-status st-live">Always On</div>
+        </div>
+        <div class="node-desc">Monitors TikTok, YouTube, IG, and X via their respective analytics APIs every 6 hours. When a piece of content crosses 300 views OR receives 3+ comments, the subscriber funnel workflow activates for that user segment.</div>
+        <div class="node-tags">
+          <span class="ntag ntag-g">Platform APIs</span>
+          <span class="ntag ntag-b">6-hour polling</span>
+          <span class="ntag ntag-a">300 view threshold</span>
+        </div>
+      </div>
+
+      <div class="node-item ai" onclick="selectNode(this,'t3')">
+        <div class="node-num-bubble nb-ai">02</div>
+        <div class="node-header">
+          <div class="node-icon">🧠</div>
+          <div class="node-meta">
+            <div class="node-type-lbl">Claude — Audience Segment</div>
+            <div class="node-title">Classify Commenter Intent</div>
+          </div>
+          <div class="node-status st-live">Active</div>
+        </div>
+        <div class="node-desc">For each commenter on a high-performing post, Claude reads their comment and classifies: coach (likely subscriber), parent (possible), player (unlikely). Coaches with positive coaching intent get fast-tracked to DM offer. Others get lookalike audience tag only.</div>
+        <div class="node-tags">
+          <span class="ntag ntag-p">Claude intent classification</span>
+          <span class="ntag ntag-o">Coach / Parent / Player</span>
+        </div>
+      </div>
+
+      <div class="node-item funnel" onclick="selectNode(this,'t4')">
+        <div class="node-num-bubble nb-funnel">03</div>
+        <div class="node-header">
+          <div class="node-icon">💬</div>
+          <div class="node-meta">
+            <div class="node-type-lbl">DM Automation Sequence</div>
+            <div class="node-title">7-Day Free Trial Offer</div>
+          </div>
+          <div class="node-status st-active">Running</div>
+        </div>
+        <div class="node-desc">Coach-intent users receive personalised DM: references their comment, offers 7-day free trial of CoachMentor (£7.99/mo). Message generated by Claude to match their specific coaching context (age group, formation mentioned, etc). IG: ManyChat. TikTok: manual queue. X: API DM.</div>
+        <div class="node-tags">
+          <span class="ntag ntag-p">Claude personalisation</span>
+          <span class="ntag ntag-g">ManyChat IG DMs</span>
+          <span class="ntag ntag-a">X API DM</span>
+          <span class="ntag ntag-b">coachmentor.co.uk/trial</span>
+        </div>
+      </div>
+
+      <div class="node-item cond" onclick="selectNode(this,'t5')">
+        <div class="node-num-bubble nb-cond">04</div>
+        <div class="node-header">
+          <div class="node-icon">🔀</div>
+          <div class="node-meta">
+            <div class="node-type-lbl">IF — Trial Started?</div>
+            <div class="node-title">Conversion Check — 48 Hours</div>
+          </div>
+          <div class="node-status st-wait">Monitoring</div>
+        </div>
+        <div class="node-desc">Checks CoachMentor app webhook for trial signup within 48hrs of DM. Signed up: triggers onboarding email sequence + welcome Slack notification. Not signed up: send a single follow-up DM with a different angle (social proof / testimonial). Never more than 2 DMs.</div>
+        <div class="node-tags">
+          <span class="ntag ntag-g">App webhook: trial_started</span>
+          <span class="ntag ntag-a">Max 2 DMs rule</span>
+          <span class="ntag ntag-b">6-email onboarding seq</span>
+        </div>
+      </div>
+
+      <div class="node-item publish" onclick="selectNode(this,'t6')">
+        <div class="node-num-bubble nb-publish">05</div>
+        <div class="node-header">
+          <div class="node-icon">🎉</div>
+          <div class="node-meta">
+            <div class="node-type-lbl">Milestone Automation</div>
+            <div class="node-title">Subscriber Milestones → Social Proof Posts</div>
+          </div>
+          <div class="node-status st-wait">Queued</div>
+        </div>
+        <div class="node-desc">When subscriber count hits milestones (50, 100, 250, 500, 1000), Claude auto-generates a celebratory social proof post for all platforms. "CoachMentor just hit 100 coaches! Here's what they're saying..." Builds FOMO and social credibility automatically.</div>
+        <div class="node-tags">
+          <span class="ntag ntag-o">Milestone: 50 / 100 / 250 / 500</span>
+          <span class="ntag ntag-p">Claude generates copy</span>
+          <span class="ntag ntag-g">All platforms</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ─ WORKFLOW C: FIXTURE HOOKS ─ -->
+  <div id="wf-fixture" class="wf-pane">
+    <div class="section-label">Workflow C — Match Day & FA Event Reactive Content</div>
+    <div class="node-chain">
+
+      <div class="node-item trigger" onclick="selectNode(this,'f1')">
+        <div class="node-num-bubble nb-trigger">01</div>
+        <div class="node-header">
+          <div class="node-icon">📅</div>
+          <div class="node-meta">
+            <div class="node-type-lbl">Trigger — Friday Fixture Check</div>
+            <div class="node-title">Verwood FC Weekend Preview</div>
+          </div>
+          <div class="node-status st-live">Active</div>
+        </div>
+        <div class="node-desc">Every Friday 3pm: checks Verwood Town FC fixture list for weekend games. Also scans for FA announcements, grassroots coaching events in Dorset, and UEFA coaching certification windows. Creates content hooks list.</div>
+        <div class="node-tags">
+          <span class="ntag ntag-g">Fri 15:00 Cron</span>
+          <span class="ntag ntag-b">Verwood FC fixtures</span>
+          <span class="ntag ntag-a">FA event calendar</span>
+        </div>
+      </div>
+
+      <div class="node-item ai" onclick="selectNode(this,'f2')">
+        <div class="node-num-bubble nb-ai">02</div>
+        <div class="node-header">
+          <div class="node-icon">🧠</div>
+          <div class="node-meta">
+            <div class="node-type-lbl">Claude — Reactive Scripts</div>
+            <div class="node-title">Match Week Coaching Content</div>
+          </div>
+          <div class="node-status st-live">Active</div>
+        </div>
+        <div class="node-desc">Generates reactive content tied to the weekend fixture: "Getting your team ready for a Saturday morning kick-off" pre-match tips, tactical breakdowns relevant to Verwood's next opponent formation, post-match reflection prompts. All original — no FA material.</div>
+        <div class="node-tags">
+          <span class="ntag ntag-p">Claude reactive scripts</span>
+          <span class="ntag ntag-r">Copyright-safe</span>
+          <span class="ntag ntag-g">Verwood FC context</span>
+        </div>
+      </div>
+
+      <div class="node-item publish" onclick="selectNode(this,'f3')">
+        <div class="node-num-bubble nb-publish">03</div>
+        <div class="node-header">
+          <div class="node-icon">📤</div>
+          <div class="node-meta">
+            <div class="node-type-lbl">Saturday Morning Push</div>
+            <div class="node-title">Match Day Content Blast</div>
+          </div>
+          <div class="node-status st-wait">Scheduled</div>
+        </div>
+        <div class="node-desc">Saturday 7:30am: TikTok "match day motivation" short. Saturday 8am: X thread on tactical setup tip. Saturday 9am: IG Story "coaching question of the match". All timed to catch coaches in the car park pre-game. CoachMentor app CTA on every piece.</div>
+        <div class="node-tags">
+          <span class="ntag ntag-b">TikTok 07:30</span>
+          <span class="ntag ntag-a">X 08:00</span>
+          <span class="ntag ntag-g">IG Story 09:00</span>
+          <span class="ntag ntag-o">Pre-game timing</span>
+        </div>
+      </div>
+
+      <div class="node-item funnel" onclick="selectNode(this,'f4')">
+        <div class="node-num-bubble nb-funnel">04</div>
+        <div class="node-header">
+          <div class="node-icon">💬</div>
+          <div class="node-meta">
+            <div class="node-type-lbl">Post-Match Engagement</div>
+            <div class="node-title">Sunday Reflection Thread</div>
+          </div>
+          <div class="node-status st-wait">Scheduled</div>
+        </div>
+        <div class="node-desc">Sunday 6pm: "Coaching question of the week" X thread auto-posted (highest engagement window for coaching community). Pulls from Claude's weekly brief. Replies monitored — coach-intent commenters fed into the subscriber funnel workflow automatically.</div>
+        <div class="node-tags">
+          <span class="ntag ntag-a">Sun 18:00</span>
+          <span class="ntag ntag-b">X thread engagement</span>
+          <span class="ntag ntag-o">→ Subscriber funnel</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /canvas -->
+
+<!-- ── SIDEBAR ── -->
+<div class="sidebar">
+
+  <!-- Pitch mini-diagram -->
+  <div class="sidebar-block">
+    <div class="sidebar-heading">Content Calendar</div>
+    <div class="pitch-mini">
+      <div class="pitch-circle"></div>
+      <div class="pitch-label" style="top:14px;left:14px;">MON</div>
+      <div class="pitch-label" style="top:14px;right:14px;">TUE</div>
+      <div class="pitch-label" style="bottom:14px;left:14px;">SAT</div>
+      <div class="pitch-label" style="bottom:14px;right:14px;">SUN</div>
+      <div class="pitch-label" style="top:50%;left:50%;transform:translate(-50%,-50%);opacity:0.4;font-size:0.5rem;">WEEK</div>
+    </div>
+    <div class="platform-dots">
+      <div class="pdot pdot-live">🎵 TikTok · 3/wk</div>
+      <div class="pdot pdot-live">▶️ YouTube · 3/wk</div>
+      <div class="pdot pdot-live">📸 Instagram · 3/wk</div>
+      <div class="pdot pdot-live">🐦 X · 3/wk</div>
+      <div class="pdot">🔗 LinkedIn · 2/wk</div>
+    </div>
+  </div>
+
+  <!-- Claude Prompt -->
+  <div class="sidebar-block">
+    <div class="sidebar-heading">Claude System Prompt</div>
+    <div class="prompt-card">
+      <span class="p-role">SYSTEM</span><br>
+      <span class="p-key">"You are a social media content creator for CoachMentor — an AI-powered football coaching education app for grassroots coaches (primarily FA Level 1/2, working with U7–U16 age groups in England).</span><br><br>
+      <span class="p-key">Brand voice: knowledgeable, encouraging, peer-to-peer. You're a fellow coach who loves the game — not a corporate brand.</span><br><br>
+      <span class="p-key">CRITICAL: All content must be 100% original. Never reproduce FA session plans, UEFA coaching materials, or any licensed coaching frameworks. Create original drills, tips, and coaching questions."</span><br><br>
+      <span class="p-role">USER</span><br>
+      <span class="p-key">Generate this week's content plan.</span><br>
+      News hooks: <span class="p-var">{{faNewsResults}}</span><br>
+      Verwood fixture: <span class="p-var">{{fixtureDetails}}</span><br>
+      Last week's top performer: <span class="p-var">{{topPostLastWeek}}</span><br><br>
+      <span class="p-cond">{{#if matchWeek}}</span>Include match-day reactive content<span class="p-cond">{{/if}}</span>
+    </div>
+  </div>
+
+  <!-- Subscriber funnel -->
+  <div class="sidebar-block">
+    <div class="sidebar-heading">Subscriber Funnel Steps</div>
+    <div class="funnel-steps">
+      <div class="funnel-item">
+        <div class="fi-num">1</div>
+        <div class="fi-body">
+          <div class="fi-title">Content Impression</div>
+          <div class="fi-desc">Coach watches TikTok/YT Short or reads X thread</div>
+        </div>
+      </div>
+      <div class="funnel-item">
+        <div class="fi-num">2</div>
+        <div class="fi-body">
+          <div class="fi-title">Engagement Signal</div>
+          <div class="fi-desc">Comment, save, or 300+ view threshold triggered</div>
+        </div>
+      </div>
+      <div class="funnel-item">
+        <div class="fi-num">3</div>
+        <div class="fi-body">
+          <div class="fi-title">Intent Classification</div>
+          <div class="fi-desc">Claude identifies coach vs parent vs player</div>
+        </div>
+      </div>
+      <div class="funnel-item">
+        <div class="fi-num">4</div>
+        <div class="fi-body">
+          <div class="fi-title">Personalised DM</div>
+          <div class="fi-desc">"Try CoachMentor free for 7 days" — context-aware</div>
+        </div>
+      </div>
+      <div class="funnel-item">
+        <div class="fi-num">5</div>
+        <div class="fi-body">
+          <div class="fi-title">Trial → Subscriber</div>
+          <div class="fi-desc">6-email onboarding → £7.99/mo conversion</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Copyright guard -->
+  <div class="sidebar-block">
+    <div class="sidebar-heading">Copyright Guard — Node 04</div>
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:0.6rem;border-left:3px solid var(--red);line-height:1.7;color:var(--muted2);">
+      <strong style="color:var(--red);">⚠️ Critical for CoachMentor</strong><br><br>
+      Claude scores each content item for originality (0–1). Items are flagged if they:<br>
+      • Reference FA session card structures<br>
+      • Reproduce UEFA coaching framework language<br>
+      • Mirror specific licensed drill formats<br><br>
+      <strong style="color:var(--text);">threshold: originality ≥ 0.80</strong><br>
+      Below threshold → Slack alert → human rewrite<br>
+      Above threshold → auto-approved to publish queue
+    </div>
+  </div>
+
+</div><!-- /sidebar -->
+</div><!-- /layout -->
+</div><!-- /wrapper -->
+
+<script>
+  function switchWF(id, btn) {
+    document.querySelectorAll('.wf-pane').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.wf-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('wf-' + id).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  function selectNode(el, id) {
+    document.querySelectorAll('.node-item').forEach(n => n.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+</script>
+</body>
+</html>

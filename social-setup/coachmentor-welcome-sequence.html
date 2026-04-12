@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CoachMentor — Subscriber Welcome Sequence</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,800;1,9..144,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #030506;
+    --s1: #080f12;
+    --s2: #0d181d;
+    --s3: #112028;
+    --border: #162530;
+    --border2: #1e3340;
+    --text: #d8eef5;
+    --muted: #2e4d5e;
+    --muted2: #4a7285;
+    --green: #059669;
+    --green-b: #10b981;
+    --green-d: rgba(16,185,129,0.1);
+    --gold: #b45309;
+    --gold-b: #f59e0b;
+    --gold-d: rgba(245,158,11,0.1);
+    --teal: #0891b2;
+    --teal-b: #22d3ee;
+    --teal-d: rgba(34,211,238,0.1);
+    --slate: #475569;
+    --white: #f0faf8;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+  }
+
+  /* Subtle radial */
+  body::before {
+    content: '';
+    position: fixed;
+    bottom: -200px; left: -200px;
+    width: 700px; height: 700px;
+    background: radial-gradient(circle, rgba(16,185,129,0.04) 0%, transparent 65%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper { position: relative; z-index: 1; }
+
+  /* ── HEADER ── */
+  header {
+    background: linear-gradient(180deg, var(--s1) 0%, transparent 100%);
+    padding: 22px 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 100;
+    backdrop-filter: blur(12px);
+  }
+
+  .hd-left {
+    display: flex; align-items: center; gap: 14px;
+  }
+
+  .hd-icon {
+    width: 38px; height: 38px;
+    background: linear-gradient(135deg, var(--green) 0%, var(--teal) 100%);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    box-shadow: 0 4px 20px rgba(16,185,129,0.3);
+  }
+
+  .hd-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 800;
+    font-size: 1rem;
+    color: var(--white);
+    letter-spacing: -0.02em;
+  }
+  .hd-title span { color: var(--green-b); }
+
+  .hd-sub {
+    font-size: 0.6rem;
+    color: var(--muted2);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 1px;
+  }
+
+  .hd-right {
+    display: flex; align-items: center; gap: 10px;
+  }
+
+  .seq-dot {
+    display: flex; align-items: center; gap: 5px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.62rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid var(--border2);
+    background: var(--s2);
+    color: var(--muted2);
+    transition: all 0.2s;
+    letter-spacing: 0.02em;
+  }
+
+  .seq-dot:hover { border-color: var(--green-b); color: var(--green-b); }
+  .seq-dot.active { background: var(--green-d); border-color: rgba(16,185,129,0.5); color: var(--green-b); }
+
+  .seq-dot-pip {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  /* ── LAYOUT ── */
+  .layout {
+    display: grid;
+    grid-template-columns: 260px 1fr 280px;
+    min-height: calc(100vh - 83px);
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    background: var(--s1);
+    border-right: 1px solid var(--border);
+    padding: 28px 0;
+  }
+
+  .sb-label {
+    font-size: 0.57rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0 22px;
+    margin-bottom: 14px;
+    font-weight: 600;
+  }
+
+  .sb-item {
+    padding: 16px 22px;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+    border-bottom: 1px solid var(--border);
+    transition: all 0.2s;
+    position: relative;
+  }
+
+  .sb-item:hover { background: var(--s2); }
+  .sb-item.active { background: var(--s2); border-left-color: var(--green-b); }
+
+  .sb-seq {
+    font-size: 0.55rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .sb-title {
+    font-family: 'Fraunces', serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.3;
+    margin-bottom: 5px;
+  }
+
+  .sb-desc {
+    font-size: 0.6rem;
+    color: var(--muted2);
+    line-height: 1.4;
+  }
+
+  .sb-badge {
+    display: inline-block;
+    font-size: 0.5rem;
+    padding: 2px 7px;
+    border-radius: 20px;
+    margin-top: 6px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* ── PREVIEW ── */
+  .preview {
+    background: #e8f0ec;
+    overflow-y: auto;
+    padding: 36px;
+  }
+
+  .email-page { display: none; }
+  .email-page.active { display: block; }
+
+  /* Email shell */
+  .em {
+    max-width: 580px;
+    margin: 0 auto;
+    background: #ffffff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 60px rgba(0,0,0,0.12);
+    font-family: 'DM Sans', -apple-system, sans-serif;
+  }
+
+  /* ── EMAIL COMPONENTS ── */
+
+  .em-topbar {
+    height: 4px;
+    background: linear-gradient(90deg, #059669, #0891b2);
+  }
+
+  .em-head {
+    padding: 28px 40px 22px;
+    border-bottom: 1px solid #f0f4f2;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .em-logo-mark {
+    width: 30px; height: 30px;
+    background: #059669;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.9rem;
+    color: white;
+  }
+
+  .em-logo-name {
+    font-family: 'Fraunces', serif;
+    font-weight: 800;
+    font-size: 1rem;
+    color: #111;
+    letter-spacing: -0.02em;
+  }
+
+  .em-logo-name span { color: #059669; }
+
+  .em-logo-tag {
+    font-size: 0.62rem;
+    color: #9ca3af;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-left: auto;
+    background: #f0fdf4;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-weight: 600;
+    color: #059669;
+    border: 1px solid #bbf7d0;
+  }
+
+  .em-hero {
+    padding: 36px 40px 28px;
+  }
+
+  .em-eyebrow {
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .em-h1 {
+    font-family: 'Fraunces', serif;
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.2;
+    letter-spacing: -0.03em;
+    margin-bottom: 18px;
+  }
+
+  .em-p {
+    font-size: 0.92rem;
+    color: #374151;
+    line-height: 1.72;
+    margin-bottom: 14px;
+  }
+
+  .em-p:last-child { margin-bottom: 0; }
+  .em-p strong { color: #0f172a; font-weight: 600; }
+  .em-p em { color: #059669; font-style: normal; font-weight: 600; }
+
+  .em-divider {
+    height: 1px;
+    background: #f0f4f2;
+    margin: 0 40px;
+  }
+
+  .em-section {
+    padding: 28px 40px;
+  }
+
+  .em-section-title {
+    font-family: 'Fraunces', serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 16px;
+    letter-spacing: -0.01em;
+  }
+
+  .em-cta-area {
+    padding: 32px 40px;
+    text-align: center;
+  }
+
+  .em-btn {
+    display: inline-block;
+    padding: 15px 36px;
+    border-radius: 10px;
+    font-size: 0.92rem;
+    font-weight: 700;
+    text-decoration: none;
+    letter-spacing: -0.01em;
+  }
+
+  .em-btn-sub {
+    font-size: 0.72rem;
+    color: #9ca3af;
+    margin-top: 10px;
+  }
+
+  /* Feature cards */
+  .em-card {
+    background: #f8fffe;
+    border: 1px solid #d1fae5;
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 12px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+
+  .em-card-icon {
+    width: 38px; height: 38px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+
+  .em-card-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 4px;
+  }
+
+  .em-card-desc {
+    font-size: 0.78rem;
+    color: #6b7280;
+    line-height: 1.5;
+  }
+
+  /* Drill block */
+  .em-drill-block {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+
+  .em-drill-head {
+    padding: 12px 18px;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .em-drill-body {
+    padding: 16px 18px;
+  }
+
+  .em-drill-row {
+    display: flex;
+    gap: 10px;
+    padding: 5px 0;
+    font-size: 0.8rem;
+    color: #374151;
+    border-bottom: 1px solid #f3f4f6;
+    line-height: 1.4;
+  }
+
+  .em-drill-row:last-child { border-bottom: none; }
+
+  .em-drill-key {
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    min-width: 58px;
+    padding-top: 2px;
+    flex-shrink: 0;
+  }
+
+  /* Quote */
+  .em-quote {
+    border-left: 3px solid #059669;
+    background: #f0fdf4;
+    padding: 16px 20px;
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 16px;
+  }
+
+  .em-quote-text {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 0.92rem;
+    color: #166534;
+    line-height: 1.6;
+    margin-bottom: 8px;
+  }
+
+  .em-quote-attr {
+    font-size: 0.72rem;
+    color: #16a34a;
+    font-weight: 600;
+  }
+
+  /* Checklist */
+  .em-check-item {
+    display: flex;
+    gap: 10px;
+    padding: 8px 0;
+    font-size: 0.82rem;
+    color: #374151;
+    border-bottom: 1px solid #f3f4f6;
+    line-height: 1.4;
+    align-items: flex-start;
+  }
+  .em-check-item:last-child { border-bottom: none; }
+  .em-check-icon { color: #059669; font-size: 0.85rem; flex-shrink: 0; margin-top: 1px; }
+
+  /* Stat bar */
+  .em-stat-row {
+    display: flex;
+    gap: 1px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+  }
+
+  .em-stat-cell {
+    flex: 1;
+    padding: 14px 10px;
+    text-align: center;
+    background: #f9fafb;
+    border-right: 1px solid #e5e7eb;
+  }
+  .em-stat-cell:last-child { border-right: none; }
+
+  .em-stat-v {
+    font-family: 'Fraunces', serif;
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1;
+    margin-bottom: 3px;
+  }
+
+  .em-stat-l {
+    font-size: 0.6rem;
+    color: #9ca3af;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    line-height: 1.3;
+  }
+
+  /* Highlight box */
+  .em-highlight {
+    padding: 16px 20px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    font-size: 0.85rem;
+    line-height: 1.65;
+  }
+
+  /* Steps */
+  .em-steps {
+    counter-reset: steps;
+  }
+
+  .em-step {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 14px;
+    align-items: flex-start;
+  }
+
+  .em-step-num {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: #059669;
+    color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+
+  .em-step-body { flex: 1; padding-top: 4px; }
+  .em-step-title { font-size: 0.85rem; font-weight: 700; color: #0f172a; margin-bottom: 3px; }
+  .em-step-desc { font-size: 0.78rem; color: #6b7280; line-height: 1.5; }
+
+  /* Footer */
+  .em-foot {
+    background: #f9fafb;
+    border-top: 1px solid #e5e7eb;
+    padding: 22px 40px;
+    text-align: center;
+  }
+
+  .em-foot p {
+    font-size: 0.7rem;
+    color: #9ca3af;
+    line-height: 1.65;
+    margin-bottom: 3px;
+  }
+
+  .em-foot a { color: #6b7280; text-decoration: underline; }
+
+  .em-ps {
+    padding: 0 40px 24px;
+    font-size: 0.78rem;
+    color: #6b7280;
+    font-style: italic;
+    line-height: 1.65;
+  }
+
+  /* ── RIGHT PANEL ── */
+  .rpanel {
+    background: var(--s1);
+    border-left: 1px solid var(--border);
+    padding: 24px 20px;
+    overflow-y: auto;
+  }
+
+  .rp-sec { margin-bottom: 26px; }
+
+  .rp-head {
+    font-size: 0.57rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+    font-weight: 700;
+  }
+
+  .rp-card {
+    background: var(--s2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .rp-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.6rem;
+    gap: 8px;
+  }
+  .rp-row:last-child { border-bottom: none; }
+  .rp-row-k { color: var(--muted2); white-space: nowrap; }
+  .rp-row-v { color: var(--text); font-weight: 600; text-align: right; }
+  .rp-green { color: var(--green-b); }
+  .rp-gold { color: var(--gold-b); }
+
+  .code-snip {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    font-family: 'DM Mono', 'JetBrains Mono', monospace;
+    font-size: 0.57rem;
+    color: var(--muted2);
+    line-height: 1.85;
+    border-left: 3px solid var(--green-b);
+  }
+
+  .cs-kw { color: #7c9fff; }
+  .cs-str { color: var(--green-b); }
+  .cs-num { color: var(--gold-b); }
+  .cs-cm { color: var(--muted); font-style: italic; }
+  .cs-fn { color: var(--teal-b); }
+
+  .milestone-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .ms-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--s2);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 8px 11px;
+    font-size: 0.6rem;
+  }
+
+  .ms-num {
+    font-family: 'Fraunces', serif;
+    font-weight: 800;
+    font-size: 0.9rem;
+    color: var(--green-b);
+    min-width: 36px;
+    line-height: 1;
+  }
+
+  .ms-label { color: var(--muted2); flex: 1; }
+  .ms-trigger { color: var(--gold-b); font-size: 0.55rem; }
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+<!-- HEADER -->
+<header>
+  <div class="hd-left">
+    <div class="hd-icon">⚽</div>
+    <div>
+      <div class="hd-title">Coach<span>Mentor</span> Subscriber Welcome</div>
+      <div class="hd-sub">4-Email Post-Conversion Sequence · Activation → Retention</div>
+    </div>
+  </div>
+  <div class="hd-right">
+    <div class="seq-dot active" onclick="showW(0,this)"><div class="seq-dot-pip"></div> Day 0 — Congrats</div>
+    <div class="seq-dot" onclick="showW(1,this)"><div class="seq-dot-pip"></div> Day 2 — Quick Start</div>
+    <div class="seq-dot" onclick="showW(2,this)"><div class="seq-dot-pip"></div> Day 7 — Community</div>
+    <div class="seq-dot" onclick="showW(3,this)"><div class="seq-dot-pip"></div> Day 30 — Milestone</div>
+  </div>
+</header>
+
+<div class="layout">
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sb-label">Welcome Sequence</div>
+
+  <div class="sb-item active" onclick="showW(0,null)">
+    <div class="sb-seq" style="color:var(--green-b)">Email 1 · Day 0 · Immediate</div>
+    <div class="sb-title">You're officially a CoachMentor. Welcome.</div>
+    <div class="sb-desc">Confirm subscription, celebrate the decision, set the stage for transformation</div>
+    <span class="sb-badge" style="background:var(--green-d);color:var(--green-b);border:1px solid rgba(16,185,129,0.3);">Activation</span>
+  </div>
+
+  <div class="sb-item" onclick="showW(1,null)">
+    <div class="sb-seq" style="color:var(--gold-b)">Email 2 · Day 2</div>
+    <div class="sb-title">Your 5-minute quick-start guide</div>
+    <div class="sb-desc">Turn a new subscriber into an active user fast. Step-by-step first session</div>
+    <span class="sb-badge" style="background:var(--gold-d);color:var(--gold-b);border:1px solid rgba(245,158,11,0.3);">Onboarding</span>
+  </div>
+
+  <div class="sb-item" onclick="showW(2,null)">
+    <div class="sb-seq" style="color:var(--teal-b)">Email 3 · Day 7</div>
+    <div class="sb-title">You're now part of something bigger</div>
+    <div class="sb-desc">Introduce the community, social proof from other subscribers, deepen belonging</div>
+    <span class="sb-badge" style="background:var(--teal-d);color:var(--teal-b);border:1px solid rgba(34,211,238,0.3);">Community</span>
+  </div>
+
+  <div class="sb-item" onclick="showW(3,null)">
+    <div class="sb-seq" style="color:var(--gold-b)">Email 4 · Day 30</div>
+    <div class="sb-title">One month in — here's what changed</div>
+    <div class="sb-desc">Celebrate the milestone, recap their progress, prime for long-term retention</div>
+    <span class="sb-badge" style="background:var(--gold-d);color:var(--gold-b);border:1px solid rgba(245,158,11,0.3);">Retention</span>
+  </div>
+
+  <div style="padding:20px 22px;border-top:1px solid var(--border);margin-top:auto;">
+    <div class="sb-label" style="margin-bottom:10px;">Triggered After</div>
+    <div style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:0.6rem;color:var(--muted2);line-height:1.8;">
+      <strong style="color:var(--text);">Trial sequence</strong> stops immediately when <span style="color:var(--green-b);">payment_confirmed</span> webhook fires.<br><br>
+      This welcome sequence starts automatically in its place.<br><br>
+      No overlap. CoachMentor app sends <code style="color:var(--green-b);">/webhook/subscribed</code> to n8n on successful charge.
+    </div>
+  </div>
+</div>
+
+<!-- PREVIEW -->
+<div class="preview">
+
+  <!-- EMAIL W1: WELCOME SUBSCRIBER -->
+  <div class="email-page active" id="w-0">
+    <div class="em">
+      <div class="em-topbar"></div>
+      <div class="em-head">
+        <div class="em-logo-mark">⚽</div>
+        <div class="em-logo-name">Coach<span>Mentor</span></div>
+        <div class="em-logo-tag">Subscriber</div>
+      </div>
+      <div class="em-hero">
+        <div class="em-eyebrow" style="color:#059669;">Welcome to the squad ✦</div>
+        <div class="em-h1">You made the call. Now let's make it count.</div>
+        <div class="em-p">Hi [First Name],</div>
+        <div class="em-p">You just became a CoachMentor subscriber. That means you've made a deliberate choice to invest in your coaching — and that already puts you ahead of most.</div>
+        <div class="em-p">Your subscription is confirmed. Everything is unlocked. Here's what that actually means.</div>
+      </div>
+      <div class="em-divider"></div>
+      <div class="em-section">
+        <div class="em-section-title">What's now fully yours</div>
+        <div class="em-card">
+          <div class="em-card-icon" style="background:#d1fae5;">📋</div>
+          <div>
+            <div class="em-card-title">60+ Original Session Plans</div>
+            <div class="em-card-desc">Every age group from U7 to U16. Every formation. Tap any plan to get a full drill sequence, coaching points, and progressions — ready to run tonight.</div>
+          </div>
+        </div>
+        <div class="em-card">
+          <div class="em-card-icon" style="background:#cffafe;">🤖</div>
+          <div>
+            <div class="em-card-title">Unlimited AI Mentor Questions</div>
+            <div class="em-card-desc">No daily cap. Ask anything at any time. From <em>"why won't my striker press?"</em> to <em>"how do I keep parents calm on the sideline?"</em> — your mentor is always on.</div>
+          </div>
+        </div>
+        <div class="em-card">
+          <div class="em-card-icon" style="background:#fef9c3;">🎯</div>
+          <div>
+            <div class="em-card-title">New Drills Every Week</div>
+            <div class="em-card-desc">We add fresh, original drills every week based on subscriber requests and what's trending in grassroots coaching. You'll never run out of ideas.</div>
+          </div>
+        </div>
+      </div>
+      <div class="em-cta-area" style="background:#f0fdf4;margin:0;">
+        <a href="https://coachmentor.co.uk/app" class="em-btn" style="background:#059669;color:white;">Open CoachMentor →</a>
+        <div class="em-btn-sub">Your next session is waiting. Takes 2 minutes to plan.</div>
+      </div>
+      <div class="em-divider" style="margin-top:0;"></div>
+      <div class="em-section">
+        <div class="em-p" style="font-size:0.85rem;">In your next email (Day 2) I'll send you a <strong>5-minute quick-start guide</strong> that shows you exactly how to get a full session plan for your next training night in under 2 minutes.</div>
+        <div class="em-p" style="font-size:0.85rem;color:#6b7280;">— Ricky & the CoachMentor team</div>
+      </div>
+      <div class="em-foot">
+        <p>CoachMentor · coachmentor.co.uk · You're subscribed at £7.99/month</p>
+        <p>Manage subscription · <a href="#">Contact support</a> · <a href="#">Privacy Policy</a></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- EMAIL W2: QUICK START -->
+  <div class="email-page" id="w-1">
+    <div class="em">
+      <div class="em-topbar" style="background:linear-gradient(90deg,#b45309,#d97706);"></div>
+      <div class="em-head">
+        <div class="em-logo-mark">⚽</div>
+        <div class="em-logo-name">Coach<span>Mentor</span></div>
+        <div class="em-logo-tag" style="color:#b45309;border-color:#fde68a;background:#fefce8;">Day 2</div>
+      </div>
+      <div class="em-hero">
+        <div class="em-eyebrow" style="color:#b45309;">Quick-start guide ✦</div>
+        <div class="em-h1">Plan your best-ever session in 5 minutes flat</div>
+        <div class="em-p">Hi [First Name],</div>
+        <div class="em-p">Most coaches open CoachMentor for the first time and spend 20 minutes just exploring. That's fine — but I want to make sure you actually use it at your <em>next training session</em>, not just have a look around.</div>
+        <div class="em-p">Here's the exact 5-minute path to a full session plan:</div>
+      </div>
+      <div class="em-section" style="padding-top:0;">
+        <div class="em-steps">
+          <div class="em-step">
+            <div class="em-step-num">1</div>
+            <div class="em-step-body">
+              <div class="em-step-title">Tell CoachMentor your context (30 seconds)</div>
+              <div class="em-step-desc">Open the app → tap "Plan a Session" → enter your age group, how many players you'll have, and session length. That's it.</div>
+            </div>
+          </div>
+          <div class="em-step">
+            <div class="em-step-num">2</div>
+            <div class="em-step-body">
+              <div class="em-step-title">Pick your session objective (1 minute)</div>
+              <div class="em-step-desc">Pressing? Possession? Transitions? Defending? Choose one. If you don't know, use the AI Mentor: <em>"What should I work on with my U11s right now?"</em></div>
+            </div>
+          </div>
+          <div class="em-step">
+            <div class="em-step-num">3</div>
+            <div class="em-step-body">
+              <div class="em-step-title">Get your full plan (instant)</div>
+              <div class="em-step-desc">CoachMentor generates a warm-up, main activity, drill with progressions, and a cool-down coaching question. Tap any drill to see the full diagram and setup.</div>
+            </div>
+          </div>
+          <div class="em-step">
+            <div class="em-step-num">4</div>
+            <div class="em-step-body">
+              <div class="em-step-title">Save it and go coach (30 seconds)</div>
+              <div class="em-step-desc">Tap "Save Session". It's in your library forever. Screenshot the drill diagram to have on your phone at the pitch. Done.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="em-section" style="padding-top:0;">
+        <div class="em-section-title">This week's drill to try</div>
+        <div class="em-drill-block">
+          <div class="em-drill-head" style="background:#fefce8;color:#b45309;">⚡ Quick Win — Rondo with Pressure Triggers</div>
+          <div class="em-drill-body">
+            <div class="em-drill-row"><span class="em-drill-key" style="color:#b45309;">Age</span><span>U10 upward</span></div>
+            <div class="em-drill-row"><span class="em-drill-key" style="color:#b45309;">Time</span><span>12 minutes</span></div>
+            <div class="em-drill-row"><span class="em-drill-key" style="color:#b45309;">Setup</span><span>5v2 rondo in a 12×12 grid. Outside players keep possession. Middle two press on a signal.</span></div>
+            <div class="em-drill-row"><span class="em-drill-key" style="color:#b45309;">Key Q.</span><span><em>"What's the signal that tells us when to press? What changes in the body shape of the player on the ball?"</em></span></div>
+            <div class="em-drill-row"><span class="em-drill-key" style="color:#b45309;">Progress</span><span>Shrink the grid. Add a 3rd defender. Give outside players a 5-second possession limit.</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="em-cta-area">
+        <a href="https://coachmentor.co.uk/app/plan" class="em-btn" style="background:#b45309;color:white;">Plan This Week's Session →</a>
+      </div>
+      <div class="em-ps">P.S. The most common question we get is <em>"I have a player who won't listen — what do I do?"</em> Ask the AI Mentor. It's the best 30 seconds you'll spend this week.</div>
+      <div class="em-foot">
+        <p>CoachMentor · coachmentor.co.uk · Subscription active</p>
+        <p><a href="#">Manage subscription</a> · <a href="#">Contact support</a></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- EMAIL W3: COMMUNITY -->
+  <div class="email-page" id="w-2">
+    <div class="em">
+      <div class="em-topbar" style="background:linear-gradient(90deg,#0891b2,#059669);"></div>
+      <div class="em-head">
+        <div class="em-logo-mark">⚽</div>
+        <div class="em-logo-name">Coach<span>Mentor</span></div>
+        <div class="em-logo-tag" style="color:#0891b2;border-color:#bae6fd;background:#f0f9ff;">Day 7</div>
+      </div>
+      <div class="em-hero">
+        <div class="em-eyebrow" style="color:#0891b2;">One week in ✦</div>
+        <div class="em-h1">You're not just a subscriber. You're part of something.</div>
+        <div class="em-p">Hi [First Name],</div>
+        <div class="em-p">You've been a CoachMentor subscriber for a week now. I wanted to give you a sense of who else is on this journey with you — because the community you're part of is something we're genuinely proud of.</div>
+      </div>
+      <div class="em-section" style="padding-top:0;">
+        <div class="em-stat-row">
+          <div class="em-stat-cell">
+            <div class="em-stat-v" style="color:#059669;">150+</div>
+            <div class="em-stat-l">Active coaches this month</div>
+          </div>
+          <div class="em-stat-cell">
+            <div class="em-stat-v" style="color:#0891b2;">23</div>
+            <div class="em-stat-l">Counties represented</div>
+          </div>
+          <div class="em-stat-cell">
+            <div class="em-stat-v" style="color:#b45309;">4,800+</div>
+            <div class="em-stat-l">Sessions planned this month</div>
+          </div>
+        </div>
+      </div>
+      <div class="em-section" style="padding-top:0;">
+        <div class="em-section-title">What coaches are doing with CoachMentor right now</div>
+        <div class="em-quote">
+          <div class="em-quote-text">"I've been coaching for 11 years and I still learn something new every time I open this app. The AI mentor asked me questions about my pressing shape I'd never thought to ask myself."</div>
+          <div class="em-quote-attr">— Tom, U14s FA Level 2, Yorkshire</div>
+        </div>
+        <div class="em-quote">
+          <div class="em-quote-text">"My assistant coach and I both subscribe and share session ideas before training. It's changed how we prepare together. Worth ten times what it costs."</div>
+          <div class="em-quote-attr">— Priya, U9s & U11s, Surrey</div>
+        </div>
+      </div>
+      <div class="em-section" style="padding-top:0;">
+        <div class="em-section-title">Three things subscribers tell us they wish they'd done sooner</div>
+        <div class="em-check-item"><div class="em-check-icon">✦</div><div><strong>Used the AI Mentor for behaviour management</strong> — not just drills. Ask it about touchline parents, distracted players, building confidence in shy kids. It's surprisingly good.</div></div>
+        <div class="em-check-item"><div class="em-check-icon">✦</div><div><strong>Saved their favourite drills into a personal library</strong> — so they can build a bank of go-to activities over time. Your saved sessions are yours forever, even if you ever pause.</div></div>
+        <div class="em-check-item"><div class="em-check-icon">✦</div><div><strong>Shared a session plan with their assistant coach</strong> — you can export any plan as a PDF and share before training. Keeps everyone aligned.</div></div>
+      </div>
+      <div class="em-cta-area">
+        <a href="https://coachmentor.co.uk/app/mentor" class="em-btn" style="background:#0891b2;color:white;">Explore the AI Mentor →</a>
+      </div>
+      <div class="em-ps">Next email lands on Day 30 — your one-month milestone. I'll share something personal then.</div>
+      <div class="em-foot">
+        <p>CoachMentor · coachmentor.co.uk · Building better grassroots coaches</p>
+        <p><a href="#">Manage subscription</a> · <a href="#">Contact support</a></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- EMAIL W4: 30-DAY MILESTONE -->
+  <div class="email-page" id="w-3">
+    <div class="em">
+      <div class="em-topbar" style="background:linear-gradient(90deg,#d97706,#b45309);"></div>
+      <div class="em-head">
+        <div class="em-logo-mark">⚽</div>
+        <div class="em-logo-name">Coach<span>Mentor</span></div>
+        <div class="em-logo-tag" style="color:#d97706;border-color:#fde68a;background:#fefce8;">Month 1 🏆</div>
+      </div>
+      <div class="em-hero">
+        <div class="em-eyebrow" style="color:#d97706;">30-day milestone ✦</div>
+        <div class="em-h1">One month as a CoachMentor. Here's what I've noticed.</div>
+        <div class="em-p">Hi [First Name],</div>
+        <div class="em-p">A month ago you made a decision. And now — quietly, at training sessions across the country — that decision is showing up on pitches. Better prepared coaches. More purposeful sessions. Players who can see the difference, even if they can't name it.</div>
+        <div class="em-p">I wanted to write this email personally, because the coaches who make it to 30 days are the ones who tend to stick around for years. <em>You're one of them.</em></div>
+      </div>
+      <div class="em-section" style="padding-top:0;">
+        <div class="em-highlight" style="background:#fefce8;border:1px solid #fde68a;">
+          <div style="font-size:0.72rem;font-weight:700;color:#b45309;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;">Your First Month with CoachMentor</div>
+          <div style="font-size:0.85rem;color:#374151;line-height:1.7;">
+            Based on your activity this month:<br>
+            <strong>Sessions planned:</strong> <span style="color:#059669;">[X] sessions</span><br>
+            <strong>Drills saved:</strong> <span style="color:#059669;">[X] drills</span><br>
+            <strong>AI Mentor questions asked:</strong> <span style="color:#059669;">[X] questions</span><br>
+            <strong>Hours of planning saved:</strong> <span style="color:#059669;">~[X] hours</span>
+          </div>
+          <div style="font-size:0.72rem;color:#9ca3af;margin-top:8px;font-style:italic;">Data pulled from your CoachMentor account · personalised per subscriber</div>
+        </div>
+      </div>
+      <div class="em-section" style="padding-top:0;">
+        <div class="em-section-title">What's coming next for CoachMentor</div>
+        <div class="em-p" style="font-size:0.85rem;">As a subscriber, you'll always get new features first. Here's what we're building right now:</div>
+        <div class="em-check-item"><div class="em-check-icon">🔜</div><div><strong>Team mode</strong> — share session plans and drills with your assistant coach or wider club. Coming Q2.</div></div>
+        <div class="em-check-item"><div class="em-check-icon">🔜</div><div><strong>Video drill library</strong> — short video demonstrations for every drill in the app. No more guessing what the setup looks like. Q3.</div></div>
+        <div class="em-check-item"><div class="em-check-icon">🔜</div><div><strong>Player development tracker</strong> — note individual player progress across sessions. Keep your own development records in one place.</div></div>
+      </div>
+      <div class="em-section" style="padding-top:0;">
+        <div class="em-quote" style="border-left-color:#d97706;background:#fefce8;">
+          <div class="em-quote-text" style="color:#92400e;">"Grassroots football is the backbone of the game. The coaches at this level are volunteers, parents, people who just love football. They deserve better tools. That's why we built this."</div>
+          <div class="em-quote-attr" style="color:#d97706;">— Ricky, founder, CoachMentor</div>
+        </div>
+      </div>
+      <div class="em-p" style="padding:0 40px 24px;font-size:0.85rem;">If you've found CoachMentor valuable, <strong>the single best thing you can do</strong> is tell another coach about it. Word of mouth from coaches like you is how we grow — and every new coach who joins makes the community stronger for everyone.</div>
+      <div class="em-cta-area">
+        <a href="https://coachmentor.co.uk/refer" class="em-btn" style="background:#d97706;color:white;">Share CoachMentor with a Coach →</a>
+        <div class="em-btn-sub">They get a 7-day trial. You get a month free if they subscribe.</div>
+      </div>
+      <div class="em-ps">P.S. Reply to this email and tell me one thing CoachMentor has helped you with. I read every reply and it genuinely shapes what we build next. Thank you for being here.</div>
+      <div class="em-foot">
+        <p>CoachMentor · coachmentor.co.uk · Thank you for being a grassroots coach</p>
+        <p><a href="#">Manage subscription</a> · <a href="#">Refer a friend</a> · <a href="#">Contact support</a></p>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /preview -->
+
+<!-- RIGHT PANEL -->
+<div class="rpanel">
+
+  <div class="rp-sec">
+    <div class="rp-head">Email Metadata</div>
+    <div class="rp-card" id="wMeta">
+      <div class="rp-row"><span class="rp-row-k">Trigger</span><span class="rp-row-v rp-green">payment_confirmed</span></div>
+      <div class="rp-row"><span class="rp-row-k">Delay</span><span class="rp-row-v">Immediate</span></div>
+      <div class="rp-row"><span class="rp-row-k">Subject</span><span class="rp-row-v">You're officially a CoachMentor ⚽</span></div>
+      <div class="rp-row"><span class="rp-row-k">Goal</span><span class="rp-row-v rp-gold">First app open</span></div>
+      <div class="rp-row"><span class="rp-row-k">CTA</span><span class="rp-row-v">Open CoachMentor</span></div>
+      <div class="rp-row"><span class="rp-row-k">Stop condition</span><span class="rp-row-v">None — always runs</span></div>
+    </div>
+  </div>
+
+  <div class="rp-sec">
+    <div class="rp-head">n8n Webhook Trigger</div>
+    <div class="code-snip">
+<span class="cs-cm">// CoachMentor app fires on</span><br>
+<span class="cs-cm">// successful Stripe charge</span><br><br>
+<span class="cs-kw">POST</span> /webhook/subscribed<br>
+{<br>
+&nbsp;<span class="cs-str">"email"</span>: <span class="cs-str">"<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="7e1d111f1d163e1b131f1712501d1113">[email&#160;protected]</a>"</span>,<br>
+&nbsp;<span class="cs-str">"firstName"</span>: <span class="cs-str">"Dave"</span>,<br>
+&nbsp;<span class="cs-str">"plan"</span>: <span class="cs-str">"monthly"</span>,<br>
+&nbsp;<span class="cs-str">"source"</span>: <span class="cs-str">"tiktok_funnel"</span>,<br>
+&nbsp;<span class="cs-str">"ageGroup"</span>: <span class="cs-str">"U11"</span>,<br>
+&nbsp;<span class="cs-str">"sessions_in_trial"</span>: <span class="cs-num">4</span><br>
+}<br><br>
+<span class="cs-cm">// n8n action:</span><br>
+<span class="cs-fn">stopTrialSequence</span>()<br>
+<span class="cs-fn">startWelcomeSequence</span>()<br>
+<span class="cs-fn">tagInAirtable</span>(<span class="cs-str">"subscriber"</span>)<br>
+<span class="cs-fn">notifySlack</span>(<span class="cs-str">"#new-subscribers"</span>)
+    </div>
+  </div>
+
+  <div class="rp-sec">
+    <div class="rp-head">Send Schedule</div>
+    <div class="rp-card">
+      <div class="rp-row"><span class="rp-row-k">W1 — Welcome</span><span class="rp-row-v rp-green">Day 0 · Immediate</span></div>
+      <div class="rp-row"><span class="rp-row-k">W2 — Quick Start</span><span class="rp-row-v">Day 2 · +48h</span></div>
+      <div class="rp-row"><span class="rp-row-k">W3 — Community</span><span class="rp-row-v">Day 7 · +168h</span></div>
+      <div class="rp-row"><span class="rp-row-k">W4 — 30-Day</span><span class="rp-row-v rp-gold">Day 30 · +720h</span></div>
+    </div>
+  </div>
+
+  <div class="rp-sec">
+    <div class="rp-head">Subscriber Milestones (Auto-Posts)</div>
+    <div class="milestone-list">
+      <div class="ms-item">
+        <div class="ms-num">50</div>
+        <div class="ms-label">subscribers milestone</div>
+        <div class="ms-trigger">social post</div>
+      </div>
+      <div class="ms-item">
+        <div class="ms-num">100</div>
+        <div class="ms-label">subscribers milestone</div>
+        <div class="ms-trigger">social + blog</div>
+      </div>
+      <div class="ms-item">
+        <div class="ms-num">250</div>
+        <div class="ms-label">subscribers milestone</div>
+        <div class="ms-trigger">press release</div>
+      </div>
+      <div class="ms-item">
+        <div class="ms-num">500</div>
+        <div class="ms-label">subscribers milestone</div>
+        <div class="ms-trigger">PR + paid ads</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="rp-sec">
+    <div class="rp-head">Retention Levers</div>
+    <div class="rp-card">
+      <div class="rp-row"><span class="rp-row-k">Referral offer</span><span class="rp-row-v rp-gold">1 month free</span></div>
+      <div class="rp-row"><span class="rp-row-k">Cancel flow</span><span class="rp-row-v">Pause option first</span></div>
+      <div class="rp-row"><span class="rp-row-k">Win-back (60d)</span><span class="rp-row-v">20% off email</span></div>
+      <div class="rp-row"><span class="rp-row-k">Annual discount</span><span class="rp-row-v rp-green">2 months free</span></div>
+    </div>
+  </div>
+
+</div><!-- /rpanel -->
+</div><!-- /layout -->
+</div><!-- /wrapper -->
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  const wMeta = [
+    { trigger:'payment_confirmed', delay:'Immediate', subject:"You're officially a CoachMentor ⚽", goal:'First app open', cta:'Open CoachMentor', stop:'None — always runs' },
+    { trigger:'Day 2 (+48h)', delay:'+48 hours', subject:'Your 5-minute quick-start guide', goal:'First session planned', cta:'Plan This Week\'s Session', stop:'None' },
+    { trigger:'Day 7 (+168h)', delay:'+168 hours', subject:"You're now part of something bigger", goal:'Community belonging', cta:'Explore AI Mentor', stop:'None' },
+    { trigger:'Day 30 (+720h)', delay:'+720 hours', subject:'One month in — here\'s what changed', goal:'Long-term retention + referrals', cta:'Share CoachMentor', stop:'None — always sends' },
+  ];
+
+  function showW(idx, btn) {
+    document.querySelectorAll('.email-page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.sb-item').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.seq-dot').forEach(d => d.classList.remove('active'));
+
+    document.getElementById(`w-${idx}`).classList.add('active');
+    document.querySelectorAll('.sb-item')[idx].classList.add('active');
+    document.querySelectorAll('.seq-dot')[idx].classList.add('active');
+
+    const m = wMeta[idx];
+    document.getElementById('wMeta').innerHTML = `
+      <div class="rp-row"><span class="rp-row-k">Trigger</span><span class="rp-row-v rp-green">${m.trigger}</span></div>
+      <div class="rp-row"><span class="rp-row-k">Delay</span><span class="rp-row-v">${m.delay}</span></div>
+      <div class="rp-row"><span class="rp-row-k">Subject</span><span class="rp-row-v">${m.subject}</span></div>
+      <div class="rp-row"><span class="rp-row-k">Goal</span><span class="rp-row-v rp-gold">${m.goal}</span></div>
+      <div class="rp-row"><span

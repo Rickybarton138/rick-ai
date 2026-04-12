@@ -1,0 +1,640 @@
+{
+  "name": "Astra Removals — Lead to Social Proof + Magna Upsell",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "movescan-lead",
+        "authentication": "headerAuth",
+        "options": {
+          "responseMode": "responseNode"
+        }
+      },
+      "id": "node_webhook_trigger",
+      "name": "01 — MoveScan Lead Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "astra-movescan-lead",
+      "notes": "Receives POST from MoveScan when homeowner completes survey. Payload: customer_name, email, phone, origin_postcode, dest_postcode, move_date, bedrooms, survey_id"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{ \"status\": \"received\", \"message\": \"Lead processing started\" }",
+        "options": {}
+      },
+      "id": "node_webhook_response",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [240, 460],
+      "notes": "Immediately returns 200 so MoveScan doesn't time out. Processing continues asynchronously."
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "customerName",
+              "value": "={{ $json.body.customer_name }}"
+            },
+            {
+              "name": "originPostcode",
+              "value": "={{ $json.body.origin_postcode.toUpperCase() }}"
+            },
+            {
+              "name": "destPostcode",
+              "value": "={{ $json.body.dest_postcode.toUpperCase() }}"
+            },
+            {
+              "name": "moveDateFormatted",
+              "value": "={{ DateTime.fromISO($json.body.move_date).toFormat('d MMMM yyyy') }}"
+            },
+            {
+              "name": "moveDate",
+              "value": "={{ $json.body.move_date }}"
+            },
+            {
+              "name": "contactPhone",
+              "value": "={{ $json.body.phone }}"
+            },
+            {
+              "name": "surveyId",
+              "value": "={{ $json.body.survey_id }}"
+            },
+            {
+              "name": "volumeCategory",
+              "value": "={{ $json.body.bedrooms <= 2 ? 'small' : $json.body.bedrooms <= 4 ? 'medium' : 'large' }}"
+            },
+            {
+              "name": "originArea",
+              "value": "={{ $json.body.origin_postcode.split(' ')[0] }}"
+            },
+            {
+              "name": "destArea",
+              "value": "={{ $json.body.dest_postcode.split(' ')[0] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node_set_vars",
+      "name": "02 — Extract & Format Lead Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [460, 300],
+      "notes": "Maps raw webhook payload to clean named variables for downstream nodes."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "condition_origin_bh",
+              "leftValue": "={{ $json.originPostcode }}",
+              "rightValue": "BH",
+              "operator": {
+                "type": "string",
+                "operation": "startsWith"
+              }
+            },
+            {
+              "id": "condition_origin_dt",
+              "leftValue": "={{ $json.originPostcode }}",
+              "rightValue": "DT",
+              "operator": {
+                "type": "string",
+                "operation": "startsWith"
+              }
+            },
+            {
+              "id": "condition_origin_sp",
+              "leftValue": "={{ $json.originPostcode }}",
+              "rightValue": "SP",
+              "operator": {
+                "type": "string",
+                "operation": "startsWith"
+              }
+            },
+            {
+              "id": "condition_dest_bh",
+              "leftValue": "={{ $json.destPostcode }}",
+              "rightValue": "BH",
+              "operator": {
+                "type": "string",
+                "operation": "startsWith"
+              }
+            },
+            {
+              "id": "condition_dest_dt",
+              "leftValue": "={{ $json.destPostcode }}",
+              "rightValue": "DT",
+              "operator": {
+                "type": "string",
+                "operation": "startsWith"
+              }
+            },
+            {
+              "id": "condition_dest_sp",
+              "leftValue": "={{ $json.destPostcode }}",
+              "rightValue": "SP",
+              "operator": {
+                "type": "string",
+                "operation": "startsWith"
+              }
+            }
+          ],
+          "combinator": "any"
+        },
+        "options": {}
+      },
+      "id": "node_if_catchment",
+      "name": "03 — Dorset / BH Postcode Check",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [680, 300],
+      "notes": "Checks if origin OR destination postcode starts with BH, DT, or SP — Magna Park catchment area. True branch sets magnaCTA flag."
+    },
+    {
+      "parameters": {
+        "values": {
+          "boolean": [
+            {
+              "name": "magnaCTA",
+              "value": true
+            }
+          ],
+          "string": [
+            {
+              "name": "magnaLink",
+              "value": "https://magnaparkselfstore.co.uk"
+            }
+          ]
+        },
+        "options": {
+          "includeBinary": false
+        }
+      },
+      "id": "node_magna_true",
+      "name": "03a — Magna Upsell Flag ON",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [900, 200],
+      "notes": "Sets magnaCTA = true. Downstream Claude prompt will include storage upsell paragraph."
+    },
+    {
+      "parameters": {
+        "values": {
+          "boolean": [
+            {
+              "name": "magnaCTA",
+              "value": false
+            }
+          ],
+          "string": [
+            {
+              "name": "magnaLink",
+              "value": ""
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node_magna_false",
+      "name": "03b — Standard Post Only",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [900, 420],
+      "notes": "Sets magnaCTA = false. Standard Astra social proof post with no storage mention."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            },
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"claude-sonnet-4-6\",\n  \"max_tokens\": 800,\n  \"system\": \"You are a warm, professional social media manager for Astra Removals, a trusted local removals company based in Bournemouth, Dorset. You write authentic, local, friendly content that builds trust. Never mention customer surnames or specific addresses. Keep posts positive, human, and genuine.\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": \"Generate social media posts for a recently completed removal job.\\n\\nMove details:\\n- Origin area: {{ $json.originArea }} postcode area\\n- Destination: {{ $json.destArea }} postcode area\\n- Home size: {{ $json.volumeCategory }} ({{ $json.volumeCategory === 'small' ? '1-2 bed' : $json.volumeCategory === 'medium' ? '3-4 bed' : '5+ bed' }})\\n- Move date: {{ $json.moveDateFormatted }}\\n\\n{{ $json.magnaCTA ? 'IMPORTANT: Include a natural, non-pushy mention of Magna Park Self Storage (magnaparkselfstore.co.uk) for customers who need temporary storage during a move or between properties. This should feel like a helpful tip, not an advert.' : '' }}\\n\\nRequirements:\\n- Facebook post: 60-100 words, warm and local, include relevant emoji, end with a soft CTA (e.g. \\\"Get your free quote today\\\")\\n- Instagram caption: 40-70 words, slightly punchier, 3-5 relevant hashtags including #AstraRemovals #DorsetRemovals\\n- Do NOT use the customer's name\\n- Sound like a real local business, not corporate\\n\\nReturn ONLY valid JSON in this exact format (no markdown, no extra text):\\n{\\\"fb_post\\\": \\\"...\\\", \\\"ig_post\\\": \\\"...\\\", \\\"confidence\\\": 0.0}\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "id": "node_claude_api",
+      "name": "04 — Claude: Generate Social Post",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1120, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "anthropic_api_cred",
+          "name": "Anthropic API Key"
+        }
+      },
+      "notes": "Calls Claude claude-sonnet-4-6 with structured prompt. Returns JSON with fb_post, ig_post, and confidence score. Set ANTHROPIC_API_KEY in n8n credentials."
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "fb_post",
+              "value": "={{ JSON.parse($json.content[0].text).fb_post }}"
+            },
+            {
+              "name": "ig_post",
+              "value": "={{ JSON.parse($json.content[0].text).ig_post }}"
+            }
+          ],
+          "number": [
+            {
+              "name": "confidence",
+              "value": "={{ JSON.parse($json.content[0].text).confidence }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node_parse_claude",
+      "name": "Parse Claude Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [1340, 300],
+      "notes": "Extracts fb_post, ig_post, and confidence score from Claude's JSON response."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "condition_confidence",
+              "leftValue": "={{ $json.confidence }}",
+              "rightValue": 0.75,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "all"
+        },
+        "options": {}
+      },
+      "id": "node_quality_gate",
+      "name": "05 — Confidence Score Gate",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1560, 300],
+      "notes": "Routes based on Claude's self-scored confidence. >= 0.75 = auto-publish. < 0.75 = Slack review required."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://slack.com/api/chat.postMessage",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"channel\": \"#social-review\",\n  \"text\": \"⚠️ Social post needs review (confidence: {{ $json.confidence }})\",\n  \"blocks\": [\n    {\n      \"type\": \"section\",\n      \"text\": {\n        \"type\": \"mrkdwn\",\n        \"text\": \"*Astra Removals — Social Post Review Required*\\nConfidence score: *{{ $json.confidence }}* (below 0.75 threshold)\\n\\n*Facebook Post:*\\n{{ $json.fb_post }}\\n\\n*Instagram:*\\n{{ $json.ig_post }}\"\n      }\n    },\n    {\n      \"type\": \"actions\",\n      \"elements\": [\n        {\n          \"type\": \"button\",\n          \"text\": { \"type\": \"plain_text\", \"text\": \"✅ Approve & Publish\" },\n          \"style\": \"primary\",\n          \"action_id\": \"approve_post\",\n          \"value\": \"{{ $json.surveyId }}\"\n        },\n        {\n          \"type\": \"button\",\n          \"text\": { \"type\": \"plain_text\", \"text\": \"❌ Reject\" },\n          \"style\": \"danger\",\n          \"action_id\": \"reject_post\"\n        }\n      ]\n    }\n  ]\n}",
+        "options": {}
+      },
+      "id": "node_slack_review",
+      "name": "Slack: Human Review Required",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1780, 440],
+      "notes": "Sends post draft to Slack #social-review channel with approve/reject buttons. Requires Slack bot token in credentials."
+    },
+    {
+      "parameters": {
+        "amount": 1,
+        "unit": "hours",
+        "resumeType": "specificTime",
+        "resumeTime": "={{ \n  (() => {\n    const now = DateTime.now().setZone('Europe/London');\n    const day = now.weekday; // 1=Mon, 7=Sun\n    const hour = now.hour;\n    \n    // Fri/Sat/Sun leads → Saturday 10am\n    if (day >= 5) {\n      const sat = now.plus({ days: (7 - day + 6) % 7 || 7 });\n      return sat.set({ hour: 10, minute: 0, second: 0 }).toISO();\n    }\n    \n    // Mon-Thu: next Tue/Wed/Thu 7:30pm\n    // If it's before 6pm today and Tue/Wed/Thu, publish tonight\n    if (day >= 2 && day <= 4 && hour < 18) {\n      return now.set({ hour: 19, minute: 30, second: 0 }).toISO();\n    }\n    \n    // Otherwise push to next weekday evening\n    const nextDay = day >= 4 ? now.plus({ days: 4 }) : now.plus({ days: 1 });\n    return nextDay.set({ hour: 19, minute: 30, second: 0 }).toISO();\n  })()\n}}"
+      },
+      "id": "node_scheduler",
+      "name": "06 — Smart Scheduler (Optimal Time)",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [1780, 300],
+      "notes": "Waits until optimal publishing time. Tue-Thu 7:30pm for weekday leads. Saturday 10am for weekend leads. Uses luxon DateTime with Europe/London timezone."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v19.0/{{ $env.FB_PAGE_ID_ASTRA }}/feed",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"message\": \"{{ $json.fb_post }}\",\n  \"access_token\": \"{{ $env.FB_PAGE_ACCESS_TOKEN_ASTRA }}\"\n}",
+        "options": {}
+      },
+      "id": "node_publish_fb",
+      "name": "07a — Publish to Facebook",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [2000, 240],
+      "notes": "Posts to Astra Removals Facebook page via Graph API. Set FB_PAGE_ID_ASTRA and FB_PAGE_ACCESS_TOKEN_ASTRA as n8n environment variables."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v19.0/{{ $env.IG_ACCOUNT_ID_ASTRA }}/media",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"caption\": \"{{ $json.ig_post }}\",\n  \"image_url\": \"{{ $env.ASTRA_DEFAULT_IMAGE_URL }}\",\n  \"access_token\": \"{{ $env.IG_ACCESS_TOKEN_ASTRA }}\"\n}",
+        "options": {}
+      },
+      "id": "node_publish_ig_container",
+      "name": "07b — Create IG Media Container",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [2000, 360],
+      "notes": "Step 1 of 2-step Instagram publish. Creates media container. Requires a default branded image URL (ASTRA_DEFAULT_IMAGE_URL env var). Set IG_ACCOUNT_ID_ASTRA and IG_ACCESS_TOKEN_ASTRA."
+    },
+    {
+      "parameters": {
+        "amount": 30,
+        "unit": "seconds"
+      },
+      "id": "node_ig_wait",
+      "name": "Wait 30s (IG Processing)",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [2220, 360],
+      "notes": "Instagram requires a brief wait after container creation before publishing."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v19.0/{{ $env.IG_ACCOUNT_ID_ASTRA }}/media_publish",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"creation_id\": \"{{ $json.id }}\",\n  \"access_token\": \"{{ $env.IG_ACCESS_TOKEN_ASTRA }}\"\n}",
+        "options": {}
+      },
+      "id": "node_publish_ig",
+      "name": "07c — Publish IG Post",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [2440, 360],
+      "notes": "Step 2: publishes the IG media container. Returns ig_media_id for logging."
+    },
+    {
+      "parameters": {
+        "resumeType": "specificTime",
+        "resumeTime": "={{ DateTime.fromISO($json.moveDate).plus({ hours: 48 }).toISO() }}"
+      },
+      "id": "node_review_wait",
+      "name": "08a — Wait Until 48h Post-Move",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [2220, 240],
+      "notes": "Waits until 48 hours after the customer's move date before sending review request SMS. If move date already past, fires immediately."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.twilio.com/2010-04-01/Accounts/{{ $env.TWILIO_ACCOUNT_SID }}/Messages.json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "From",
+              "value": "={{ $env.TWILIO_FROM_NUMBER }}"
+            },
+            {
+              "name": "To",
+              "value": "={{ $json.contactPhone }}"
+            },
+            {
+              "name": "Body",
+              "value": "=Hi {{ $json.customerName.split(' ')[0] }}, thank you for choosing Astra Removals! We hope your move went smoothly. We'd love a quick Google review if you have 2 minutes — it means the world to a local business: https://g.page/r/AstraRemovals/review Thanks so much 🙂 — The Astra Team"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node_review_sms",
+      "name": "08b — Send Google Review SMS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [2440, 240],
+      "notes": "Sends SMS via Twilio 48hrs post-move. Set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM_NUMBER as env vars. Update Google review link with real Astra Place ID."
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "{{ $env.AIRTABLE_BASE_ID_ASTRA }}",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "Social Automation Runs",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "survey_id": "={{ $json.surveyId }}",
+            "customer_name": "={{ $json.customerName }}",
+            "origin_postcode": "={{ $json.originPostcode }}",
+            "dest_postcode": "={{ $json.destPostcode }}",
+            "volume_category": "={{ $json.volumeCategory }}",
+            "move_date": "={{ $json.moveDate }}",
+            "magna_upsell": "={{ $json.magnaCTA }}",
+            "confidence_score": "={{ $json.confidence }}",
+            "fb_post_content": "={{ $json.fb_post }}",
+            "ig_post_content": "={{ $json.ig_post }}",
+            "fb_post_id": "={{ $json.fb_post_id || '' }}",
+            "ig_media_id": "={{ $json.ig_media_id || '' }}",
+            "published_at": "={{ DateTime.now().toISO() }}",
+            "review_sms_sent": true,
+            "workflow_version": "1.0"
+          }
+        },
+        "options": {}
+      },
+      "id": "node_log_crm",
+      "name": "09 — Log Run to Astra CRM",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2,
+      "position": [2660, 300],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "airtable_cred",
+          "name": "Airtable API Token"
+        }
+      },
+      "notes": "Logs every workflow run to Airtable Astra CRM. Set AIRTABLE_BASE_ID_ASTRA env var. Create 'Social Automation Runs' table with matching field names."
+    }
+  ],
+  "connections": {
+    "01 — MoveScan Lead Webhook": {
+      "main": [
+        [
+          { "node": "Respond to Webhook", "type": "main", "index": 0 },
+          { "node": "02 — Extract & Format Lead Data", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "02 — Extract & Format Lead Data": {
+      "main": [
+        [{ "node": "03 — Dorset / BH Postcode Check", "type": "main", "index": 0 }]
+      ]
+    },
+    "03 — Dorset / BH Postcode Check": {
+      "main": [
+        [{ "node": "03a — Magna Upsell Flag ON", "type": "main", "index": 0 }],
+        [{ "node": "03b — Standard Post Only", "type": "main", "index": 0 }]
+      ]
+    },
+    "03a — Magna Upsell Flag ON": {
+      "main": [
+        [{ "node": "04 — Claude: Generate Social Post", "type": "main", "index": 0 }]
+      ]
+    },
+    "03b — Standard Post Only": {
+      "main": [
+        [{ "node": "04 — Claude: Generate Social Post", "type": "main", "index": 0 }]
+      ]
+    },
+    "04 — Claude: Generate Social Post": {
+      "main": [
+        [{ "node": "Parse Claude Response", "type": "main", "index": 0 }]
+      ]
+    },
+    "Parse Claude Response": {
+      "main": [
+        [{ "node": "05 — Confidence Score Gate", "type": "main", "index": 0 }]
+      ]
+    },
+    "05 — Confidence Score Gate": {
+      "main": [
+        [{ "node": "06 — Smart Scheduler (Optimal Time)", "type": "main", "index": 0 }],
+        [{ "node": "Slack: Human Review Required", "type": "main", "index": 0 }]
+      ]
+    },
+    "06 — Smart Scheduler (Optimal Time)": {
+      "main": [
+        [
+          { "node": "07a — Publish to Facebook", "type": "main", "index": 0 },
+          { "node": "07b — Create IG Media Container", "type": "main", "index": 0 },
+          { "node": "08a — Wait Until 48h Post-Move", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "07b — Create IG Media Container": {
+      "main": [
+        [{ "node": "Wait 30s (IG Processing)", "type": "main", "index": 0 }]
+      ]
+    },
+    "Wait 30s (IG Processing)": {
+      "main": [
+        [{ "node": "07c — Publish IG Post", "type": "main", "index": 0 }]
+      ]
+    },
+    "08a — Wait Until 48h Post-Move": {
+      "main": [
+        [{ "node": "08b — Send Google Review SMS", "type": "main", "index": 0 }]
+      ]
+    },
+    "07a — Publish to Facebook": {
+      "main": [
+        [{ "node": "09 — Log Run to Astra CRM", "type": "main", "index": 0 }]
+      ]
+    },
+    "07c — Publish IG Post": {
+      "main": [
+        [{ "node": "09 — Log Run to Astra CRM", "type": "main", "index": 0 }]
+      ]
+    },
+    "08b — Send Google Review SMS": {
+      "main": [
+        [{ "node": "09 — Log Run to Astra CRM", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "astra-workflow-error-handler"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "instanceId": "astra-social-automation"
+  },
+  "tags": ["astra", "social-media", "automation", "magna-park", "claude-api"],
+  "_readme": {
+    "workflow_name": "Astra Removals — Lead to Social Proof + Magna Upsell",
+    "version": "1.0",
+    "created_for": "Ricky — Astra Removals / Magna Park / MoveScan ecosystem",
+    "n8n_version": "1.x",
+    "required_credentials": [
+      "Anthropic API Key (httpHeaderAuth) — x-api-key header",
+      "Facebook Page Access Token (env: FB_PAGE_ACCESS_TOKEN)",
+      "Instagram Access Token (env: IG_ACCESS_TOKEN)",
+      "Twilio Account SID + Auth Token (httpBasicAuth)",
+      "Airtable API Token (airtableTokenApi)",
+      "Slack Bot Token (httpHeaderAuth) — optional, for review workflow"
+    ],
+    "required_env_vars": [
+      "FB_PAGE_ID_ASTRA — Your Astra Removals Facebook Page ID",
+      "FB_PAGE_ACCESS_TOKEN_ASTRA — Long-lived FB page token",
+      "IG_ACCOUNT_ID_ASTRA — Instagram Business Account ID",
+      "IG_ACCESS_TOKEN_ASTRA — Instagram access token",
+      "TWILIO_ACCOUNT_SID — Twilio account SID",
+      "TWILIO_FROM_NUMBER — Twilio phone number",
+      "AIRTABLE_BASE_ID_ASTRA — Airtable base ID for Astra CRM",
+      "ASTRA_DEFAULT_IMAGE_URL — Public URL of default branded image for IG posts",
+      "MOVESCAN_SECRET — Webhook auth token shared with MoveScan"
+    ],
+    "setup_steps": [
+      "1. Import this JSON into n8n (Settings > Import Workflow)",
+      "2. Set all environment variables in n8n Settings > Environment Variables",
+      "3. Create credentials for Anthropic, Twilio, Airtable",
+      "4. Create 'Social Automation Runs' table in your Airtable base",
+      "5. Point MoveScan webhook to: https://your-n8n.domain.com/webhook/movescan-lead",
+      "6. Add MOVESCAN_SECRET to webhook header auth",
+      "7. Test with a manual webhook trigger using sample payload",
+      "8. Enable workflow"
+    ],
+    "airtable_table_fields": [
+      "survey_id (Text)", "customer_name (Text)", "origin_postcode (Text)",
+      "dest_postcode (Text)", "volume_category (Single select: small/medium/large)",
+      "move_date (Date)", "magna_upsell (Checkbox)", "confidence_score (Number)",
+      "fb_post_content (Long text)", "ig_post_content (Long text)",
+      "fb_post_id (Text)", "ig_media_id (Text)", "published_at (Date)",
+      "review_sms_sent (Checkbox)", "workflow_version (Text)"
+    ]
+  }
+}

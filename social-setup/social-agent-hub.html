@@ -1,0 +1,1495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Social Agent Hub — Ricky's Ecosystem</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0b0d;
+    --surface: #111318;
+    --surface2: #181c23;
+    --border: #22272f;
+    --border2: #2d3340;
+    --text: #e8ecf0;
+    --muted: #5a6378;
+    --muted2: #8491a8;
+
+    --astra: #f97316;
+    --astra-dim: #7c3d12;
+    --astra-glow: rgba(249,115,22,0.15);
+
+    --magna: #3b82f6;
+    --magna-dim: #1e3a5f;
+    --magna-glow: rgba(59,130,246,0.15);
+
+    --prime: #10b981;
+    --prime-dim: #064e3b;
+    --prime-glow: rgba(16,185,129,0.15);
+
+    --coach: #a855f7;
+    --coach-dim: #4c1d95;
+    --coach-glow: rgba(168,85,247,0.15);
+
+    --amber: #fbbf24;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Noise texture overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.6;
+  }
+
+  .wrapper { position: relative; z-index: 1; }
+
+  /* ── HEADER ── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 32px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(10,11,13,0.9);
+    backdrop-filter: blur(12px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.1rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+
+  .logo span {
+    color: var(--astra);
+  }
+
+  .header-status {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    font-size: 0.7rem;
+    color: var(--muted2);
+    letter-spacing: 0.05em;
+  }
+
+  .pulse-dot {
+    display: inline-block;
+    width: 7px; height: 7px;
+    background: var(--prime);
+    border-radius: 50%;
+    margin-right: 6px;
+    box-shadow: 0 0 8px var(--prime);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  .agent-count {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    color: var(--amber);
+    font-size: 0.85rem;
+  }
+
+  /* ── MAIN LAYOUT ── */
+  main {
+    padding: 32px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  /* ── SECTION TITLE ── */
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.65rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── BRAND GRID ── */
+  .brand-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+
+  .brand-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .brand-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.3s;
+    border-radius: 12px;
+  }
+
+  .brand-card:hover { transform: translateY(-2px); }
+  .brand-card:hover::before { opacity: 1; }
+
+  .brand-card.astra { border-top: 2px solid var(--astra); }
+  .brand-card.astra::before { background: var(--astra-glow); }
+  .brand-card.magna { border-top: 2px solid var(--magna); }
+  .brand-card.magna::before { background: var(--magna-glow); }
+  .brand-card.prime { border-top: 2px solid var(--prime); }
+  .brand-card.prime::before { background: var(--prime-glow); }
+  .brand-card.coach { border-top: 2px solid var(--coach); }
+  .brand-card.coach::before { background: var(--coach-glow); }
+
+  .brand-card.active { border-width: 2px; }
+  .brand-card.astra.active { box-shadow: 0 0 24px var(--astra-glow); }
+  .brand-card.magna.active { box-shadow: 0 0 24px var(--magna-glow); }
+  .brand-card.prime.active { box-shadow: 0 0 24px var(--prime-glow); }
+  .brand-card.coach.active { box-shadow: 0 0 24px var(--coach-glow); }
+
+  .brand-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+    margin-bottom: 12px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .brand-card.astra .brand-icon { background: var(--astra-glow); }
+  .brand-card.magna .brand-icon { background: var(--magna-glow); }
+  .brand-card.prime .brand-icon { background: var(--prime-glow); }
+  .brand-card.coach .brand-icon { background: var(--coach-glow); }
+
+  .brand-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-bottom: 2px;
+    position: relative; z-index: 1;
+  }
+
+  .brand-card.astra .brand-name { color: var(--astra); }
+  .brand-card.magna .brand-name { color: var(--magna); }
+  .brand-card.prime .brand-name { color: var(--prime); }
+  .brand-card.coach .brand-name { color: var(--coach); }
+
+  .brand-sub {
+    font-size: 0.65rem;
+    color: var(--muted2);
+    letter-spacing: 0.04em;
+    position: relative; z-index: 1;
+    margin-bottom: 16px;
+  }
+
+  .brand-stats {
+    display: flex;
+    gap: 12px;
+    position: relative; z-index: 1;
+  }
+
+  .stat {
+    flex: 1;
+  }
+
+  .stat-val {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--text);
+  }
+
+  .stat-lbl {
+    font-size: 0.6rem;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .toggle-btn {
+    position: absolute;
+    top: 16px; right: 16px;
+    width: 28px; height: 16px;
+    background: var(--border2);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+    z-index: 2;
+  }
+
+  .toggle-btn::after {
+    content: '';
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 12px; height: 12px;
+    background: var(--muted);
+    border-radius: 50%;
+    transition: all 0.2s;
+  }
+
+  .brand-card.active .toggle-btn { background: currentColor; }
+  .brand-card.astra.active .toggle-btn { background: var(--astra); }
+  .brand-card.magna.active .toggle-btn { background: var(--magna); }
+  .brand-card.prime.active .toggle-btn { background: var(--prime); }
+  .brand-card.coach.active .toggle-btn { background: var(--coach); }
+
+  .brand-card.active .toggle-btn::after {
+    left: 14px;
+    background: white;
+  }
+
+  /* ── WORKFLOW PIPELINE ── */
+  .pipeline-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+
+  .pipeline-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .panel-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface2);
+  }
+
+  .panel-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.04em;
+  }
+
+  .panel-badge {
+    font-size: 0.6rem;
+    padding: 3px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  .badge-running { background: rgba(16,185,129,0.15); color: var(--prime); }
+  .badge-paused { background: rgba(251,191,36,0.15); color: var(--amber); }
+  .badge-idle { background: rgba(90,99,120,0.2); color: var(--muted2); }
+
+  /* Workflow Steps */
+  .workflow-steps {
+    padding: 20px;
+  }
+
+  .step {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    animation: fadeSlide 0.5s ease forwards;
+    opacity: 0;
+  }
+
+  .step:last-child { border-bottom: none; }
+
+  @keyframes fadeSlide {
+    from { opacity: 0; transform: translateX(-8px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .step:nth-child(1) { animation-delay: 0.1s; }
+  .step:nth-child(2) { animation-delay: 0.2s; }
+  .step:nth-child(3) { animation-delay: 0.3s; }
+  .step:nth-child(4) { animation-delay: 0.4s; }
+  .step:nth-child(5) { animation-delay: 0.5s; }
+
+  .step-node {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .node-done { background: rgba(16,185,129,0.2); color: var(--prime); border: 1px solid var(--prime); }
+  .node-active { background: rgba(249,115,22,0.2); color: var(--astra); border: 1px solid var(--astra); animation: nodePulse 1.5s infinite; }
+  .node-wait { background: var(--surface2); color: var(--muted); border: 1px solid var(--border2); }
+  .node-ai { background: rgba(168,85,247,0.2); color: var(--coach); border: 1px solid var(--coach); }
+
+  @keyframes nodePulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(249,115,22,0.4); }
+    50% { box-shadow: 0 0 0 6px rgba(249,115,22,0); }
+  }
+
+  .step-content { flex: 1; }
+
+  .step-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    font-size: 0.78rem;
+    color: var(--text);
+    margin-bottom: 3px;
+  }
+
+  .step-desc {
+    font-size: 0.65rem;
+    color: var(--muted2);
+    line-height: 1.5;
+  }
+
+  .step-tag {
+    font-size: 0.6rem;
+    padding: 2px 6px;
+    border-radius: 3px;
+    margin-top: 4px;
+    display: inline-block;
+  }
+
+  .tag-astra { background: var(--astra-glow); color: var(--astra); }
+  .tag-magna { background: var(--magna-glow); color: var(--magna); }
+  .tag-prime { background: var(--prime-glow); color: var(--prime); }
+  .tag-coach { background: var(--coach-glow); color: var(--coach); }
+  .tag-n8n { background: rgba(251,191,36,0.1); color: var(--amber); }
+
+  /* ── CONTENT QUEUE ── */
+  .queue-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 40px;
+  }
+
+  .queue-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    transition: all 0.2s;
+  }
+
+  .queue-card:hover {
+    border-color: var(--border2);
+    transform: translateY(-1px);
+  }
+
+  .queue-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .queue-brand {
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 500;
+    padding: 2px 7px;
+    border-radius: 4px;
+  }
+
+  .queue-time {
+    font-size: 0.6rem;
+    color: var(--muted);
+  }
+
+  .queue-platform {
+    font-size: 1rem;
+    margin-bottom: 8px;
+  }
+
+  .queue-text {
+    font-size: 0.68rem;
+    color: var(--muted2);
+    line-height: 1.55;
+    margin-bottom: 10px;
+  }
+
+  .queue-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .queue-status {
+    font-size: 0.6rem;
+    letter-spacing: 0.06em;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .dot-green { width: 6px; height: 6px; background: var(--prime); border-radius: 50%; }
+  .dot-amber { width: 6px; height: 6px; background: var(--amber); border-radius: 50%; }
+  .dot-blue { width: 6px; height: 6px; background: var(--magna); border-radius: 50%; }
+
+  .approve-btn {
+    font-size: 0.6rem;
+    padding: 4px 10px;
+    border-radius: 5px;
+    border: 1px solid var(--border2);
+    background: transparent;
+    color: var(--muted2);
+    cursor: pointer;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.04em;
+    transition: all 0.2s;
+  }
+
+  .approve-btn:hover {
+    border-color: var(--astra);
+    color: var(--astra);
+    background: var(--astra-glow);
+  }
+
+  /* ── METRICS ROW ── */
+  .metrics-row {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+    margin-bottom: 40px;
+  }
+
+  .metric-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+  }
+
+  .metric-val {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.6rem;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .metric-lbl {
+    font-size: 0.6rem;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .metric-delta {
+    font-size: 0.65rem;
+    margin-top: 4px;
+  }
+
+  .delta-up { color: var(--prime); }
+  .delta-down { color: #ef4444; }
+
+  /* ── AGENT ACTIVITY LOG ── */
+  .log-container {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 40px;
+  }
+
+  .log-body {
+    padding: 0;
+    max-height: 240px;
+    overflow-y: auto;
+  }
+
+  .log-body::-webkit-scrollbar { width: 4px; }
+  .log-body::-webkit-scrollbar-track { background: transparent; }
+  .log-body::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  .log-line {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.65rem;
+    line-height: 1.4;
+    transition: background 0.15s;
+  }
+
+  .log-line:hover { background: var(--surface2); }
+  .log-line:last-child { border-bottom: none; }
+
+  .log-time {
+    color: var(--muted);
+    font-size: 0.6rem;
+    white-space: nowrap;
+    min-width: 70px;
+  }
+
+  .log-brand-tag {
+    font-size: 0.55rem;
+    padding: 2px 6px;
+    border-radius: 3px;
+    white-space: nowrap;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+  }
+
+  .log-msg { color: var(--muted2); flex: 1; }
+  .log-msg strong { color: var(--text); font-weight: 500; }
+
+  .log-type {
+    font-size: 0.55rem;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  /* ── N8N WORKFLOW MAP ── */
+  .workflow-map {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    margin-bottom: 40px;
+    overflow-x: auto;
+  }
+
+  .flow-diagram {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    min-width: 900px;
+    position: relative;
+  }
+
+  .flow-node {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    padding: 12px 16px;
+    min-width: 120px;
+    text-align: center;
+    position: relative;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+
+  .flow-node:hover {
+    transform: translateY(-2px);
+    border-color: var(--astra);
+    box-shadow: 0 4px 20px var(--astra-glow);
+  }
+
+  .flow-node-icon { font-size: 1.2rem; margin-bottom: 4px; }
+
+  .flow-node-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 0.03em;
+  }
+
+  .flow-node-sub {
+    font-size: 0.55rem;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .flow-arrow {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    min-width: 40px;
+  }
+
+  .flow-arrow::before {
+    content: '';
+    position: absolute;
+    left: 4px; right: 4px;
+    height: 1px;
+    background: linear-gradient(to right, var(--border2), var(--astra), var(--border2));
+    animation: flowAnim 2s linear infinite;
+  }
+
+  @keyframes flowAnim {
+    0% { background-position: -100px 0; }
+    100% { background-position: 100px 0; }
+  }
+
+  .flow-arrow::after {
+    content: '▶';
+    font-size: 0.5rem;
+    color: var(--astra);
+    position: relative;
+    z-index: 1;
+  }
+
+  .flow-node.trigger { border-color: var(--prime); }
+  .flow-node.ai-node { border-color: var(--coach); }
+  .flow-node.publish { border-color: var(--magna); }
+  .flow-node.crm { border-color: var(--astra); }
+
+  /* ── PLATFORM MATRIX ── */
+  .platform-matrix {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 40px;
+  }
+
+  .matrix-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .matrix-table th {
+    padding: 12px 16px;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+    text-align: left;
+    font-weight: 500;
+  }
+
+  .matrix-table td {
+    padding: 12px 16px;
+    font-size: 0.68rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+
+  .matrix-table tr:last-child td { border-bottom: none; }
+  .matrix-table tr:hover td { background: var(--surface2); }
+
+  .matrix-brand {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.75rem;
+  }
+
+  .check { color: var(--prime); }
+  .cross { color: var(--muted); opacity: 0.4; }
+  .partial { color: var(--amber); }
+
+  .platform-icons { font-size: 0.9rem; letter-spacing: 0.1em; }
+
+  /* ── TABS ── */
+  .tabs {
+    display: flex;
+    gap: 2px;
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 3px;
+    margin-bottom: 20px;
+    width: fit-content;
+  }
+
+  .tab {
+    padding: 7px 16px;
+    font-size: 0.65rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--muted2);
+    transition: all 0.2s;
+    font-family: 'DM Mono', monospace;
+    border: none;
+    background: transparent;
+  }
+
+  .tab.active {
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 20px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.62rem;
+    color: var(--muted);
+  }
+
+  footer span { color: var(--astra); }
+
+  /* Responsive */
+  @media (max-width: 1200px) {
+    .brand-grid { grid-template-columns: repeat(2, 1fr); }
+    .metrics-row { grid-template-columns: repeat(3, 1fr); }
+    .queue-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+<!-- HEADER -->
+<header>
+  <div class="logo">Rick<span>.AI</span> — Social Agent Hub</div>
+  <div class="header-status">
+    <div><span class="pulse-dot"></span>4 Agents Running</div>
+    <div class="agent-count">14 Posts Queued Today</div>
+    <div>n8n · Claude API · Multi-brand</div>
+  </div>
+</header>
+
+<main>
+
+  <!-- BRAND SELECTOR -->
+  <div class="section-title">Brand Agents</div>
+  <div class="brand-grid">
+
+    <div class="brand-card astra active" onclick="toggleBrand(this)">
+      <div class="toggle-btn"></div>
+      <div class="brand-icon">🚛</div>
+      <div class="brand-name">Astra Removals</div>
+      <div class="brand-sub">Removals · Storage Upsell · Leads</div>
+      <div class="brand-stats">
+        <div class="stat">
+          <div class="stat-val">12</div>
+          <div class="stat-lbl">Posts/wk</div>
+        </div>
+        <div class="stat">
+          <div class="stat-val">3</div>
+          <div class="stat-lbl">Platforms</div>
+        </div>
+        <div class="stat">
+          <div class="stat-val">94%</div>
+          <div class="stat-lbl">Auto</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="brand-card magna active" onclick="toggleBrand(this)">
+      <div class="toggle-btn"></div>
+      <div class="brand-icon">📦</div>
+      <div class="brand-name">Magna Park</div>
+      <div class="brand-sub">Self Storage · Containers · B2B</div>
+      <div class="brand-stats">
+        <div class="stat">
+          <div class="stat-val">8</div>
+          <div class="stat-lbl">Posts/wk</div>
+        </div>
+        <div class="stat">
+          <div class="stat-val">3</div>
+          <div class="stat-lbl">Platforms</div>
+        </div>
+        <div class="stat">
+          <div class="stat-val">87%</div>
+          <div class="stat-lbl">Auto</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="brand-card prime active" onclick="toggleBrand(this)">
+      <div class="toggle-btn"></div>
+      <div class="brand-icon">🏠</div>
+      <div class="brand-name">Prime Haul</div>
+      <div class="brand-sub">Lead Marketplace · MoveScan · B2C</div>
+      <div class="brand-stats">
+        <div class="stat">
+          <div class="stat-val">10</div>
+          <div class="stat-lbl">Posts/wk</div>
+        </div>
+        <div class="stat">
+          <div class="stat-val">4</div>
+          <div class="stat-lbl">Platforms</div>
+        </div>
+        <div class="stat">
+          <div class="stat-val">91%</div>
+          <div class="stat-lbl">Auto</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="brand-card coach active" onclick="toggleBrand(this)">
+      <div class="toggle-btn"></div>
+      <div class="brand-icon">⚽</div>
+      <div class="brand-name">CoachMentor</div>
+      <div class="brand-sub">AI Football Coaching · £7.99/mo</div>
+      <div class="brand-stats">
+        <div class="stat">
+          <div class="stat-val">14</div>
+          <div class="stat-lbl">Posts/wk</div>
+        </div>
+        <div class="stat">
+          <div class="stat-val">4</div>
+          <div class="stat-lbl">Platforms</div>
+        </div>
+        <div class="stat">
+          <div class="stat-val">89%</div>
+          <div class="stat-lbl">Auto</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- METRICS -->
+  <div class="section-title">This Week</div>
+  <div class="metrics-row">
+    <div class="metric-card">
+      <div class="metric-val" style="color:var(--astra)">44</div>
+      <div class="metric-lbl">Posts Published</div>
+      <div class="metric-delta delta-up">↑ 18% vs last wk</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-val" style="color:var(--prime)">27</div>
+      <div class="metric-lbl">Leads Generated</div>
+      <div class="metric-delta delta-up">↑ 34% vs last wk</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-val" style="color:var(--magna)">6.2k</div>
+      <div class="metric-lbl">Impressions</div>
+      <div class="metric-delta delta-up">↑ 22%</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-val" style="color:var(--coach)">189</div>
+      <div class="metric-lbl">Engagements</div>
+      <div class="metric-delta delta-up">↑ 41%</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-val" style="color:var(--amber)">31h</div>
+      <div class="metric-lbl">Hours Saved</div>
+      <div class="metric-delta delta-up">↑ vs manual</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-val" style="color:var(--text)">4.8%</div>
+      <div class="metric-lbl">Avg Eng. Rate</div>
+      <div class="metric-delta delta-up">↑ 1.2pts</div>
+    </div>
+  </div>
+
+  <!-- N8N WORKFLOW MAP -->
+  <div class="section-title">n8n Agent Pipeline — How It Flows</div>
+  <div class="workflow-map">
+    <div style="margin-bottom:16px; font-size:0.65rem; color:var(--muted2);">Core agentic loop running across all 4 brands · Claude API · n8n · Social APIs</div>
+    <div class="flow-diagram">
+      <div class="flow-node trigger">
+        <div class="flow-node-icon">⚡</div>
+        <div class="flow-node-name">Trigger</div>
+        <div class="flow-node-sub">Schedule / Webhook / Lead Event</div>
+      </div>
+      <div class="flow-arrow"></div>
+      <div class="flow-node ai-node">
+        <div class="flow-node-icon">🧠</div>
+        <div class="flow-node-name">Claude Agent</div>
+        <div class="flow-node-sub">Brand Voice + Content Gen</div>
+      </div>
+      <div class="flow-arrow"></div>
+      <div class="flow-node ai-node">
+        <div class="flow-node-icon">🎨</div>
+        <div class="flow-node-name">Image Gen</div>
+        <div class="flow-node-sub">fal.ai / Canva API</div>
+      </div>
+      <div class="flow-arrow"></div>
+      <div class="flow-node">
+        <div class="flow-node-icon">🔍</div>
+        <div class="flow-node-name">Sentiment Check</div>
+        <div class="flow-node-sub">Score &lt; 0.7 → Human review</div>
+      </div>
+      <div class="flow-arrow"></div>
+      <div class="flow-node publish">
+        <div class="flow-node-icon">📤</div>
+        <div class="flow-node-name">Publish</div>
+        <div class="flow-node-sub">FB · IG · LinkedIn · X</div>
+      </div>
+      <div class="flow-arrow"></div>
+      <div class="flow-node crm">
+        <div class="flow-node-icon">📊</div>
+        <div class="flow-node-name">Analytics Loop</div>
+        <div class="flow-node-sub">Feed back → Astra CRM</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WORKFLOWS + QUEUE TABS -->
+  <div class="section-title">Agent Workflows & Queue</div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('workflows', this)">Workflows</button>
+    <button class="tab" onclick="switchTab('queue', this)">Content Queue</button>
+    <button class="tab" onclick="switchTab('platforms', this)">Platform Matrix</button>
+  </div>
+
+  <!-- WORKFLOWS TAB -->
+  <div id="tab-workflows" class="tab-content active">
+    <div class="pipeline-container">
+
+      <!-- ASTRA -->
+      <div class="pipeline-panel">
+        <div class="panel-header">
+          <div class="panel-title" style="color:var(--astra)">🚛 Astra Removals Agent</div>
+          <div class="panel-badge badge-running">Running</div>
+        </div>
+        <div class="workflow-steps">
+          <div class="step">
+            <div class="step-node node-done">✓</div>
+            <div class="step-content">
+              <div class="step-name">Trigger: New Lead in CRM</div>
+              <div class="step-desc">MoveScan webhook fires when homeowner submits removal survey. Agent wakes up.</div>
+              <span class="step-tag tag-n8n">n8n webhook</span>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-node node-done">✓</div>
+            <div class="step-content">
+              <div class="step-name">Extract Lead Data</div>
+              <div class="step-desc">Pull move date, origin postcode, destination, volume. Check if Dorset/Bournemouth area → flag Magna Park upsell.</div>
+              <span class="step-tag tag-astra">CRM Node</span>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-node node-active">▶</div>
+            <div class="step-content">
+              <div class="step-name">Claude: Generate Social Proof Post</div>
+              <div class="step-desc">Anonymised "Just helped a family move from [area] today!" post + storage upsell CTA if flagged.</div>
+              <span class="step-tag tag-astra">Claude API</span>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-node node-wait">○</div>
+            <div class="step-content">
+              <div class="step-name">Schedule to FB & Google Business</div>
+              <div class="step-desc">Optimal time window: Tue–Thu 7–9pm. Buffer for weekend moving quotes.</div>
+              <span class="step-tag tag-n8n">Scheduler</span>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-node node-wait">○</div>
+            <div class="step-content">
+              <div class="step-name">Loop: Review request SMS</div>
+              <div class="step-desc">48hrs post-move: auto-send Google review link via Twilio node.</div>
+              <span class="step-tag tag-astra">Twilio · n8n</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MAGNA PARK -->
+      <div class="pipeline-panel">
+        <div class="panel-header">
+          <div class="panel-title" style="color:var(--magna)">📦 Magna Park Agent</div>
+          <div class="panel-badge badge-running">Running</div>
+        </div>
+        <div class="workflow-steps">
+          <div class="step">
+            <div class="step-node node-done">✓</div>
+            <div class="step-content">
+              <div class="step-name">Trigger: Weekly Schedule (Mon 8am)</div>
+              <div class="step-desc">Agent fires every Monday to plan the week's B2B storage content across LinkedIn and Facebook.</div>
+              <span class="step-tag tag-n8n">Cron trigger</span>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-node node-done">✓</div>
+            <div class="step-content">
+              <div class="step-name">Scan: Local Business News</div>
+              <div class="step-desc">Web search for Dorset/Wimborne business openings, industrial news, planning applications — creates hooks.</div>
+              <span class="step-tag tag-magna">Brave Search MCP</span>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-node node-done">✓</div>
+            <div class="step-content">
+              <div class="step-name">Claude: Draft 3 B2B Posts</div>
+              <div class="step-desc">Container storage angles: trade businesses, overflow stock, document archiving. LinkedIn-professional tone.</div>
+              <span class="step-tag tag-magna">Claude API</span>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-node node-active">▶</div>
+            <div class="step-content">
+              <div class="step-name">Astra Upsell Cross-Post</div>
+              <div class="step-desc">If Astra has active move leads in Dorset → auto-append "Moving soon? Store with us" on Magna's FB.</div>
+              <span class="step-tag tag-astra">Cross-brand Node</span>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-node node-wait">○</div>
+            <div class="step-content">
+              <div class="step-name">Enquiry DM Response</div>
+              <div class="step-desc">FB Messenger bot handles container size queries, pricing FAQs, and books site visits automatically.</div>
+              <span class="step-tag tag-magna">ManyChat · n8n</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PRIME HAUL / MOVESCAN -->
+      <div class="pipeline-panel">
+        <div class="panel-header">
+          <div class="panel-title" style="color:var(--prime)">🏠 Prime Haul / MoveScan Agent</div>
+          <div class="panel-badge badge-running">Running</div>
+        </div>
+        <div class="workflow-steps">
+          <div class="step">
+            <div class="step-node node-done">✓</div>
+            <div class="step-content">
+              <div class="step-name">Trigger: Survey Completion Event</div>
+              <div class="step-desc">Homeowner completes MoveScan flow → agent creates content and lead notification simultaneously.</div>
+              <span class="step-tag tag-prime">Webhook</span>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-node node-done">✓</div>
+            <div class="step-content">
+              <div class="step-name">Trend Scan: Moving Season Hooks</div>
+              <div class="step-desc">Searches "UK house moves [month]", "moving tips", "removal costs" to find viral angles for content.</div>
+              <span class="step-tag tag-n8n">Brave Search</span>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-node node-active">▶</div>
+            <div class="step-content">
+              <div class="step-name">Claude: Lead Magnet Content</div>
+              <div class="step-desc">"Save £££ on your move" tips, comparison hooks, "what removal companies don't tell you" formats for TikTok + IG Reels.</div>
+              <span class="step-tag tag-prime">Claude API</span>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-node node-wait">○</div>
+            <div class="step-content">
+              <div class="step-name">Multi-Platform Publish</div>
+              <div class="step-desc">TikTok, Instagram, Facebook, Pinterest. Each reformatted for platform spec. Reels script + voiceover prompt included.</div>
+              <span class="step-tag tag-prime">Social APIs</span>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-node node-wait">○</div>
+            <div class="step-content">
+              <div class="step-name">Remarketing Pixel Sync</div>
+              <div class="step-desc">High-engagers passed back to FB custom audience for paid retargeting on MoveScan sign-up page.</div>
+              <span class="step-tag tag-n8n">Meta API</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- COACHMENTOR -->
+      <div class="pipeline-panel">
+        <div class="panel-header">
+          <div class="panel-title" style="color:var(--coach)">⚽ CoachMentor Agent</div>
+          <div class="panel-badge badge-running">Running</div>
+        </div>
+        <div class="workflow-steps">
+          <div class="step">
+            <div class="step-node node-done">✓</div>
+            <div class="step-content">
+              <div class="step-name">Trigger: FA Calendar + Match Days</div>
+              <div class="step-desc">Monitors grassroots fixture lists, FA announcements, and UEFA coaching certification news as content triggers.</div>
+              <span class="step-tag tag-coach">Brave Search MCP</span>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-node node-done">✓</div>
+            <div class="step-content">
+              <div class="step-name">Claude: Coaching Tip Content</div>
+              <div class="step-desc">Session drills, tactical tips, "coaching question of the week" — original content, no FA copyright risk.</div>
+              <span class="step-tag tag-coach">Claude API</span>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-node node-active">▶</div>
+            <div class="step-content">
+              <div class="step-name">YouTube + TikTok Script Gen</div>
+              <div class="step-desc">Short-form drill demo scripts generated for Verwood FC pitch walkthroughs. Auto-captions + hashtag sets included.</div>
+              <span class="step-tag tag-coach">Video Node</span>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-node node-wait">○</div>
+            <div class="step-content">
+              <div class="step-name">Free Trial → Subscriber Funnel</div>
+              <div class="step-desc">Engagements on coaching posts trigger DM sequence: "Try CoachMentor free for 7 days" with direct app link.</div>
+              <span class="step-tag tag-coach">DM Automation</span>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-node node-wait">○</div>
+            <div class="step-content">
+              <div class="step-name">Subscriber Milestone Posts</div>
+              <div class="step-desc">Auto-celebrates sub milestones (50, 100, 250…) with social proof posts to build FOMO and word-of-mouth.</div>
+              <span class="step-tag tag-coach">Milestone Node</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- QUEUE TAB -->
+  <div id="tab-queue" class="tab-content">
+    <div class="queue-grid">
+
+      <div class="queue-card">
+        <div class="queue-header">
+          <span class="queue-brand tag-astra">Astra</span>
+          <span class="queue-time">Today 7:30pm</span>
+        </div>
+        <div class="queue-platform">📘 Facebook</div>
+        <div class="queue-text">Another smooth move done for a lovely family heading to Poole! 📦✅ If you're moving in the Bournemouth area and need secure storage too, our Magna Park containers are right there when you need them.</div>
+        <div class="queue-footer">
+          <div class="queue-status"><span class="dot-green"></span>Ready to publish</div>
+          <button class="approve-btn">Approve</button>
+        </div>
+      </div>
+
+      <div class="queue-card">
+        <div class="queue-header">
+          <span class="queue-brand tag-magna">Magna</span>
+          <span class="queue-time">Tue 9:00am</span>
+        </div>
+        <div class="queue-platform">💼 LinkedIn</div>
+        <div class="queue-text">Running a trade business in Dorset? Overflow stock and document storage is a real headache. Our shipping container units at Magna Park give you flexible, secure space from just £X/month — no long contracts.</div>
+        <div class="queue-footer">
+          <div class="queue-status"><span class="dot-amber"></span>Pending review</div>
+          <button class="approve-btn">Approve</button>
+        </div>
+      </div>
+
+      <div class="queue-card">
+        <div class="queue-header">
+          <span class="queue-brand tag-prime">PrimeHaul</span>
+          <span class="queue-time">Wed 6:00pm</span>
+        </div>
+        <div class="queue-platform">📱 TikTok + IG Reel</div>
+        <div class="queue-text">3 things removal companies don't want you to know before you book 👀 [Script generated — 45 sec reel format, hook in first 2 seconds, CTA to MoveScan survey link in bio]</div>
+        <div class="queue-footer">
+          <div class="queue-status"><span class="dot-blue"></span>Awaiting visual</div>
+          <button class="approve-btn">Approve</button>
+        </div>
+      </div>
+
+      <div class="queue-card">
+        <div class="queue-header">
+          <span class="queue-brand tag-coach">CoachMentor</span>
+          <span class="queue-time">Thu 8:00am</span>
+        </div>
+        <div class="queue-platform">▶️ YouTube Shorts</div>
+        <div class="queue-text">This week's grassroots drill: 3v2 pressing trigger exercise to teach your U12s defensive shape. Works with any formation. Full session plan inside the app 🎯 [Script ready, needs recording at Verwood]</div>
+        <div class="queue-footer">
+          <div class="queue-status"><span class="dot-amber"></span>Needs recording</div>
+          <button class="approve-btn">Approve</button>
+        </div>
+      </div>
+
+      <div class="queue-card">
+        <div class="queue-header">
+          <span class="queue-brand tag-astra">Astra</span>
+          <span class="queue-time">Fri 7:00pm</span>
+        </div>
+        <div class="queue-platform">📸 Instagram</div>
+        <div class="queue-text">Weekend move season is on 🚛 We cover Bournemouth, Poole, Christchurch, and all across Dorset. Get your free quote today — link in bio. #DorsetRemovals #AstraRemovals</div>
+        <div class="queue-footer">
+          <div class="queue-status"><span class="dot-green"></span>Ready to publish</div>
+          <button class="approve-btn">Approve</button>
+        </div>
+      </div>
+
+      <div class="queue-card">
+        <div class="queue-header">
+          <span class="queue-brand tag-coach">CoachMentor</span>
+          <span class="queue-time">Fri 12:00pm</span>
+        </div>
+        <div class="queue-platform">🐦 X / Twitter</div>
+        <div class="queue-text">Coaching question of the week: How do you handle a parent who shouts instructions from the sideline that contradict yours? Drop your answer below 👇 #GrassrootsFootball #CoachingLife</div>
+        <div class="queue-footer">
+          <div class="queue-status"><span class="dot-green"></span>Ready to publish</div>
+          <button class="approve-btn">Approve</button>
+        </div>
+      </div>
+
+      <div class="queue-card">
+        <div class="queue-header">
+          <span class="queue-brand tag-magna">Magna</span>
+          <span class="queue-time">Sat 10:00am</span>
+        </div>
+        <div class="queue-platform">📘 Facebook</div>
+        <div class="queue-text">Did you know our Magna Park containers are also perfect for small businesses between premises? Secure, accessible 7 days a week, just off the A31 near Wimborne. DM us for availability 📦</div>
+        <div class="queue-footer">
+          <div class="queue-status"><span class="dot-green"></span>Ready to publish</div>
+          <button class="approve-btn">Approve</button>
+        </div>
+      </div>
+
+      <div class="queue-card">
+        <div class="queue-header">
+          <span class="queue-brand tag-prime">PrimeHaul</span>
+          <span class="queue-time">Sun 5:00pm</span>
+        </div>
+        <div class="queue-platform">📌 Pinterest</div>
+        <div class="queue-text">Moving house checklist — 8 weeks to moving day. [Infographic auto-generated] Pin to your home board and share with anyone planning a move. Get instant quotes via MoveScan 🏠</div>
+        <div class="queue-footer">
+          <div class="queue-status"><span class="dot-blue"></span>Awaiting visual</div>
+          <button class="approve-btn">Approve</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- PLATFORMS TAB -->
+  <div id="tab-platforms" class="tab-content">
+    <div class="platform-matrix">
+      <table class="matrix-table">
+        <thead>
+          <tr>
+            <th>Brand</th>
+            <th>Facebook</th>
+            <th>Instagram</th>
+            <th>LinkedIn</th>
+            <th>TikTok</th>
+            <th>YouTube</th>
+            <th>X / Twitter</th>
+            <th>Pinterest</th>
+            <th>Google Biz</th>
+            <th>Auto DMs</th>
+            <th>Review Loop</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="matrix-brand" style="color:var(--astra)">🚛 Astra</span></td>
+            <td class="check">✓</td>
+            <td class="check">✓</td>
+            <td class="partial">~</td>
+            <td class="cross">—</td>
+            <td class="cross">—</td>
+            <td class="cross">—</td>
+            <td class="cross">—</td>
+            <td class="check">✓</td>
+            <td class="check">✓</td>
+            <td class="check">✓</td>
+          </tr>
+          <tr>
+            <td><span class="matrix-brand" style="color:var(--magna)">📦 Magna Park</span></td>
+            <td class="check">✓</td>
+            <td class="partial">~</td>
+            <td class="check">✓</td>
+            <td class="cross">—</td>
+            <td class="cross">—</td>
+            <td class="cross">—</td>
+            <td class="cross">—</td>
+            <td class="check">✓</td>
+            <td class="check">✓</td>
+            <td class="partial">~</td>
+          </tr>
+          <tr>
+            <td><span class="matrix-brand" style="color:var(--prime)">🏠 Prime Haul</span></td>
+            <td class="check">✓</td>
+            <td class="check">✓</td>
+            <td class="partial">~</td>
+            <td class="check">✓</td>
+            <td class="partial">~</td>
+            <td class="cross">—</td>
+            <td class="check">✓</td>
+            <td class="cross">—</td>
+            <td class="partial">~</td>
+            <td class="cross">—</td>
+          </tr>
+          <tr>
+            <td><span class="matrix-brand" style="color:var(--coach)">⚽ CoachMentor</span></td>
+            <td class="check">✓</td>
+            <td class="check">✓</td>
+            <td class="partial">~</td>
+            <td class="check">✓</td>
+            <td class="check">✓</td>
+            <td class="check">✓</td>
+            <td class="cross">—</td>
+            <td class="cross">—</td>
+            <td class="check">✓</td>
+            <td class="cross">—</td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="padding:14px 20px; font-size:0.62rem; color:var(--muted); border-top:1px solid var(--border);">
+        <strong style="color:var(--prime)">✓</strong> Fully automated &nbsp;·&nbsp; <strong style="color:var(--amber)">~</strong> Partial / human-assisted &nbsp;·&nbsp; <strong style="color:var(--muted)">—</strong> Not active
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTIVITY LOG -->
+  <div class="section-title">Live Agent Log</div>
+  <div class="log-container">
+    <div class="panel-header">
+      <div class="panel-title">Agent Activity Stream</div>
+      <div class="panel-badge badge-running">Live</div>
+    </div>
+    <div class="log-body" id="logBody">
+      <div class="log-line">
+        <span class="log-time">09:14:32</span>
+        <span class="log-brand-tag tag-astra">ASTRA</span>
+        <span class="log-msg"><strong>New lead detected</strong> via MoveScan — Bournemouth to Poole, 3-bed. Magna Park upsell flagged. Content brief generated.</span>
+        <span class="log-type">TRIGGER</span>
+      </div>
+      <div class="log-line">
+        <span class="log-time">09:14:35</span>
+        <span class="log-brand-tag tag-astra">ASTRA</span>
+        <span class="log-msg">Claude API → <strong>Social proof post drafted</strong> (FB + IG). Storage upsell CTA appended. Confidence score: 0.91</span>
+        <span class="log-type">GEN</span>
+      </div>
+      <div class="log-line">
+        <span class="log-time">09:15:01</span>
+        <span class="log-brand-tag tag-magna">MAGNA</span>
+        <span class="log-msg"><strong>Cross-brand node triggered</strong> — Astra Bournemouth lead matched Magna Park catchment. FB post queued for Sat 10am.</span>
+        <span class="log-type">CROSS</span>
+      </div>
+      <div class="log-line">
+        <span class="log-time">09:22:14</span>
+        <span class="log-brand-tag tag-coach">COACH</span>
+        <span class="log-msg">FA calendar scan complete. <strong>2 grassroots coaching events</strong> found in Dorset this weekend. Hook brief generated for X thread.</span>
+        <span class="log-type">SCAN</span>
+      </div>
+      <div class="log-line">
+        <span class="log-time">09:23:40</span>
+        <span class="log-brand-tag tag-coach">COACH</span>
+        <span class="log-msg">Claude API → <strong>YouTube Shorts script generated</strong> — "3v2 pressing trigger drill" (48 sec). Flagged for Verwood recording session.</span>
+        <span class="log-type">GEN</span>
+      </div>
+      <div class="log-line">
+        <span class="log-time">09:31:07</span>
+        <span class="log-brand-tag tag-prime">PRIME</span>
+        <span class="log-msg">Trend scan complete. <strong>"UK spring moving season"</strong> trending. TikTok hook: "3 things removal companies…" brief queued. Reel format.</span>
+        <span class="log-type">TREND</span>
+      </div>
+      <div class="log-line">
+        <span class="log-time">09:33:52</span>
+        <span class="log-brand-tag tag-magna">MAGNA</span>
+        <span class="log-msg">LinkedIn post scored <strong>0.84 confidence</strong>. Auto-approved. Scheduled for Tuesday 9am. B2B trade angle confirmed.</span>
+        <span class="log-type">PUBLISH</span>
+      </div>
+      <div class="log-line">
+        <span class="log-time">09:41:18</span>
+        <span class="log-brand-tag tag-astra">ASTRA</span>
+        <span class="log-msg"><strong>Review request queued</strong> — prior Christchurch move (48hr mark). Twilio SMS node ready. Awaiting 10am send window.</span>
+        <span class="log-type">REVIEW</span>
+      </div>
+      <div class="log-line">
+        <span class="log-time">09:45:00</span>
+        <span class="log-brand-tag tag-coach">COACH</span>
+        <span class="log-msg"><strong>DM automation triggered</strong> — Instagram user engaged with 3 CoachMentor posts. Free trial sequence initiated (7-day offer).</span>
+        <span class="log-type">FUNNEL</span>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <div>Rick<span>.AI</span> Social Agent Hub · Built for Astra · Magna Park · Prime Haul · CoachMentor</div>
+  <div>Powered by <span>n8n</span> · <span>Claude API</span> · Brave Search MCP · fal.ai</div>
+</footer>
+
+</div>
+
+<script>
+  function toggleBrand(card) {
+    card.classList.toggle('active');
+  }
+
+  function switchTab(name, btn) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  // Simulate live log updates
+  const logMessages = [
+    { time: 'now', brand: 'PRIME', cls: 'tag-prime', msg: '<strong>Pinterest infographic brief</strong> sent to Canva API. Moving checklist template selected. Rendering...', type: 'GEN' },
+    { time: 'now', brand: 'ASTRA', cls: 'tag-astra', msg: 'FB post published ✓ — <strong>"Another smooth move…"</strong> post live. Impressions tracking active.', type: 'PUBLISH' },
+    { time: 'now', brand: 'COACH', cls: 'tag-coach', msg: 'Subscriber milestone: <strong>CoachMentor hits 150 users</strong>. Social proof post auto-generated for IG + X.', type: 'MILESTONE' },
+  ];
+
+  let msgIdx = 0;
+  function addLogEntry() {
+    const logBody = document.getElementById('logBody');
+    if (!logBody) return;
+    const m = logMessages[msgIdx % logMessages.length];
+    const now = new Date();
+    const ts = now.toTimeString().slice(0,8);
+    const line = document.createElement('div');
+    line.className = 'log-line';
+    line.style.opacity = '0';
+    line.style.transition = 'opacity 0.5s';
+    line.innerHTML = `
+      <span class="log-time">${ts}</span>
+      <span class="log-brand-tag ${m.cls}">${m.brand}</span>
+      <span class="log-msg">${m.msg}</span>
+      <span class="log-type">${m.type}</span>
+    `;
+    logBody.insertBefore(line, logBody.firstChild);
+    setTimeout(() => line.style.opacity = '1', 50);
+    if (logBody.children.length > 14) logBody.removeChild(logBody.lastChild);
+    msgIdx++;
+  }
+
+  setInterval(addLogEntry, 7000);
+</script>
+
+</body>
+</html>

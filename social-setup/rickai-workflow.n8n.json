@@ -1,0 +1,554 @@
+{
+  "name": "Rick.AI — Social Content Engine (2 Workflows)",
+  "nodes": [
+
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "cronExpression", "expression": "0 6 * * 1" }]
+        }
+      },
+      "id": "ra_a01_cron",
+      "name": "A01 — Monday 06:00 Content Kick-off",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [240, 300],
+      "notes": "Fires every Monday at 06:00. Plans Rick.AI weekly thought leadership content across X, LinkedIn, YouTube."
+    },
+
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.search.brave.com/res/v1/web/search",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [{ "name": "Accept", "value": "application/json" }]
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            { "name": "q", "value": "AI app development trends {{ $now.format('MMMM yyyy') }}" },
+            { "name": "count", "value": "5" },
+            { "name": "country", "value": "gb" }
+          ]
+        }
+      },
+      "id": "ra_a02_search_ai_trends",
+      "name": "A02 — Search: AI Dev Trends",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [460, 220],
+      "credentials": { "httpHeaderAuth": { "id": "brave_search_cred", "name": "Brave Search API" } },
+      "notes": "Searches for AI app development trends, new Claude/OpenAI features, and indie builder news."
+    },
+
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.search.brave.com/res/v1/web/search",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [{ "name": "Accept", "value": "application/json" }]
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            { "name": "q", "value": "Claude AI Anthropic new features {{ $now.format('MMMM yyyy') }}" },
+            { "name": "count", "value": "3" },
+            { "name": "country", "value": "gb" }
+          ]
+        }
+      },
+      "id": "ra_a03_search_claude",
+      "name": "A03 — Search: Claude/Anthropic News",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [460, 380],
+      "credentials": { "httpHeaderAuth": { "id": "brave_search_cred", "name": "Brave Search API" } },
+      "notes": "Fetches latest Claude and Anthropic news for timely content hooks."
+    },
+
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "anthropic-version", "value": "2023-06-01" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"claude-sonnet-4-20250514\",\n  \"max_tokens\": 4000,\n  \"messages\": [{\n    \"role\": \"user\",\n    \"content\": \"You are the content strategist for Rick.AI — an AI app development studio run by Ricky Barton in the UK. We build production AI apps (10+ shipped).\\n\\nCurrent AI trends: {{ $node['A02 — Search: AI Dev Trends'].json.web.results.map(r => r.title).join('; ') }}\\nClaude/Anthropic news: {{ $node['A03 — Search: Claude/Anthropic News'].json.web.results.map(r => r.title).join('; ') }}\\n\\nPortfolio: CoachMentor (AI coaching platform), Manager Mentor (computer vision football analysis), Dream 4-4-2 (fantasy PL), THRYVE/KODA/HALO (AI fitness), PrimeHaul (AI lead gen), Astra Removals (business platform + SEO), StorySync (AI video gen), CellSynergy CNS (biometrics).\\n\\nGenerate a 7-day content plan in JSON with this structure:\\n{\\n  \\\"theme\\\": \\\"Week theme\\\",\\n  \\\"content\\\": [\\n    {\\n      \\\"day\\\": \\\"Monday\\\",\\n      \\\"platform\\\": \\\"X\\\",\\n      \\\"type\\\": \\\"thread\\\",\\n      \\\"pillar\\\": \\\"Build Log|AI Tutorial|Tech Stack|Project Showcase|Industry Insight\\\",\\n      \\\"title\\\": \\\"Thread title\\\",\\n      \\\"hook\\\": \\\"First tweet (must be attention-grabbing, <280 chars)\\\",\\n      \\\"thread_points\\\": [\\\"Point 1\\\", \\\"Point 2\\\", \\\"Point 3\\\"],\\n      \\\"cta\\\": \\\"Call to action\\\",\\n      \\\"schedule\\\": \\\"HH:MM\\\"\\n    }\\n  ]\\n}\\n\\nRules:\\n- Mon/Wed/Fri: X threads (Build Log, AI Tutorial, Industry Insight)\\n- Tue: LinkedIn article/post (professional, B2B focused)\\n- Wed: Instagram carousel/post (visual, behind-the-scenes, project showcase)\\n- Thu: Short-form video script (60s, dev tip or project walkthrough for TikTok/Reels)\\n- Fri: Facebook post (community-focused, shareable, broader audience)\\n- Sat: Pinterest pin (project showcase, infographic, visual portfolio piece)\\n- Sun: Rest\\n- All times in UK timezone (BST/GMT)\\n- Best posting times: X 08:00-09:00 or 17:00-18:00, LinkedIn 07:30-08:30, Instagram 11:00-13:00, Facebook 09:00-11:00, Pinterest 20:00-22:00, YouTube 12:00-14:00\\n- Tone: Builder/indie hacker, technical but accessible, show real code/results\\n- Reference actual projects and real numbers where possible\\n- Hook MUST be under 280 chars and create curiosity\\n\\nReturn ONLY the JSON, no markdown fencing.\"\n  }]\n}"
+      },
+      "id": "ra_a04_claude_plan",
+      "name": "A04 — Claude: Generate Weekly Content Plan",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [700, 300],
+      "credentials": { "httpHeaderAuth": { "id": "anthropic_api_cred", "name": "Anthropic API Key" } },
+      "notes": "Claude generates a full 7-day content plan based on trends and portfolio context. Returns structured JSON."
+    },
+
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ JSON.parse($json.content[0].text).content.length }}",
+              "operation": "largerEqual",
+              "value2": 5
+            }
+          ]
+        }
+      },
+      "id": "ra_a05_quality_gate",
+      "name": "A05 — Quality Gate: ≥5 Content Items",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [920, 300],
+      "notes": "Ensures Claude generated at least 5 content items for the week. Rejects incomplete plans."
+    },
+
+    {
+      "parameters": {
+        "url": "https://api.airtable.com/v0/{{ $env.AIRTABLE_BASE_ID_RICKAI }}/Content%20Automation%20Runs",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "method": "POST",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"fields\": {\n    \"week_of\": \"{{ $now.format('yyyy-MM-dd') }}\",\n    \"workflow_name\": \"Rick.AI Weekly Engine\",\n    \"platform\": \"All\",\n    \"content_type\": \"Weekly Plan\",\n    \"post_title\": \"{{ JSON.parse($node['A04 — Claude: Generate Weekly Content Plan'].json.content[0].text).theme }}\",\n    \"confidence_score\": 1\n  }\n}"
+      },
+      "id": "ra_a06_airtable_log",
+      "name": "A06 — Airtable: Log Weekly Plan",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1140, 220],
+      "credentials": { "httpHeaderAuth": { "id": "airtable_cred", "name": "Airtable API Token" } },
+      "notes": "Logs the weekly content plan to Airtable CRM for tracking."
+    },
+
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.twitter.com/2/tweets",
+        "authentication": "oAuth1",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"text\": \"{{ JSON.parse($node['A04 — Claude: Generate Weekly Content Plan'].json.content[0].text).content.filter(c => c.day === 'Monday')[0].hook }}\\n\\n🧵 Thread below 👇\"\n}"
+      },
+      "id": "ra_a07_post_x_monday",
+      "name": "A07 — Post X: Monday Thread",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1140, 380],
+      "credentials": { "oAuth1Api": { "id": "x_rickai_cred", "name": "X/Twitter Rick.AI" } },
+      "notes": "Posts the Monday X thread hook. Thread replies follow via the Twitter API reply chain."
+    },
+
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.linkedin.com/rest/posts",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "LinkedIn-Version", "value": "202401" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"author\": \"urn:li:person:{{ $env.LINKEDIN_PERSON_ID_RICKAI }}\",\n  \"commentary\": \"{{ JSON.parse($node['A04 — Claude: Generate Weekly Content Plan'].json.content[0].text).content.filter(c => c.day === 'Tuesday')[0].hook }}\\n\\n{{ JSON.parse($node['A04 — Claude: Generate Weekly Content Plan'].json.content[0].text).content.filter(c => c.day === 'Tuesday')[0].thread_points.join('\\n\\n') }}\\n\\n{{ JSON.parse($node['A04 — Claude: Generate Weekly Content Plan'].json.content[0].text).content.filter(c => c.day === 'Tuesday')[0].cta }}\\n\\n#AI #AppDevelopment #IndieHacker #ClaudeAI\",\n  \"visibility\": \"PUBLIC\",\n  \"distribution\": {\n    \"feedDistribution\": \"MAIN_FEED\",\n    \"targetEntities\": [],\n    \"thirdPartyDistributionChannels\": []\n  },\n  \"lifecycleState\": \"PUBLISHED\"\n}"
+      },
+      "id": "ra_a08_post_linkedin_tuesday",
+      "name": "A08 — Post LinkedIn: Tuesday Article",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1360, 300],
+      "credentials": { "httpHeaderAuth": { "id": "linkedin_rickai_cred", "name": "LinkedIn Rick.AI" } },
+      "notes": "Posts Tuesday LinkedIn thought leadership content via the Posts API (v2). B2B focused, professional tone."
+    },
+
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v19.0/{{ $env.IG_ACCOUNT_ID_RICKAI }}/media",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"caption\": \"{{ JSON.parse($node['A04 — Claude: Generate Weekly Content Plan'].json.content[0].text).content.filter(c => c.day === 'Wednesday')[0].hook }}\\n\\n{{ JSON.parse($node['A04 — Claude: Generate Weekly Content Plan'].json.content[0].text).content.filter(c => c.day === 'Wednesday')[0].thread_points.join('\\n\\n') }}\\n\\n{{ JSON.parse($node['A04 — Claude: Generate Weekly Content Plan'].json.content[0].text).content.filter(c => c.day === 'Wednesday')[0].cta }}\\n\\n#RickAI #AIApps #BuildInPublic #IndieDev #ClaudeAI\",\n  \"image_url\": \"{{ $env.RICKAI_DEFAULT_IMAGE_URL }}\",\n  \"access_token\": \"{{ $env.IG_ACCESS_TOKEN_RICKAI }}\"\n}"
+      },
+      "id": "ra_a09_ig_container_wednesday",
+      "name": "A09 — Create IG Media Container: Wednesday",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1580, 220],
+      "notes": "Step 1 of 2-step Instagram publish for Wednesday content. Creates media container with branded image."
+    },
+
+    {
+      "parameters": {
+        "amount": 30,
+        "unit": "seconds"
+      },
+      "id": "ra_a09b_ig_wait",
+      "name": "A09b — Wait 30s (IG Processing)",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [1800, 220],
+      "notes": "Instagram requires a brief wait after container creation before publishing."
+    },
+
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v19.0/{{ $env.IG_ACCOUNT_ID_RICKAI }}/media_publish",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"creation_id\": \"{{ $json.id }}\",\n  \"access_token\": \"{{ $env.IG_ACCESS_TOKEN_RICKAI }}\"\n}"
+      },
+      "id": "ra_a09c_ig_publish_wednesday",
+      "name": "A09c — Publish IG Post: Wednesday",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [2020, 220],
+      "notes": "Step 2: publishes the IG media container for Wednesday Instagram post."
+    },
+
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "video_script",
+              "value": "={{ JSON.parse($node['A04 — Claude: Generate Weekly Content Plan'].json.content[0].text).content.filter(c => c.day === 'Thursday')[0].hook }}"
+            },
+            {
+              "name": "video_points",
+              "value": "={{ JSON.parse($node['A04 — Claude: Generate Weekly Content Plan'].json.content[0].text).content.filter(c => c.day === 'Thursday')[0].thread_points.join(' | ') }}"
+            },
+            {
+              "name": "video_cta",
+              "value": "={{ JSON.parse($node['A04 — Claude: Generate Weekly Content Plan'].json.content[0].text).content.filter(c => c.day === 'Thursday')[0].cta }}"
+            },
+            {
+              "name": "tiktok_status",
+              "value": "PLACEHOLDER — TikTok/Reels API approval pending. Script saved for manual posting."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ra_a10_video_script_thursday",
+      "name": "A10 — Thursday: Short-Form Video Script (TikTok/Reels Placeholder)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [1580, 380],
+      "notes": "PLACEHOLDER NODE: TikTok/Reels API requires app approval. Once approved, replace with TikTok Content Posting API call (POST https://open.tiktokapis.com/v2/post/publish/content/init/). Script is saved for manual posting and logged to Airtable."
+    },
+
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v19.0/{{ $env.FB_PAGE_ID_RICKAI }}/feed",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"message\": \"{{ JSON.parse($node['A04 — Claude: Generate Weekly Content Plan'].json.content[0].text).content.filter(c => c.day === 'Friday')[0].hook }}\\n\\n{{ JSON.parse($node['A04 — Claude: Generate Weekly Content Plan'].json.content[0].text).content.filter(c => c.day === 'Friday')[0].thread_points.join('\\n\\n') }}\\n\\n{{ JSON.parse($node['A04 — Claude: Generate Weekly Content Plan'].json.content[0].text).content.filter(c => c.day === 'Friday')[0].cta }}\",\n  \"access_token\": \"{{ $env.FB_PAGE_ACCESS_TOKEN_RICKAI }}\"\n}"
+      },
+      "id": "ra_a11_post_fb_friday",
+      "name": "A11 — Post Facebook: Friday",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1580, 540],
+      "notes": "Posts Friday Facebook content to the Rick.AI page. Community-focused, shareable content for broader audience."
+    },
+
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.pinterest.com/v5/pins",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"board_id\": \"{{ $env.PINTEREST_BOARD_ID_RICKAI }}\",\n  \"title\": \"{{ JSON.parse($node['A04 — Claude: Generate Weekly Content Plan'].json.content[0].text).content.filter(c => c.day === 'Saturday')[0].title }}\",\n  \"description\": \"{{ JSON.parse($node['A04 — Claude: Generate Weekly Content Plan'].json.content[0].text).content.filter(c => c.day === 'Saturday')[0].hook }}\\n\\n{{ JSON.parse($node['A04 — Claude: Generate Weekly Content Plan'].json.content[0].text).content.filter(c => c.day === 'Saturday')[0].cta }}\\n\\n#AIApps #BuildInPublic #TechPortfolio #IndieDev\",\n  \"link\": \"https://rick.ai?utm_source=pinterest&utm_medium=social&utm_campaign=weekly_showcase\",\n  \"media_source\": {\n    \"source_type\": \"image_url\",\n    \"url\": \"{{ $env.RICKAI_PINTEREST_IMAGE_URL }}\"\n  }\n}"
+      },
+      "id": "ra_a12_pinterest_saturday",
+      "name": "A12 — Post Pinterest: Saturday Pin",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1580, 700],
+      "credentials": { "httpHeaderAuth": { "id": "pinterest_cred_rickai", "name": "Pinterest API Token Rick.AI" } },
+      "notes": "Creates a pin on the Rick.AI portfolio board via Pinterest API v5. Project showcase or infographic content."
+    },
+
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "cronExpression", "expression": "0 */8 * * *" }]
+        }
+      },
+      "id": "ra_b01_cron",
+      "name": "B01 — Every 8h: Check Engagement",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [240, 700],
+      "notes": "Runs every 8 hours to check engagement metrics on X and LinkedIn."
+    },
+
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://api.twitter.com/2/users/by/username/{{ $env.X_USERNAME_RICKAI || 'rick_ai_dev' }}?user.fields=public_metrics",
+        "authentication": "oAuth1"
+      },
+      "id": "ra_b02_x_metrics",
+      "name": "B02 — Fetch X Profile Metrics",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [460, 620],
+      "credentials": { "oAuth1Api": { "id": "x_rickai_cred", "name": "X/Twitter Rick.AI" } },
+      "notes": "Gets current follower count, tweet count, and engagement metrics from X."
+    },
+
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://api.twitter.com/2/users/{{ $json.data.id }}/mentions?max_results=10&tweet.fields=created_at,author_id,text",
+        "authentication": "oAuth1"
+      },
+      "id": "ra_b03_x_mentions",
+      "name": "B03 — Fetch X Mentions",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [680, 620],
+      "credentials": { "oAuth1Api": { "id": "x_rickai_cred", "name": "X/Twitter Rick.AI" } },
+      "notes": "Gets recent mentions and replies for lead identification."
+    },
+
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "anthropic-version", "value": "2023-06-01" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"claude-haiku-4-5-20251001\",\n  \"max_tokens\": 1000,\n  \"messages\": [{\n    \"role\": \"user\",\n    \"content\": \"Classify these social media mentions for Rick.AI (AI app development studio).\\n\\nMentions:\\n{{ $json.data ? $json.data.map(m => m.text).join('\\n---\\n') : 'No mentions' }}\\n\\nFor each mention, return JSON array:\\n[{\\\"text\\\": \\\"...\\\", \\\"intent\\\": \\\"lead|question|praise|spam\\\", \\\"urgency\\\": \\\"high|medium|low\\\", \\\"suggested_reply\\\": \\\"...\\\"}]\\n\\n- lead: Someone asking about building an AI app, needing a developer, or expressing interest in our services\\n- question: Technical question about AI/dev (good for visibility, reply with value)\\n- praise: Positive feedback (like + reply with thanks)\\n- spam: Irrelevant\\n\\nReturn ONLY the JSON array.\"\n  }]\n}"
+      },
+      "id": "ra_b04_claude_classify",
+      "name": "B04 — Claude: Classify Mentions",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [900, 620],
+      "credentials": { "httpHeaderAuth": { "id": "anthropic_api_cred", "name": "Anthropic API Key" } },
+      "notes": "Claude Haiku classifies mentions by intent: lead, question, praise, or spam. Leads trigger CRM entry."
+    },
+
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ JSON.parse($json.content[0].text).filter(m => m.intent === 'lead').length > 0 ? 'true' : 'false' }}",
+              "value2": "true"
+            }
+          ]
+        }
+      },
+      "id": "ra_b05_lead_check",
+      "name": "B05 — Lead Detected?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [1120, 620],
+      "notes": "Routes to Airtable CRM if any mentions are classified as leads."
+    },
+
+    {
+      "parameters": {
+        "url": "https://api.airtable.com/v0/{{ $env.AIRTABLE_BASE_ID_RICKAI }}/Leads",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "method": "POST",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"fields\": {\n    \"name\": \"X Lead — {{ $now.format('dd MMM') }}\",\n    \"source\": \"X\",\n    \"project_description\": \"{{ JSON.parse($node['B04 — Claude: Classify Mentions'].json.content[0].text).filter(m => m.intent === 'lead').map(m => m.text).join(' | ') }}\",\n    \"status\": \"New\",\n    \"created_at\": \"{{ $now.format('yyyy-MM-dd') }}\"\n  }\n}"
+      },
+      "id": "ra_b06_airtable_lead",
+      "name": "B06 — Airtable: Log Lead",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1340, 540],
+      "credentials": { "httpHeaderAuth": { "id": "airtable_cred", "name": "Airtable API Token" } },
+      "notes": "Logs detected leads to Airtable CRM with source, description, and auto-tagged status."
+    },
+
+    {
+      "parameters": {
+        "channel": "#rickai-leads",
+        "text": "=🚨 *New Lead Detected on X*\n\n{{ JSON.parse($node['B04 — Claude: Classify Mentions'].json.content[0].text).filter(m => m.intent === 'lead').map(m => '> ' + m.text + '\\nSuggested reply: ' + m.suggested_reply).join('\\n\\n') }}\n\nLogged to Airtable. Reply within 1 hour for best conversion.",
+        "username": "Rick.AI Bot"
+      },
+      "id": "ra_b07_slack_alert",
+      "name": "B07 — Slack: Lead Alert",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2,
+      "position": [1340, 700],
+      "credentials": { "slackApi": { "id": "slack_cred", "name": "Slack" } },
+      "notes": "Sends Slack notification with lead details and suggested reply for fast response."
+    }
+
+  ],
+
+  "connections": {
+
+    "A01 — Monday 06:00 Content Kick-off": {
+      "main": [[
+        { "node": "A02 — Search: AI Dev Trends", "type": "main", "index": 0 },
+        { "node": "A03 — Search: Claude/Anthropic News", "type": "main", "index": 0 }
+      ]]
+    },
+    "A02 — Search: AI Dev Trends": {
+      "main": [[ { "node": "A04 — Claude: Generate Weekly Content Plan", "type": "main", "index": 0 } ]]
+    },
+    "A03 — Search: Claude/Anthropic News": {
+      "main": [[ { "node": "A04 — Claude: Generate Weekly Content Plan", "type": "main", "index": 0 } ]]
+    },
+    "A04 — Claude: Generate Weekly Content Plan": {
+      "main": [[ { "node": "A05 — Quality Gate: ≥5 Content Items", "type": "main", "index": 0 } ]]
+    },
+    "A05 — Quality Gate: ≥5 Content Items": {
+      "main": [
+        [
+          { "node": "A06 — Airtable: Log Weekly Plan", "type": "main", "index": 0 },
+          { "node": "A07 — Post X: Monday Thread", "type": "main", "index": 0 }
+        ],
+        []
+      ]
+    },
+    "A07 — Post X: Monday Thread": {
+      "main": [[ { "node": "A08 — Post LinkedIn: Tuesday Article", "type": "main", "index": 0 } ]]
+    },
+    "A08 — Post LinkedIn: Tuesday Article": {
+      "main": [[
+        { "node": "A09 — Create IG Media Container: Wednesday", "type": "main", "index": 0 },
+        { "node": "A10 — Thursday: Short-Form Video Script (TikTok/Reels Placeholder)", "type": "main", "index": 0 },
+        { "node": "A11 — Post Facebook: Friday", "type": "main", "index": 0 },
+        { "node": "A12 — Post Pinterest: Saturday Pin", "type": "main", "index": 0 }
+      ]]
+    },
+    "A09 — Create IG Media Container: Wednesday": {
+      "main": [[ { "node": "A09b — Wait 30s (IG Processing)", "type": "main", "index": 0 } ]]
+    },
+    "A09b — Wait 30s (IG Processing)": {
+      "main": [[ { "node": "A09c — Publish IG Post: Wednesday", "type": "main", "index": 0 } ]]
+    },
+
+    "B01 — Every 8h: Check Engagement": {
+      "main": [[ { "node": "B02 — Fetch X Profile Metrics", "type": "main", "index": 0 } ]]
+    },
+    "B02 — Fetch X Profile Metrics": {
+      "main": [[ { "node": "B03 — Fetch X Mentions", "type": "main", "index": 0 } ]]
+    },
+    "B03 — Fetch X Mentions": {
+      "main": [[ { "node": "B04 — Claude: Classify Mentions", "type": "main", "index": 0 } ]]
+    },
+    "B04 — Claude: Classify Mentions": {
+      "main": [[ { "node": "B05 — Lead Detected?", "type": "main", "index": 0 } ]]
+    },
+    "B05 — Lead Detected?": {
+      "main": [
+        [
+          { "node": "B06 — Airtable: Log Lead", "type": "main", "index": 0 },
+          { "node": "B07 — Slack: Lead Alert", "type": "main", "index": 0 }
+        ],
+        []
+      ]
+    }
+
+  },
+
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "instanceId": "rickai-social-content-engine"
+  },
+  "tags": ["rickai", "social-media", "content", "lead-gen", "claude-api", "thought-leadership"],
+  "_readme": {
+    "workflow_name": "Rick.AI — Social Content Engine (2 Workflows)",
+    "version": "1.0",
+    "created_for": "Ricky — Rick.AI / rick.ai",
+    "n8n_version": "1.x",
+    "description": "Two-workflow social automation engine: (A) Weekly thought leadership content generation and publishing across 6 platforms, (B) Engagement monitoring and lead capture from X mentions.",
+    "trigger_a": "Cron — every Monday at 06:00 UK time",
+    "trigger_b": "Cron — every 8 hours",
+    "platforms": ["X/Twitter", "LinkedIn", "Instagram", "Facebook", "Pinterest", "TikTok/Reels (placeholder)"],
+    "required_credentials": [
+      "Anthropic API Key (httpHeaderAuth) — x-api-key header for Claude Sonnet + Haiku",
+      "X/Twitter OAuth 1.0a (oAuth1Api) — for posting threads and reading mentions",
+      "LinkedIn API Token (httpHeaderAuth) — Bearer token for Posts API v2",
+      "Airtable API Token (httpHeaderAuth) — for CRM logging",
+      "Brave Search API (httpHeaderAuth) — for trend research",
+      "Pinterest API Token (httpHeaderAuth) — Bearer token for pin creation",
+      "Facebook Page Access Token (env var) — for page feed posting",
+      "Instagram Access Token (env var) — for media container publish flow",
+      "Slack Bot Token (slackApi) — for lead alerts"
+    ],
+    "required_env_vars": [
+      "AIRTABLE_BASE_ID_RICKAI — Airtable base ID for Rick.AI CRM",
+      "LINKEDIN_PERSON_ID_RICKAI — LinkedIn person URN ID for Ricky's profile",
+      "X_USERNAME_RICKAI — X/Twitter username (default: rick_ai_dev)",
+      "FB_PAGE_ID_RICKAI — Rick.AI Facebook Page ID",
+      "FB_PAGE_ACCESS_TOKEN_RICKAI — Long-lived Facebook page access token",
+      "IG_ACCOUNT_ID_RICKAI — Instagram Business Account ID",
+      "IG_ACCESS_TOKEN_RICKAI — Instagram access token",
+      "RICKAI_DEFAULT_IMAGE_URL — Public URL of default branded image for IG posts",
+      "RICKAI_PINTEREST_IMAGE_URL — Public URL of Pinterest pin image (2:3 ratio recommended)",
+      "PINTEREST_BOARD_ID_RICKAI — Pinterest board ID for Rick.AI portfolio pins"
+    ],
+    "setup_steps": [
+      "1. Import this JSON into n8n (Settings > Import Workflow)",
+      "2. Set all environment variables in n8n Settings > Environment Variables",
+      "3. Create credentials: Anthropic (httpHeaderAuth with x-api-key), X/Twitter (OAuth 1.0a), LinkedIn (httpHeaderAuth with Bearer token), Airtable (httpHeaderAuth), Brave Search (httpHeaderAuth), Pinterest (httpHeaderAuth with Bearer token)",
+      "4. Create 'Content Automation Runs' and 'Leads' tables in your Airtable base",
+      "5. Configure Facebook Page and Instagram Business Account in Meta Business Suite",
+      "6. Create a Pinterest board for Rick.AI portfolio content",
+      "7. Upload branded images to public CDN for IG and Pinterest defaults",
+      "8. Test Workflow A with a manual trigger on Monday morning",
+      "9. Test Workflow B by sending a test mention on X",
+      "10. Enable both workflows",
+      "11. Once TikTok API is approved, replace placeholder node A10 with TikTok Content Posting API call"
+    ],
+    "tiktok_note": "TikTok Business API requires app approval (1-2 weeks). Once approved: replace node A10 with POST to https://open.tiktokapis.com/v2/post/publish/content/init/ with video upload flow. Script is stored in Airtable for manual posting until then."
+  }
+}

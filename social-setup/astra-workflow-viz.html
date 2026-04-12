@@ -1,0 +1,1321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Astra → Magna n8n Workflow</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080a0c;
+    --grid: #0f1318;
+    --surface: #12161c;
+    --surface2: #1a1f28;
+    --border: #1e2530;
+    --border2: #262e3d;
+    --text: #dde4f0;
+    --muted: #4a5568;
+    --muted2: #718096;
+    --orange: #f97316;
+    --orange-d: rgba(249,115,22,0.12);
+    --orange-g: rgba(249,115,22,0.04);
+    --blue: #3b82f6;
+    --blue-d: rgba(59,130,246,0.12);
+    --green: #22c55e;
+    --green-d: rgba(34,197,94,0.12);
+    --purple: #a855f7;
+    --purple-d: rgba(168,85,247,0.12);
+    --amber: #f59e0b;
+    --amber-d: rgba(245,158,11,0.12);
+    --red: #ef4444;
+    --red-d: rgba(239,68,68,0.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 32px 32px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper { position: relative; z-index: 1; }
+
+  /* ─── HEADER ─── */
+  header {
+    padding: 24px 36px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    background: rgba(8,10,12,0.95);
+    backdrop-filter: blur(8px);
+    position: sticky; top: 0; z-index: 100;
+  }
+
+  .header-left h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    letter-spacing: 0.06em;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .header-left h1 span { color: var(--orange); }
+
+  .header-sub {
+    font-size: 0.62rem;
+    color: var(--muted2);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .header-right {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .badge {
+    font-size: 0.6rem;
+    padding: 4px 10px;
+    border-radius: 4px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border: 1px solid;
+  }
+
+  .badge-n8n { border-color: var(--orange); color: var(--orange); background: var(--orange-d); }
+  .badge-claude { border-color: var(--purple); color: var(--purple); background: var(--purple-d); }
+  .badge-live { border-color: var(--green); color: var(--green); background: var(--green-d); }
+
+  /* ─── LAYOUT ─── */
+  .layout {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    min-height: calc(100vh - 97px);
+  }
+
+  /* ─── CANVAS ─── */
+  .canvas {
+    padding: 40px 36px;
+    overflow-y: auto;
+  }
+
+  /* ─── WORKFLOW FLOW ─── */
+  .flow-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .flow-label::after { content: ''; flex:1; height:1px; background: var(--border); }
+
+  .flow {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+  }
+
+  /* Connector line */
+  .flow::before {
+    content: '';
+    position: absolute;
+    left: 28px;
+    top: 56px;
+    bottom: 56px;
+    width: 1px;
+    background: linear-gradient(to bottom, var(--orange) 0%, var(--blue) 40%, var(--green) 70%, var(--purple) 100%);
+    opacity: 0.3;
+  }
+
+  .flow-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    position: relative;
+    padding-bottom: 6px;
+  }
+
+  /* Node connector dot */
+  .flow-row::before {
+    content: '';
+    position: absolute;
+    left: 22px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 13px; height: 13px;
+    border-radius: 50%;
+    border: 2px solid var(--border2);
+    background: var(--bg);
+    z-index: 2;
+    transition: all 0.3s;
+  }
+
+  .flow-row:hover::before {
+    border-color: var(--orange);
+    background: var(--orange-d);
+    box-shadow: 0 0 12px rgba(249,115,22,0.4);
+  }
+
+  /* Arrow between nodes */
+  .flow-arrow-line {
+    display: flex;
+    align-items: center;
+    padding: 0 0 0 56px;
+    height: 28px;
+    position: relative;
+  }
+
+  .flow-arrow-line::before {
+    content: '';
+    position: absolute;
+    left: 56px;
+    top: 50%;
+    right: 0;
+    height: 1px;
+    background: transparent;
+  }
+
+  .arrow-label {
+    font-size: 0.55rem;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .arrow-label .arrow-line {
+    width: 40px;
+    height: 1px;
+    background: var(--border2);
+    position: relative;
+  }
+
+  .arrow-label .arrow-line::after {
+    content: '▼';
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.4rem;
+    color: var(--muted);
+  }
+
+  /* Branch rows */
+  .branch-container {
+    padding: 0 0 0 56px;
+    margin: 6px 0;
+  }
+
+  .branch-header {
+    font-size: 0.58rem;
+    color: var(--muted2);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    padding-left: 4px;
+    border-left: 2px solid var(--border2);
+    padding-left: 10px;
+  }
+
+  .branches {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  /* ─── NODE CARDS ─── */
+  .node {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .node::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.25s;
+    border-radius: 10px;
+  }
+
+  .node:hover { transform: translateY(-1px); }
+  .node:hover::after { opacity: 1; }
+  .node.active { transform: translateY(-1px); }
+  .node.active::after { opacity: 1; }
+
+  .node.orange { border-left: 3px solid var(--orange); }
+  .node.orange::after { background: var(--orange-g); }
+  .node.orange:hover, .node.orange.active { border-color: var(--orange); box-shadow: 0 0 20px rgba(249,115,22,0.15); }
+
+  .node.blue { border-left: 3px solid var(--blue); }
+  .node.blue:hover, .node.blue.active { border-color: var(--blue); box-shadow: 0 0 20px rgba(59,130,246,0.15); }
+
+  .node.green { border-left: 3px solid var(--green); }
+  .node.green:hover, .node.green.active { border-color: var(--green); box-shadow: 0 0 20px rgba(34,197,94,0.15); }
+
+  .node.purple { border-left: 3px solid var(--purple); }
+  .node.purple:hover, .node.purple.active { border-color: var(--purple); box-shadow: 0 0 20px rgba(168,85,247,0.15); }
+
+  .node.amber { border-left: 3px solid var(--amber); }
+  .node.amber:hover, .node.amber.active { border-color: var(--amber); box-shadow: 0 0 20px rgba(245,158,11,0.15); }
+
+  .node.red-n { border-left: 3px solid var(--red); }
+  .node.red-n:hover, .node.red-n.active { border-color: var(--red); box-shadow: 0 0 20px rgba(239,68,68,0.15); }
+
+  .node-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .node-icon {
+    width: 32px; height: 32px;
+    border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+  }
+
+  .icon-orange { background: var(--orange-d); }
+  .icon-blue { background: var(--blue-d); }
+  .icon-green { background: var(--green-d); }
+  .icon-purple { background: var(--purple-d); }
+  .icon-amber { background: var(--amber-d); }
+  .icon-red { background: var(--red-d); }
+
+  .node-meta { flex: 1; }
+
+  .node-type {
+    font-size: 0.52rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 2px;
+  }
+
+  .node-name {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: 0.01em;
+  }
+
+  .node-id {
+    font-size: 0.5rem;
+    color: var(--muted);
+    background: var(--surface2);
+    padding: 2px 6px;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  .node-desc {
+    font-size: 0.63rem;
+    color: var(--muted2);
+    line-height: 1.6;
+    margin-bottom: 10px;
+  }
+
+  .node-params {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+
+  .param {
+    font-size: 0.55rem;
+    padding: 2px 7px;
+    border-radius: 4px;
+    border: 1px solid var(--border2);
+    color: var(--muted2);
+    background: var(--surface2);
+    letter-spacing: 0.03em;
+  }
+
+  .param.orange { border-color: rgba(249,115,22,0.3); color: var(--orange); background: var(--orange-d); }
+  .param.blue { border-color: rgba(59,130,246,0.3); color: var(--blue); background: var(--blue-d); }
+  .param.green { border-color: rgba(34,197,94,0.3); color: var(--green); background: var(--green-d); }
+  .param.purple { border-color: rgba(168,85,247,0.3); color: var(--purple); background: var(--purple-d); }
+  .param.amber { border-color: rgba(245,158,11,0.3); color: var(--amber); background: var(--amber-d); }
+
+  /* ─── BRANCH NODE (smaller) ─── */
+  .branch-node {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .branch-node:hover { transform: translateY(-1px); }
+
+  .branch-node.yes { border-top: 2px solid var(--green); }
+  .branch-node.yes:hover { box-shadow: 0 0 16px rgba(34,197,94,0.15); }
+
+  .branch-node.no { border-top: 2px solid var(--amber); }
+  .branch-node.no:hover { box-shadow: 0 0 16px rgba(245,158,11,0.15); }
+
+  .branch-label {
+    font-size: 0.58rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+
+  .branch-node.yes .branch-label { color: var(--green); }
+  .branch-node.no .branch-label { color: var(--amber); }
+
+  .branch-title {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .branch-desc {
+    font-size: 0.6rem;
+    color: var(--muted2);
+    line-height: 1.5;
+  }
+
+  /* ─── SIDEBAR ─── */
+  .sidebar {
+    border-left: 1px solid var(--border);
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .sidebar-section {
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .sidebar-title {
+    font-size: 0.58rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+
+  /* Config panel */
+  .config-item {
+    margin-bottom: 14px;
+  }
+
+  .config-label {
+    font-size: 0.58rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 5px;
+  }
+
+  .config-val {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 0.65rem;
+    color: var(--text);
+    line-height: 1.5;
+    width: 100%;
+  }
+
+  .config-val.code {
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--orange);
+    font-size: 0.6rem;
+  }
+
+  textarea.config-val {
+    resize: vertical;
+    min-height: 80px;
+    border: none;
+    outline: none;
+    background: var(--surface2);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+  }
+
+  /* Prompt preview */
+  .prompt-box {
+    background: var(--bg);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 14px;
+    font-size: 0.6rem;
+    color: var(--muted2);
+    line-height: 1.7;
+    margin-bottom: 14px;
+    border-left: 3px solid var(--purple);
+  }
+
+  .prompt-box strong { color: var(--text); }
+  .prompt-box .var { color: var(--orange); }
+
+  /* Trigger sim */
+  .sim-btn {
+    width: 100%;
+    padding: 11px;
+    background: var(--orange-d);
+    border: 1px solid var(--orange);
+    color: var(--orange);
+    border-radius: 8px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 600;
+  }
+
+  .sim-btn:hover {
+    background: rgba(249,115,22,0.2);
+    box-shadow: 0 0 20px rgba(249,115,22,0.2);
+  }
+
+  .sim-btn:active { transform: scale(0.98); }
+
+  /* Sim log */
+  .sim-log {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    max-height: 180px;
+    overflow-y: auto;
+    font-size: 0.6rem;
+    color: var(--muted2);
+    line-height: 1.8;
+  }
+
+  .sim-log .log-entry {
+    display: flex;
+    gap: 8px;
+    opacity: 0;
+    animation: logIn 0.3s forwards;
+  }
+
+  @keyframes logIn {
+    from { opacity: 0; transform: translateX(-4px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .log-ts { color: var(--muted); min-width: 55px; }
+  .log-ok { color: var(--green); }
+  .log-run { color: var(--amber); }
+  .log-info { color: var(--blue); }
+
+  /* Condition builder */
+  .condition-box {
+    background: var(--bg);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 0.6rem;
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--muted2);
+    line-height: 2;
+  }
+
+  .condition-box .keyword { color: var(--blue); }
+  .condition-box .val { color: var(--green); }
+  .condition-box .op { color: var(--orange); }
+  .condition-box .comment { color: var(--muted); font-style: italic; }
+
+  /* Progress bar */
+  .progress-bar {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--orange), var(--amber));
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  /* Stats strip */
+  .stats-strip {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .stat-box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 10px;
+    text-align: center;
+  }
+
+  .stat-box .sv {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .stat-box .sl {
+    font-size: 0.52rem;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  /* Step counter */
+  .step-counter {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 20px;
+  }
+
+  .step-pip {
+    width: 24px; height: 3px;
+    border-radius: 2px;
+    background: var(--border2);
+    transition: background 0.3s;
+  }
+
+  .step-pip.active { background: var(--orange); }
+  .step-pip.done { background: var(--green); }
+
+  /* Node number badge */
+  .node-num {
+    position: absolute;
+    top: -1px; right: -1px;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 0 8px 0 6px;
+    padding: 2px 7px;
+    font-size: 0.52rem;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+<header>
+  <div class="header-left">
+    <h1>ASTRA <span>→</span> MAGNA PARK</h1>
+    <div class="header-sub">n8n Workflow · Lead to Social Proof + Storage Upsell · 9 Nodes</div>
+  </div>
+  <div class="header-right">
+    <span class="badge badge-n8n">n8n v1.x</span>
+    <span class="badge badge-claude">Claude API</span>
+    <span class="badge badge-live">Import Ready</span>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- ─── CANVAS ─── -->
+  <div class="canvas">
+
+    <div class="flow-label">Workflow Nodes — Click any node to inspect</div>
+
+    <div class="step-counter" id="stepCounter">
+      <!-- filled by JS -->
+    </div>
+
+    <div class="flow">
+
+      <!-- NODE 1: WEBHOOK TRIGGER -->
+      <div class="flow-row">
+        <div style="width:56px;flex-shrink:0;"></div>
+        <div class="node orange" onclick="selectNode(0)" id="node-0">
+          <span class="node-num">01</span>
+          <div class="node-top">
+            <div class="node-icon icon-orange">⚡</div>
+            <div class="node-meta">
+              <div class="node-type">Webhook Trigger</div>
+              <div class="node-name">MoveScan Lead Received</div>
+            </div>
+            <div class="node-id">webhook/movescan</div>
+          </div>
+          <div class="node-desc">POST request fires when a homeowner completes the MoveScan survey. Receives full JSON payload: move details, postcode, date, volume, contact info.</div>
+          <div class="node-params">
+            <span class="param orange">POST /webhook/movescan-lead</span>
+            <span class="param">Authentication: Header Token</span>
+            <span class="param">Response: 200 OK immediately</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-arrow-line">
+        <div class="arrow-label">
+          <div class="arrow-line"></div>
+          <span>Parse payload →</span>
+        </div>
+      </div>
+
+      <!-- NODE 2: SET VARIABLES -->
+      <div class="flow-row">
+        <div style="width:56px;flex-shrink:0;"></div>
+        <div class="node blue" onclick="selectNode(1)" id="node-1">
+          <span class="node-num">02</span>
+          <div class="node-top">
+            <div class="node-icon icon-blue">📋</div>
+            <div class="node-meta">
+              <div class="node-type">Set Node</div>
+              <div class="node-name">Extract & Format Lead Data</div>
+            </div>
+            <div class="node-id">set/lead-vars</div>
+          </div>
+          <div class="node-desc">Maps raw webhook payload into clean variables used downstream. Normalises postcodes, calculates estimated move size, sets lead timestamp.</div>
+          <div class="node-params">
+            <span class="param blue">customerName</span>
+            <span class="param blue">originPostcode</span>
+            <span class="param blue">destPostcode</span>
+            <span class="param blue">moveDateFormatted</span>
+            <span class="param blue">volumeCategory</span>
+            <span class="param blue">contactPhone</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-arrow-line">
+        <div class="arrow-label">
+          <div class="arrow-line"></div>
+          <span>Check postcode →</span>
+        </div>
+      </div>
+
+      <!-- NODE 3: IF CONDITION -->
+      <div class="flow-row">
+        <div style="width:56px;flex-shrink:0;"></div>
+        <div class="node amber" onclick="selectNode(2)" id="node-2">
+          <span class="node-num">03</span>
+          <div class="node-top">
+            <div class="node-icon icon-amber">🔀</div>
+            <div class="node-meta">
+              <div class="node-type">IF Node — Branch</div>
+              <div class="node-name">Dorset / BH Postcode Check</div>
+            </div>
+            <div class="node-id">if/magna-catchment</div>
+          </div>
+          <div class="node-desc">Checks if origin OR destination postcode falls within Magna Park's service catchment (BH, DT, SP postcodes). Routes to Magna upsell branch if true.</div>
+          <div class="node-params">
+            <span class="param amber">originPostcode CONTAINS [BH, DT, SP]</span>
+            <span class="param amber">OR destPostcode CONTAINS [BH, DT, SP]</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- BRANCHES -->
+      <div class="branch-container">
+        <div class="branch-header">Condition branches</div>
+        <div class="branches">
+          <div class="branch-node yes" onclick="selectNode(3)">
+            <div class="branch-label">✓ True — Dorset Match</div>
+            <div class="branch-title">Magna Upsell Flag = ON</div>
+            <div class="branch-desc">Sets <code>magnaCTA = true</code>. Claude prompt will include storage upsell paragraph. Adds Magna Park contact link to post.</div>
+          </div>
+          <div class="branch-node no" onclick="selectNode(4)">
+            <div class="branch-label">✗ False — Outside Area</div>
+            <div class="branch-title">Standard Social Proof Post</div>
+            <div class="branch-desc">Sets <code>magnaCTA = false</code>. Standard Astra social proof post only. No storage mention. Joins main flow at Claude node.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-arrow-line">
+        <div class="arrow-label">
+          <div class="arrow-line"></div>
+          <span>Both branches merge → Claude</span>
+        </div>
+      </div>
+
+      <!-- NODE 4: CLAUDE API -->
+      <div class="flow-row">
+        <div style="width:56px;flex-shrink:0;"></div>
+        <div class="node purple" onclick="selectNode(5)" id="node-5">
+          <span class="node-num">04</span>
+          <div class="node-top">
+            <div class="node-icon icon-purple">🧠</div>
+            <div class="node-meta">
+              <div class="node-type">HTTP Request → Anthropic API</div>
+              <div class="node-name">Claude: Generate Social Post</div>
+            </div>
+            <div class="node-id">http/claude-api</div>
+          </div>
+          <div class="node-desc">Sends structured prompt to Claude claude-sonnet-4-6. Generates Facebook + Instagram post copy. Conditionally includes Magna Park storage CTA based on upstream flag. Returns JSON with platform-specific variants.</div>
+          <div class="node-params">
+            <span class="param purple">POST api.anthropic.com/v1/messages</span>
+            <span class="param purple">Model: claude-sonnet-4-6</span>
+            <span class="param purple">max_tokens: 800</span>
+            <span class="param">Conditional: magnaCTA injection</span>
+            <span class="param">Output: JSON { fb_post, ig_post }</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-arrow-line">
+        <div class="arrow-label">
+          <div class="arrow-line"></div>
+          <span>Score & route →</span>
+        </div>
+      </div>
+
+      <!-- NODE 5: CONFIDENCE CHECK -->
+      <div class="flow-row">
+        <div style="width:56px;flex-shrink:0;"></div>
+        <div class="node amber" onclick="selectNode(6)" id="node-6">
+          <span class="node-num">05</span>
+          <div class="node-top">
+            <div class="node-icon icon-amber">⚖️</div>
+            <div class="node-meta">
+              <div class="node-type">IF Node — Quality Gate</div>
+              <div class="node-name">Confidence Score Check</div>
+            </div>
+            <div class="node-id">if/quality-gate</div>
+          </div>
+          <div class="node-desc">Claude returns a self-scored confidence value (0–1) in JSON. Posts scoring above 0.75 are auto-approved. Below threshold routes to Slack for human review before publishing.</div>
+          <div class="node-params">
+            <span class="param amber">confidence_score ≥ 0.75 → Auto publish</span>
+            <span class="param amber">confidence_score &lt; 0.75 → Slack review</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-arrow-line">
+        <div class="arrow-label">
+          <div class="arrow-line"></div>
+          <span>Auto-approved path →</span>
+        </div>
+      </div>
+
+      <!-- NODE 6: SCHEDULE -->
+      <div class="flow-row">
+        <div style="width:56px;flex-shrink:0;"></div>
+        <div class="node blue" onclick="selectNode(7)" id="node-7">
+          <span class="node-num">06</span>
+          <div class="node-top">
+            <div class="node-icon icon-blue">🕐</div>
+            <div class="node-meta">
+              <div class="node-type">Wait Node — Smart Scheduler</div>
+              <div class="node-name">Optimal Time Calculation</div>
+            </div>
+            <div class="node-id">wait/optimal-time</div>
+          </div>
+          <div class="node-desc">Calculates next optimal publishing window based on day-of-week rules. Tue–Thu 7–9pm for removals content (homeowners browsing). Saturdays 10am for weekend movers. Waits until window opens.</div>
+          <div class="node-params">
+            <span class="param blue">Mon–Fri lead → next Tue/Wed/Thu 7–9pm</span>
+            <span class="param blue">Fri/Sat lead → Sat 10am slot</span>
+            <span class="param">Max wait: 72hrs</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-arrow-line">
+        <div class="arrow-label">
+          <div class="arrow-line"></div>
+          <span>Publish to platforms →</span>
+        </div>
+      </div>
+
+      <!-- NODE 7: PUBLISH FB + IG (parallel) -->
+      <div class="flow-row">
+        <div style="width:56px;flex-shrink:0;"></div>
+        <div class="node green" onclick="selectNode(8)" id="node-8">
+          <span class="node-num">07</span>
+          <div class="node-top">
+            <div class="node-icon icon-green">📤</div>
+            <div class="node-meta">
+              <div class="node-type">HTTP Request — Social Publish</div>
+              <div class="node-name">Post to Facebook + Instagram</div>
+            </div>
+            <div class="node-id">http/publish-social</div>
+          </div>
+          <div class="node-desc">Publishes FB post via Graph API and queues IG post. Uses platform-specific copy variants from Claude output. Stores post_id for later engagement tracking. Fires simultaneously via n8n parallel branches.</div>
+          <div class="node-params">
+            <span class="param green">FB: graph.facebook.com/v19.0/{page-id}/feed</span>
+            <span class="param green">IG: graph.facebook.com/v19.0/{ig-id}/media</span>
+            <span class="param">Stores: fb_post_id, ig_post_id</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-arrow-line">
+        <div class="arrow-label">
+          <div class="arrow-line"></div>
+          <span>48hrs later → review loop</span>
+        </div>
+      </div>
+
+      <!-- NODE 8: REVIEW REQUEST -->
+      <div class="flow-row">
+        <div style="width:56px;flex-shrink:0;"></div>
+        <div class="node orange" onclick="selectNode(9)" id="node-9">
+          <span class="node-num">08</span>
+          <div class="node-top">
+            <div class="node-icon icon-orange">⭐</div>
+            <div class="node-meta">
+              <div class="node-type">Wait 48h → Twilio SMS</div>
+              <div class="node-name">Google Review Request</div>
+            </div>
+            <div class="node-id">twilio/review-sms</div>
+          </div>
+          <div class="node-desc">48 hours after the move date (from lead data), sends personalised SMS to customer via Twilio asking for a Google review. Includes direct link. One-time send, deduplication via lead ID check.</div>
+          <div class="node-params">
+            <span class="param orange">Wait: moveDateFormatted + 48hrs</span>
+            <span class="param orange">Twilio SMS → contactPhone</span>
+            <span class="param">De-dup: check lead_id in Airtable</span>
+            <span class="param">Link: google.com/maps?cid=AstraRemovals</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-arrow-line">
+        <div class="arrow-label">
+          <div class="arrow-line"></div>
+          <span>Log to CRM →</span>
+        </div>
+      </div>
+
+      <!-- NODE 9: LOG TO CRM -->
+      <div class="flow-row">
+        <div style="width:56px;flex-shrink:0;"></div>
+        <div class="node green" onclick="selectNode(10)" id="node-10">
+          <span class="node-num">09</span>
+          <div class="node-top">
+            <div class="node-icon icon-green">🗂️</div>
+            <div class="node-meta">
+              <div class="node-type">Airtable / Astra CRM Node</div>
+              <div class="node-name">Log Run to CRM + Analytics</div>
+            </div>
+            <div class="node-id">airtable/log-run</div>
+          </div>
+          <div class="node-desc">Creates a record in Astra CRM for every workflow run. Logs: lead source, postcode, magna_upsell flag, post IDs, confidence score, publish time, review sent Y/N. Powers the Social Agent Hub dashboard.</div>
+          <div class="node-params">
+            <span class="param green">Airtable: Astra CRM → Social Runs table</span>
+            <span class="param green">Fields: all upstream variables</span>
+            <span class="param">Triggers: Dashboard refresh webhook</span>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /flow -->
+  </div><!-- /canvas -->
+
+  <!-- ─── SIDEBAR ─── -->
+  <div class="sidebar">
+
+    <!-- Stats -->
+    <div class="sidebar-section">
+      <div class="sidebar-title">Workflow Stats</div>
+      <div class="stats-strip">
+        <div class="stat-box">
+          <div class="sv" style="color:var(--orange)">9</div>
+          <div class="sl">Nodes</div>
+        </div>
+        <div class="stat-box">
+          <div class="sv" style="color:var(--green)">~23s</div>
+          <div class="sl">Avg Run</div>
+        </div>
+        <div class="stat-box">
+          <div class="sv" style="color:var(--blue)">94%</div>
+          <div class="sl">Auto Rate</div>
+        </div>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <div style="font-size:0.58rem;color:var(--muted);text-align:right;" id="progressLabel">Select a node to inspect</div>
+    </div>
+
+    <!-- Node inspector -->
+    <div class="sidebar-section" id="inspectorSection">
+      <div class="sidebar-title">Node Inspector</div>
+      <div style="font-size:0.62rem;color:var(--muted2);line-height:1.7;" id="inspectorContent">
+        Click any node in the workflow to inspect its configuration, parameters, and Claude prompt details.
+      </div>
+    </div>
+
+    <!-- Claude Prompt Preview -->
+    <div class="sidebar-section">
+      <div class="sidebar-title">Claude Prompt — Node 04</div>
+      <div class="prompt-box">
+        <strong>System:</strong> You are a social media manager for Astra Removals, a professional removals company in Bournemouth, Dorset. Write warm, trustworthy, local content.<br><br>
+        <strong>User:</strong> Generate a Facebook post and Instagram caption for a completed move. Details:<br>
+        — Origin area: <span class="var">{{originPostcode | postcodeToArea}}</span><br>
+        — Destination: <span class="var">{{destPostcode | postcodeToArea}}</span><br>
+        — Volume: <span class="var">{{volumeCategory}}</span> home<br>
+        — Move date: <span class="var">{{moveDateFormatted}}</span><br><br>
+        <span class="var">{{#if magnaCTA}}</span>Include a natural mention of Magna Park Self Storage for customers who need temporary storage during a move. Link: magnaparkselfstore.co.uk<span class="var">{{/if}}</span><br><br>
+        Return JSON: <span class="var">{"fb_post": "...", "ig_post": "...", "confidence": 0.0–1.0}</span>
+      </div>
+    </div>
+
+    <!-- Postcode condition -->
+    <div class="sidebar-section">
+      <div class="sidebar-title">IF Node — Condition Logic</div>
+      <div class="condition-box">
+        <span class="comment">// Node 03: Magna catchment check</span><br>
+        <span class="keyword">IF</span> (<br>
+        &nbsp;&nbsp;<span class="val">"{{originPostcode}}"</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;.<span class="keyword">startsWith</span>(<span class="op">["BH","DT","SP"]</span>)<br>
+        &nbsp;<span class="keyword">||</span><br>
+        &nbsp;&nbsp;<span class="val">"{{destPostcode}}"</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;.<span class="keyword">startsWith</span>(<span class="op">["BH","DT","SP"]</span>)<br>
+        ) {<br>
+        &nbsp;&nbsp;<span class="keyword">set</span> magnaCTA = <span class="val">true</span><br>
+        } <span class="keyword">else</span> {<br>
+        &nbsp;&nbsp;<span class="keyword">set</span> magnaCTA = <span class="val">false</span><br>
+        }
+      </div>
+    </div>
+
+    <!-- Simulate -->
+    <div class="sidebar-section">
+      <div class="sidebar-title">Simulate Run</div>
+      <div class="config-item">
+        <div class="config-label">Test Lead Postcode</div>
+        <input class="config-val" id="simPostcode" value="BH1 4AA → BH12 2BB" style="outline:none;border:none;background:var(--surface2);color:var(--text);font-family:inherit;font-size:0.65rem;width:100%;">
+      </div>
+      <button class="sim-btn" onclick="runSimulation()">▶ Run Simulation</button>
+      <div style="margin-top:12px;">
+        <div class="sim-log" id="simLog">
+          <div style="color:var(--muted);font-size:0.58rem;">Simulation output will appear here...</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /sidebar -->
+
+</div><!-- /layout -->
+</div><!-- /wrapper -->
+
+<script>
+  // Node data
+  const nodes = [
+    {
+      id: 0,
+      name: "MoveScan Lead Received",
+      type: "Webhook Trigger",
+      color: "orange",
+      progress: 11,
+      config: `<div class="config-item">
+        <div class="config-label">Endpoint</div>
+        <div class="config-val code">POST /webhook/movescan-lead</div>
+      </div>
+      <div class="config-item">
+        <div class="config-label">Auth Header</div>
+        <div class="config-val code">X-Webhook-Secret: {{MOVESCAN_SECRET}}</div>
+      </div>
+      <div class="config-item">
+        <div class="config-label">Expected Payload Fields</div>
+        <div class="config-val" style="font-size:0.58rem">customer_name, email, phone, origin_postcode, dest_postcode, move_date, bedrooms, survey_id</div>
+      </div>`
+    },
+    {
+      id: 1,
+      name: "Extract & Format Lead Data",
+      type: "Set Node",
+      color: "blue",
+      progress: 22,
+      config: `<div class="config-item">
+        <div class="config-label">Key Mappings</div>
+        <div class="config-val code" style="font-size:0.55rem;line-height:1.8">customerName = body.customer_name<br>originPostcode = body.origin_postcode.toUpperCase()<br>destPostcode = body.dest_postcode.toUpperCase()<br>moveDateFormatted = DateTime.fromISO(body.move_date).toFormat('d MMM yyyy')<br>volumeCategory = bedrooms ≤ 2 ? 'small' : bedrooms ≤ 4 ? 'medium' : 'large'</div>
+      </div>`
+    },
+    {
+      id: 2,
+      name: "Dorset / BH Postcode Check",
+      type: "IF Node",
+      color: "amber",
+      progress: 33,
+      config: `<div class="config-item">
+        <div class="config-label">Catchment Postcodes</div>
+        <div class="config-val code" style="font-size:0.55rem;line-height:1.8">BH (Bournemouth/Poole)<br>DT (Dorchester/Weymouth)<br>SP (Salisbury/Wimborne)</div>
+      </div>
+      <div class="config-item">
+        <div class="config-label">True Branch Output</div>
+        <div class="config-val code">magnaCTA = true</div>
+      </div>`
+    },
+    {
+      id: 3,
+      name: "Magna Upsell Flag ON",
+      type: "Branch: True",
+      color: "green",
+      progress: 40,
+      config: `<div class="config-item">
+        <div class="config-label">Set Variable</div>
+        <div class="config-val code">magnaCTA = true<br>magnaLink = "magnaparkselfstore.co.uk"</div>
+      </div>
+      <div class="config-item">
+        <div class="config-label">Note</div>
+        <div class="config-val" style="font-size:0.6rem">Both branches converge at Claude node. The magnaCTA boolean controls whether Claude includes the storage paragraph in the generated post.</div>
+      </div>`
+    },
+    {
+      id: 4,
+      name: "Standard Post Only",
+      type: "Branch: False",
+      color: "amber",
+      progress: 40,
+      config: `<div class="config-item">
+        <div class="config-label">Set Variable</div>
+        <div class="config-val code">magnaCTA = false</div>
+      </div>
+      <div class="config-item">
+        <div class="config-label">Note</div>
+        <div class="config-val" style="font-size:0.6rem">Post will be standard Astra social proof only. No Magna mention. Claude prompt template omits the storage section via Handlebars conditional.</div>
+      </div>`
+    },
+    {
+      id: 5,
+      name: "Claude: Generate Social Post",
+      type: "HTTP Request → Anthropic",
+      color: "purple",
+      progress: 55,
+      config: `<div class="config-item">
+        <div class="config-label">API Endpoint</div>
+        <div class="config-val code">POST https://api.anthropic.com/v1/messages</div>
+      </div>
+      <div class="config-item">
+        <div class="config-label">Headers</div>
+        <div class="config-val code" style="font-size:0.55rem">x-api-key: {{ANTHROPIC_API_KEY}}<br>anthropic-version: 2023-06-01<br>content-type: application/json</div>
+      </div>
+      <div class="config-item">
+        <div class="config-label">Model</div>
+        <div class="config-val code">claude-sonnet-4-6</div>
+      </div>
+      <div class="config-item">
+        <div class="config-label">Response Parsing</div>
+        <div class="config-val code" style="font-size:0.55rem">JSON.parse(body.content[0].text)<br>→ fb_post, ig_post, confidence</div>
+      </div>`
+    },
+    {
+      id: 6,
+      name: "Confidence Score Check",
+      type: "IF Quality Gate",
+      color: "amber",
+      progress: 66,
+      config: `<div class="config-item">
+        <div class="config-label">Condition</div>
+        <div class="config-val code">claudeResponse.confidence >= 0.75</div>
+      </div>
+      <div class="config-item">
+        <div class="config-label">True Path</div>
+        <div class="config-val" style="font-size:0.6rem">Auto-publish. Proceeds to scheduler node.</div>
+      </div>
+      <div class="config-item">
+        <div class="config-label">False Path</div>
+        <div class="config-val" style="font-size:0.6rem">Sends Slack message to #social-review with post draft + confidence score. Human approves via Slack button → resumes workflow.</div>
+      </div>`
+    },
+    {
+      id: 7,
+      name: "Optimal Time Calculation",
+      type: "Wait Node",
+      color: "blue",
+      progress: 77,
+      config: `<div class="config-item">
+        <div class="config-label">Scheduling Logic</div>
+        <div class="config-val code" style="font-size:0.55rem;line-height:1.8">Mon–Thu received → next Tue/Wed/Thu 7:30pm<br>Fri received → next Sat 10:00am<br>Sat/Sun received → Mon 8:00pm<br>Max wait cap: 72 hours</div>
+      </div>
+      <div class="config-item">
+        <div class="config-label">Implementation</div>
+        <div class="config-val" style="font-size:0.6rem">Use n8n's built-in Wait node with "At specific time" mode. Set via JavaScript expression using DateTime from luxon.</div>
+      </div>`
+    },
+    {
+      id: 8,
+      name: "Post to Facebook + Instagram",
+      type: "HTTP Request — Publish",
+      color: "green",
+      progress: 88,
+      config: `<div class="config-item">
+        <div class="config-label">Facebook Graph API</div>
+        <div class="config-val code" style="font-size:0.55rem">POST https://graph.facebook.com/v19.0/<br>{{FB_PAGE_ID}}/feed<br>{ message: claudeResponse.fb_post,<br>&nbsp;&nbsp;access_token: {{FB_TOKEN}} }</div>
+      </div>
+      <div class="config-item">
+        <div class="config-label">Instagram</div>
+        <div class="config-val code" style="font-size:0.55rem">2-step: create media container → publish<br>caption: claudeResponse.ig_post</div>
+      </div>
+      <div class="config-item">
+        <div class="config-label">Store Result</div>
+        <div class="config-val code">fb_post_id, ig_media_id</div>
+      </div>`
+    },
+    {
+      id: 9,
+      name: "Google Review Request SMS",
+      type: "Wait 48h → Twilio",
+      color: "orange",
+      progress: 94,
+      config: `<div class="config-item">
+        <div class="config-label">Wait Calculation</div>
+        <div class="config-val code" style="font-size:0.55rem">moveDate + 48 hours = send time<br>If sendTime < now: send immediately<br>If sendTime > 7 days: skip</div>
+      </div>
+      <div class="config-item">
+        <div class="config-label">Twilio SMS Body</div>
+        <div class="config-val" style="font-size:0.6rem;line-height:1.6">"Hi {{customerName}}, thanks for choosing Astra Removals! We hope your move went smoothly. We'd really appreciate a quick Google review: [link]"</div>
+      </div>`
+    },
+    {
+      id: 10,
+      name: "Log Run to Astra CRM",
+      type: "Airtable Node",
+      color: "green",
+      progress: 100,
+      config: `<div class="config-item">
+        <div class="config-label">Table</div>
+        <div class="config-val code">Astra CRM → Social Automation Runs</div>
+      </div>
+      <div class="config-item">
+        <div class="config-label">Fields Written</div>
+        <div class="config-val code" style="font-size:0.55rem;line-height:1.8">lead_source, origin_postcode, dest_postcode,<br>magna_upsell, confidence_score,<br>fb_post_id, ig_media_id,<br>published_at, review_sms_sent,<br>workflow_run_id</div>
+      </div>`
+    }
+  ];
+
+  // Build step counter pips
+  const counter = document.getElementById('stepCounter');
+  for (let i = 0; i < 9; i++) {
+    const pip = document.createElement('div');
+    pip.className = 'step-pip';
+    pip.id = `pip-${i}`;
+    counter.appendChild(pip);
+  }
+
+  let selectedNode = null;
+
+  function selectNode(idx) {
+    // Reset all nodes
+    document.querySelectorAll('.node, .branch-node').forEach(n => n.classList.remove('active'));
+
+    const nodeEl = document.getElementById(`node-${idx}`);
+    if (nodeEl) nodeEl.classList.add('active');
+
+    const data = nodes[idx];
+    if (!data) return;
+
+    selectedNode = idx;
+
+    // Update progress
+    document.getElementById('progressFill').style.width = data.progress + '%';
+    document.getElementById('progressLabel').textContent = `Node ${idx + 1} of 9 — ${data.type}`;
+
+    // Update step pips
+    document.querySelectorAll('.step-pip').forEach((pip, i) => {
+      pip.className = 'step-pip';
+      const nodeProgress = Math.round((i / 8) * 100);
+      if (nodeProgress < data.progress - 5) pip.classList.add('done');
+      else if (nodeProgress <= data.progress) pip.classList.add('active');
+    });
+
+    // Update inspector
+    document.getElementById('inspectorSection').querySelector('.sidebar-title').textContent = `${data.type} — ${data.name}`;
+    document.getElementById('inspectorContent').innerHTML = data.config || '<p style="color:var(--muted2);font-size:0.62rem">No additional config.</p>';
+  }
+
+  // Simulation
+  function runSimulation() {
+    const postcode = document.getElementById('simPostcode').value;
+    const log = document.getElementById('simLog');
+    log.innerHTML = '';
+
+    const isDorset = /^BH|^DT|^SP/i.test(postcode);
+
+    const entries = [
+      { delay: 0,    cls: 'log-run', ts: '00:00', msg: '▶ Workflow triggered — MoveScan webhook received' },
+      { delay: 400,  cls: 'log-ok',  ts: '00:00', msg: '✓ Payload parsed — lead variables extracted' },
+      { delay: 900,  cls: isDorset ? 'log-ok' : 'log-info',
+                     ts: '00:01', msg: isDorset
+                       ? `✓ Postcode match — ${postcode.split('→')[0].trim()} is in Magna Park catchment. magnaCTA = true`
+                       : `ℹ Postcode ${postcode.split('→')[0].trim()} outside catchment. magnaCTA = false` },
+      { delay: 1400, cls: 'log-run', ts: '00:01', msg: '▶ Claude API call initiated — generating social post...' },
+      { delay: 3200, cls: 'log-ok',  ts: '00:03', msg: '✓ Claude response received — confidence: 0.91' },
+      { delay: 3600, cls: 'log-ok',  ts: '00:03', msg: '✓ Quality gate passed — auto-approved for publishing' },
+      { delay: 4000, cls: 'log-info',ts: '00:04', msg: `ℹ Scheduler: next optimal slot → ${getNextSlot()}` },
+      { delay: 4500, cls: 'log-ok',  ts: getNextSlot(), msg: '✓ Facebook post published — post_id: 1847362918' },
+      { delay: 5000, cls: 'log-ok',  ts: getNextSlot(), msg: '✓ Instagram post queued — media_id: 9182736450' },
+      { delay: 5400, cls: 'log-info',ts: '+48h',  msg: 'ℹ Review SMS queued for 48hrs post-move date' },
+      { delay: 5800, cls: 'log-ok',  ts: 'done',  msg: '✓ Run logged to Astra CRM. Workflow complete.' },
+    ];
+
+    entries.forEach(e => {
+      setTimeout(() => {
+        const div = document.createElement('div');
+        div.className = `log-entry ${e.cls}`;
+        div.innerHTML = `<span class="log-ts">${e.ts}</span><span>${e.msg}</span>`;
+        log.appendChild(div);
+        log.scrollTop = log.scrollHeight;
+      }, e.delay);
+    });
+  }
+
+  function getNextSlot() {
+    const now = new Date();
+    const day = now.getDay(); // 0=sun
+    // Simple: next weekday evening
+    if (day >= 5) return 'Sat 10:00am';
+    return ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'][Math.min(day + 1, 4)] + ' 7:30pm';
+  }
+
+  // Animate progress bar on load
+  setTimeout(() => {
+    document.getElementById('progressFill').style.width = '0%';
+  }, 100);
+</script>
+</body>
+</html>

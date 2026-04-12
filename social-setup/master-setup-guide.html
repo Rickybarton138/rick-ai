@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rick.AI — Master Setup Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,500;12..96,700;12..96,800&family=Fira+Code:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #03080a;
+    --s1: #070f13;
+    --s2: #0b161c;
+    --s3: #0f1e26;
+    --border: #132030;
+    --border2: #1a2e40;
+    --text: #cce4f0;
+    --muted: #2a4555;
+    --muted2: #3d6478;
+    --muted3: #5a8a9f;
+
+    --astra: #f97316;
+    --astra-d: rgba(249,115,22,0.1);
+    --astra-g: rgba(249,115,22,0.04);
+
+    --magna: #3b82f6;
+    --magna-d: rgba(59,130,246,0.1);
+
+    --prime: #10b981;
+    --prime-d: rgba(16,185,129,0.1);
+
+    --coach: #a855f7;
+    --coach-d: rgba(168,85,247,0.1);
+
+    --gold: #f59e0b;
+    --gold-d: rgba(245,158,11,0.1);
+
+    --red: #ef4444;
+    --red-d: rgba(239,68,68,0.1);
+
+    --complete: #22c55e;
+    --complete-d: rgba(34,197,94,0.1);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Bricolage Grotesque', sans-serif;
+    min-height: 100vh;
+  }
+
+  /* Scanline overlay */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(12,30,40,0.3) 3px, rgba(12,30,40,0.3) 4px);
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  .z1 { position: relative; z-index: 1; }
+
+  /* ── HERO HEADER ── */
+  .hero {
+    padding: 52px 48px 44px;
+    background: linear-gradient(180deg, var(--s2) 0%, transparent 100%);
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Decorative grid */
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 48px 48px;
+    opacity: 0.4;
+    pointer-events: none;
+  }
+
+  .hero-inner { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; }
+
+  .hero-eyebrow {
+    font-size: 0.62rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted3);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .hero-eyebrow::before { content: '//'; color: var(--astra); }
+
+  .hero-h1 {
+    font-size: 3.2rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    color: var(--text);
+    margin-bottom: 16px;
+  }
+
+  .hero-h1 .hl-a { color: var(--astra); }
+  .hero-h1 .hl-m { color: var(--magna); }
+  .hero-h1 .hl-p { color: var(--prime); }
+  .hero-h1 .hl-c { color: var(--coach); }
+
+  .hero-sub {
+    font-size: 0.9rem;
+    color: var(--muted3);
+    max-width: 700px;
+    line-height: 1.65;
+    margin-bottom: 32px;
+    font-weight: 300;
+  }
+
+  .hero-stats {
+    display: flex;
+    gap: 32px;
+  }
+
+  .hs {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .hs-val {
+    font-size: 1.8rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+
+  .hs-lbl {
+    font-size: 0.58rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted2);
+    font-weight: 400;
+  }
+
+  /* ── MAIN LAYOUT ── */
+  .main {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 48px 80px;
+  }
+
+  /* ── SECTION HEADERS ── */
+  .sec-head {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 40px 0 20px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 28px;
+  }
+
+  .sec-num {
+    font-size: 0.6rem;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+    color: var(--muted2);
+    background: var(--s2);
+    border: 1px solid var(--border2);
+    padding: 4px 10px;
+    border-radius: 4px;
+  }
+
+  .sec-title {
+    font-size: 1.1rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--text);
+  }
+
+  .sec-badge {
+    font-size: 0.58rem;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-left: auto;
+  }
+
+  /* ── PHASE TIMELINE ── */
+  .phase-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    margin-bottom: 48px;
+  }
+
+  .phase-card {
+    background: var(--s1);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.25s;
+  }
+
+  .phase-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+
+  .phase-card:hover { transform: translateY(-2px); border-color: var(--border2); }
+
+  .phase-card.ph-1::before { background: var(--gold); }
+  .phase-card.ph-2::before { background: var(--astra); }
+  .phase-card.ph-3::before { background: var(--magna); }
+  .phase-card.ph-4::before { background: var(--prime); }
+  .phase-card.ph-5::before { background: var(--coach); }
+
+  .ph-num {
+    font-size: 0.58rem;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted2);
+    margin-bottom: 8px;
+  }
+
+  .ph-title {
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 6px;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+  }
+
+  .ph-est {
+    font-size: 0.6rem;
+    color: var(--muted2);
+    margin-bottom: 12px;
+    font-family: 'Fira Code', monospace;
+  }
+
+  .ph-items {
+    font-size: 0.6rem;
+    color: var(--muted3);
+    line-height: 1.8;
+  }
+
+  .ph-items li { list-style: none; display: flex; gap: 6px; align-items: flex-start; }
+  .ph-items li::before { content: '→'; color: var(--muted2); flex-shrink: 0; }
+
+  /* ── BRAND COMMAND CARDS ── */
+  .brand-section {
+    margin-bottom: 48px;
+  }
+
+  .brand-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 24px;
+    border-radius: 12px 12px 0 0;
+    border: 1px solid var(--border);
+    border-bottom: none;
+  }
+
+  .bh-icon {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem;
+  }
+
+  .bh-name {
+    font-size: 1.1rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  .bh-sub {
+    font-size: 0.62rem;
+    color: var(--muted3);
+    margin-top: 1px;
+  }
+
+  .bh-progress {
+    margin-left: auto;
+    text-align: right;
+  }
+
+  .progress-bar {
+    width: 120px;
+    height: 4px;
+    background: var(--border2);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 4px;
+  }
+
+  .progress-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 1s ease;
+  }
+
+  .progress-label {
+    font-size: 0.58rem;
+    color: var(--muted2);
+    font-family: 'Fira Code', monospace;
+  }
+
+  .brand-body {
+    border: 1px solid var(--border);
+    border-radius: 0 0 12px 12px;
+    overflow: hidden;
+  }
+
+  /* Checklist table */
+  .check-table {
+    width: 100%;
+  }
+
+  .ct-row {
+    display: grid;
+    grid-template-columns: 36px 1fr 120px 100px 120px;
+    align-items: center;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border);
+    gap: 16px;
+    font-size: 0.68rem;
+    transition: background 0.15s;
+    cursor: pointer;
+  }
+
+  .ct-row:last-child { border-bottom: none; }
+  .ct-row:hover { background: var(--s2); }
+
+  .ct-row.header {
+    background: var(--s2);
+    font-size: 0.55rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted2);
+    font-weight: 700;
+    cursor: default;
+  }
+
+  .ct-row.header:hover { background: var(--s2); }
+
+  .ct-check {
+    width: 20px; height: 20px;
+    border-radius: 5px;
+    border: 1.5px solid var(--border2);
+    background: var(--s1);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.65rem;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+
+  .ct-check.done { background: var(--complete-d); border-color: rgba(34,197,94,0.5); color: var(--complete); }
+  .ct-check.manual { background: var(--gold-d); border-color: rgba(245,158,11,0.5); color: var(--gold); }
+  .ct-check.pending { background: var(--s1); border-color: var(--border2); color: transparent; }
+
+  .ct-task { color: var(--text); line-height: 1.4; font-weight: 500; }
+  .ct-task .sub { color: var(--muted3); font-weight: 400; font-size: 0.6rem; display: block; margin-top: 1px; }
+
+  .ct-type {
+    font-size: 0.55rem;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .type-api { background: var(--complete-d); color: var(--complete); }
+  .type-browser { background: var(--gold-d); color: var(--gold); }
+  .type-manual { background: var(--red-d); color: var(--red); }
+  .type-n8n { background: var(--astra-d); color: var(--astra); }
+  .type-claude { background: var(--coach-d); color: var(--coach); }
+  .type-script { background: var(--magna-d); color: var(--magna); }
+
+  .ct-time {
+    font-family: 'Fira Code', monospace;
+    font-size: 0.6rem;
+    color: var(--muted3);
+    white-space: nowrap;
+  }
+
+  .ct-dep {
+    font-size: 0.6rem;
+    color: var(--muted2);
+  }
+
+  /* ── COMMAND BLOCKS ── */
+  .command-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 48px;
+  }
+
+  .cmd-card {
+    background: var(--s1);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .cmd-head {
+    padding: 14px 18px;
+    background: var(--s2);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .cmd-head-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text);
+    flex: 1;
+  }
+
+  .cmd-head-badge {
+    font-size: 0.55rem;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .cmd-body {
+    padding: 16px 18px;
+  }
+
+  .code-block {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    font-family: 'Fira Code', monospace;
+    font-size: 0.6rem;
+    color: var(--muted3);
+    line-height: 1.9;
+    overflow-x: auto;
+  }
+
+  .cb-comment { color: var(--muted2); font-style: italic; }
+  .cb-cmd { color: var(--gold); }
+  .cb-str { color: var(--prime); }
+  .cb-flag { color: var(--magna); }
+  .cb-var { color: var(--astra); }
+  .cb-ok { color: var(--complete); }
+  .cb-section { color: var(--muted3); border-top: 1px solid var(--border); padding-top: 8px; margin-top: 8px; display: block; }
+
+  .cmd-note {
+    font-size: 0.62rem;
+    color: var(--muted3);
+    line-height: 1.65;
+    padding: 12px 0 0;
+  }
+
+  .cmd-note strong { color: var(--text); }
+
+  /* ── TOKEN REFERENCE ── */
+  .token-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 48px;
+  }
+
+  .token-card {
+    background: var(--s1);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .tc-head {
+    padding: 12px 16px;
+    background: var(--s2);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .tc-platform { font-size: 1rem; }
+
+  .tc-body {
+    padding: 12px 16px;
+  }
+
+  .tc-step {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+    align-items: flex-start;
+    font-size: 0.6rem;
+    color: var(--muted3);
+    line-height: 1.5;
+  }
+
+  .tc-step-num {
+    min-width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--s3);
+    border: 1px solid var(--border2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.5rem;
+    font-weight: 700;
+    color: var(--muted2);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .tc-url {
+    font-family: 'Fira Code', monospace;
+    font-size: 0.55rem;
+    color: var(--magna);
+    word-break: break-all;
+  }
+
+  /* ── N8N ENV VAR REFERENCE ── */
+  .env-table {
+    background: var(--s1);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 48px;
+  }
+
+  .env-row {
+    display: grid;
+    grid-template-columns: 280px 1fr 100px;
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.62rem;
+    gap: 16px;
+    align-items: center;
+  }
+
+  .env-row:last-child { border-bottom: none; }
+  .env-row:hover { background: var(--s2); }
+
+  .env-row.header {
+    background: var(--s2);
+    font-size: 0.55rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted2);
+    font-weight: 700;
+  }
+
+  .env-key {
+    font-family: 'Fira Code', monospace;
+    color: var(--astra);
+    font-size: 0.6rem;
+  }
+
+  .env-desc { color: var(--muted3); line-height: 1.4; }
+
+  .env-brand {
+    font-size: 0.52rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 700;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  /* ── WORKFLOW SUMMARY ── */
+  .wf-summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 48px;
+  }
+
+  .wfs-card {
+    background: var(--s1);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .wfs-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+  }
+
+  .wfs-a::after { background: var(--astra); }
+  .wfs-m::after { background: var(--magna); }
+  .wfs-p::after { background: var(--prime); }
+  .wfs-c::after { background: var(--coach); }
+
+  .wfs-brand {
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .wfs-title {
+    font-size: 0.88rem;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.01em;
+    margin-bottom: 14px;
+    line-height: 1.2;
+  }
+
+  .wfs-workflows {
+    font-size: 0.6rem;
+    color: var(--muted3);
+    line-height: 2;
+  }
+
+  .wfs-wf { display: flex; align-items: center; gap: 6px; }
+  .wfs-wf::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+
+  .wfs-file {
+    margin-top: 12px;
+    padding: 8px 10px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-family: 'Fira Code', monospace;
+    font-size: 0.55rem;
+    color: var(--muted2);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .wfs-file-icon { color: var(--astra); }
+
+  /* ── CONTACTS ── */
+  .contact-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 48px;
+  }
+
+  .contact-card {
+    background: var(--s1);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px;
+  }
+
+  .cc-label {
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted2);
+    margin-bottom: 8px;
+  }
+
+  .cc-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .cc-url {
+    font-family: 'Fira Code', monospace;
+    font-size: 0.6rem;
+    color: var(--magna);
+    word-break: break-all;
+    line-height: 1.5;
+  }
+
+  .cc-note {
+    font-size: 0.6rem;
+    color: var(--muted3);
+    margin-top: 6px;
+    line-height: 1.4;
+  }
+
+  /* Overall progress bar */
+  .master-progress {
+    background: var(--s2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin-bottom: 48px;
+    display: flex;
+    align-items: center;
+    gap: 28px;
+  }
+
+  .mp-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted2);
+    margin-bottom: 8px;
+    font-weight: 700;
+  }
+
+  .mp-bar {
+    flex: 1;
+    height: 8px;
+    background: var(--border2);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .mp-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--astra), var(--magna), var(--prime), var(--coach));
+    border-radius: 4px;
+    width: 0%;
+    transition: width 1.5s ease;
+  }
+
+  .mp-pct {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.02em;
+    min-width: 60px;
+    text-align: right;
+    font-family: 'Fira Code', monospace;
+  }
+
+  /* Alert boxes */
+  .alert {
+    padding: 14px 18px;
+    border-radius: 8px;
+    font-size: 0.65rem;
+    line-height: 1.7;
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .alert-icon { font-size: 1rem; flex-shrink: 0; }
+  .alert-warning { background: var(--gold-d); border: 1px solid rgba(245,158,11,0.25); color: var(--gold); }
+  .alert-info { background: var(--magna-d); border: 1px solid rgba(59,130,246,0.2); color: var(--magna); }
+  .alert-success { background: var(--complete-d); border: 1px solid rgba(34,197,94,0.2); color: var(--complete); }
+
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+  @media (max-width: 1200px) {
+    .phase-grid { grid-template-columns: repeat(3, 1fr); }
+    .wf-summary { grid-template-columns: repeat(2, 1fr); }
+    .token-grid { grid-template-columns: repeat(2, 1fr); }
+    .command-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="z1">
+
+<!-- HERO -->
+<div class="hero z1">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">Rick.AI · Social Automation Stack · Master Setup Guide · March 2026</div>
+    <div class="hero-h1">
+      The complete playbook.<br>
+      <span class="hl-a">Astra</span> · <span class="hl-m">Magna</span> · <span class="hl-p">Prime Haul</span> · <span class="hl-c">CoachMentor</span>
+    </div>
+    <div class="hero-sub">Every workflow, script, token, checklist, email, and n8n import — in one place. Your full social media automation ecosystem, built on n8n + Claude API + Playwright MCP + Brave Search. Start at Phase 1. Tick boxes as you go.</div>
+    <div class="hero-stats">
+      <div class="hs"><div class="hs-val" style="color:var(--astra)">9</div><div class="hs-lbl">n8n workflows</div></div>
+      <div class="hs"><div class="hs-val" style="color:var(--magna)">4</div><div class="hs-lbl">brands covered</div></div>
+      <div class="hs"><div class="hs-val" style="color:var(--prime)">10</div><div class="hs-lbl">email sequences</div></div>
+      <div class="hs"><div class="hs-val" style="color:var(--coach)">7</div><div class="hs-lbl">platforms automated</div></div>
+      <div class="hs"><div class="hs-val" style="color:var(--gold)">~12h</div><div class="hs-lbl">total setup time</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="main z1">
+
+  <!-- OVERALL PROGRESS -->
+  <div class="sec-head">
+    <div class="sec-num">00</div>
+    <div class="sec-title">Overall Setup Progress</div>
+    <div class="sec-badge" style="background:var(--gold-d);color:var(--gold);border:1px solid rgba(245,158,11,0.3);">Track as you go</div>
+  </div>
+
+  <div class="master-progress">
+    <div style="flex:1;">
+      <div class="mp-label">Tasks Complete</div>
+      <div class="mp-bar"><div class="mp-fill" id="masterFill" style="width:0%"></div></div>
+    </div>
+    <div class="mp-pct" id="masterPct">0%</div>
+    <div style="font-size:0.6rem;color:var(--muted2);font-family:'Fira Code',monospace;" id="masterCount">0 / 0 tasks</div>
+  </div>
+
+  <!-- PHASES -->
+  <div class="sec-head">
+    <div class="sec-num">01</div>
+    <div class="sec-title">Setup Phases — Start Here</div>
+    <div class="sec-badge" style="background:var(--prime-d);color:var(--prime);border:1px solid rgba(16,185,129,0.3);">Sequential</div>
+  </div>
+
+  <div class="phase-grid">
+    <div class="phase-card ph-1">
+      <div class="ph-num">Phase 1 · ~1h</div>
+      <div class="ph-title">Seed Accounts & Verification</div>
+      <div class="ph-est">⏱ ~1 hour per brand</div>
+      <ul class="ph-items">
+        <li>Create Google/email accounts for each brand</li>
+        <li>Phone verify TikTok + X accounts</li>
+        <li>Claim Google Business Profiles</li>
+        <li>Create personal FB admin profile</li>
+        <li>LinkedIn personal admin account</li>
+      </ul>
+    </div>
+    <div class="phase-card ph-2">
+      <div class="ph-num">Phase 2 · ~2h</div>
+      <div class="ph-title">Playwright MCP Profile Fill</div>
+      <div class="ph-est">⏱ ~30 min per brand</div>
+      <ul class="ph-items">
+        <li>Run setup-orchestrator.js per brand</li>
+        <li>Watch browser auto-fill all bios</li>
+        <li>Press Enter at manual checkpoints</li>
+        <li>Upload brand images to each platform</li>
+        <li>Save auth states for future runs</li>
+      </ul>
+    </div>
+    <div class="phase-card ph-3">
+      <div class="ph-num">Phase 3 · ~2h</div>
+      <div class="ph-title">API Token Harvest</div>
+      <div class="ph-est">⏱ ~30 min per brand</div>
+      <ul class="ph-items">
+        <li>FB/IG long-lived page tokens</li>
+        <li>LinkedIn Company OAuth token</li>
+        <li>YouTube OAuth + refresh token</li>
+        <li>X/Twitter API v2 credentials</li>
+        <li>Pinterest + TikTok access tokens</li>
+      </ul>
+    </div>
+    <div class="phase-card ph-4">
+      <div class="ph-num">Phase 4 · ~3h</div>
+      <div class="ph-title">n8n Workflow Import & Config</div>
+      <div class="ph-est">⏱ ~45 min per brand</div>
+      <ul class="ph-items">
+        <li>Import all 4 n8n JSON workflows</li>
+        <li>Set all env variables</li>
+        <li>Create credentials (Anthropic, Airtable, etc.)</li>
+        <li>Configure webhook URLs in each platform</li>
+        <li>Run test executions on each workflow</li>
+      </ul>
+    </div>
+    <div class="phase-card ph-5">
+      <div class="ph-num">Phase 5 · ~2h</div>
+      <div class="ph-title">Email Sequences & CRM</div>
+      <div class="ph-est">⏱ ~2 hours total</div>
+      <ul class="ph-items">
+        <li>Build Airtable tables (schemas provided)</li>
+        <li>Set up Mailchimp/SendGrid templates</li>
+        <li>Import CoachMentor 6-email trial sequence</li>
+        <li>Import CoachMentor 4-email welcome sequence</li>
+        <li>Test end-to-end trial → convert flow</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- WORKFLOW SUMMARY -->
+  <div class="sec-head">
+    <div class="sec-num">02</div>
+    <div class="sec-title">All Workflows — Import Files</div>
+    <div class="sec-badge" style="background:var(--astra-d);color:var(--astra);border:1px solid rgba(249,115,22,0.3);">n8n JSON</div>
+  </div>
+
+  <div class="wf-summary">
+    <div class="wfs-card wfs-a">
+      <div class="wfs-brand" style="color:var(--astra)">🚛 Astra Removals</div>
+      <div class="wfs-title">Lead → Social Proof → Magna Upsell</div>
+      <div class="wfs-workflows">
+        <div class="wfs-wf" style="color:var(--prime)">Webhook: MoveScan lead event</div>
+        <div class="wfs-wf" style="color:var(--gold)">IF: Dorset postcode → magnaCTA</div>
+        <div class="wfs-wf" style="color:var(--coach)">Claude: Social post gen</div>
+        <div class="wfs-wf" style="color:var(--magna)">Publish: FB + IG (optimal time)</div>
+        <div class="wfs-wf" style="color:var(--astra)">SMS: Review request +48h</div>
+      </div>
+      <div class="wfs-file"><span class="wfs-file-icon">📄</span>astra-magna-workflow.n8n.json</div>
+    </div>
+
+    <div class="wfs-card wfs-m">
+      <div class="wfs-brand" style="color:var(--magna)">📦 Magna Park</div>
+      <div class="wfs-title">Weekly B2B Content + DM Enquiry Bot</div>
+      <div class="wfs-workflows">
+        <div class="wfs-wf" style="color:var(--prime)">Cron: Monday 08:00</div>
+        <div class="wfs-wf" style="color:var(--gold)">Brave Search: local biz news</div>
+        <div class="wfs-wf" style="color:var(--coach)">Claude: 3 B2B posts + cross-brand</div>
+        <div class="wfs-wf" style="color:var(--magna)">Publish: FB + LinkedIn + GMB</div>
+        <div class="wfs-wf" style="color:var(--astra)">Always-on: FB Messenger bot</div>
+      </div>
+      <div class="wfs-file"><span class="wfs-file-icon">📄</span>magna-movescan-setup-hub.html (spec)</div>
+    </div>
+
+    <div class="wfs-card wfs-p">
+      <div class="wfs-brand" style="color:var(--prime)">🏠 Prime Haul / MoveScan</div>
+      <div class="wfs-title">TikTok/Reels Engine + Pinterest SEO</div>
+      <div class="wfs-workflows">
+        <div class="wfs-wf" style="color:var(--prime)">Dual trigger: cron + survey</div>
+        <div class="wfs-wf" style="color:var(--gold)">Brave Search: trending hooks</div>
+        <div class="wfs-wf" style="color:var(--coach)">Claude: short-form scripts</div>
+        <div class="wfs-wf" style="color:var(--magna)">Predis.ai: auto-visuals</div>
+        <div class="wfs-wf" style="color:var(--astra)">Retarget: Meta custom audience</div>
+      </div>
+      <div class="wfs-file"><span class="wfs-file-icon">📄</span>magna-movescan-setup-hub.html (spec)</div>
+    </div>
+
+    <div class="wfs-card wfs-c">
+      <div class="wfs-brand" style="color:var(--coach)">⚽ CoachMentor</div>
+      <div class="wfs-title">Content Engine + Sub Funnel + Fixture Hooks</div>
+      <div class="wfs-workflows">
+        <div class="wfs-wf" style="color:var(--prime)">Workflow A: Mon 07:00 content</div>
+        <div class="wfs-wf" style="color:var(--gold)">Workflow B: 6h engagement poll</div>
+        <div class="wfs-wf" style="color:var(--coach)">Originality gate ≥0.80</div>
+        <div class="wfs-wf" style="color:var(--magna)">DM funnel: coach intent only</div>
+        <div class="wfs-wf" style="color:var(--astra)">Workflow C: Fri fixture hooks</div>
+      </div>
+      <div class="wfs-file"><span class="wfs-file-icon">📄</span>coachmentor-workflow.n8n.json</div>
+    </div>
+  </div>
+
+  <!-- BRAND CHECKLISTS -->
+  <div class="sec-head">
+    <div class="sec-num">03</div>
+    <div class="sec-title">Brand-by-Brand Checklist</div>
+    <div class="sec-badge" style="background:var(--complete-d);color:var(--complete);border:1px solid rgba(34,197,94,0.3);">Click to check off</div>
+  </div>
+
+  <!-- ASTRA -->
+  <div class="brand-section">
+    <div class="brand-header" style="background:linear-gradient(135deg,var(--s2),var(--s1));">
+      <div class="bh-icon" style="background:var(--astra-d);">🚛</div>
+      <div>
+        <div class="bh-name" style="color:var(--astra)">Astra Removals</div>
+        <div class="bh-sub">FB Page · Instagram · Google Business · n8n workflow · SMS review</div>
+      </div>
+      <div class="bh-progress">
+        <div class="progress-bar"><div class="progress-fill" id="prog-astra" style="background:var(--astra);width:0%"></div></div>
+        <div class="progress-label" id="pct-astra">0%</div>
+      </div>
+    </div>
+    <div class="brand-body">
+      <div class="check-table">
+        <div class="ct-row header"><div></div><div>Task</div><div>Method</div><div>Est. Time</div><div>Depends On</div></div>
+        <div class="ct-row" onclick="toggleCheck(this,'astra')"><div class="ct-check pending">✓</div><div class="ct-task">Personal Facebook admin account exists<span class="sub">Required before creating the business page</span></div><div><span class="ct-type type-manual">Manual</span></div><div class="ct-time">5 min</div><div class="ct-dep">—</div></div>
+        <div class="ct-row" onclick="toggleCheck(this,'astra')"><div class="ct-check pending">✓</div><div class="ct-task">Astra Removals Facebook Page created<span class="sub">setup-orchestrator.js --brand astra</span></div><div><span class="ct-type type-script">Playwright</span></div><div class="ct-time">10 min</div><div class="ct-dep">FB account</div></div>
+        <div class="ct-row" onclick="toggleCheck(this,'astra')"><div class="ct-check pending">✓</div><div class="ct-task">Instagram Business account created + linked to FB Page<span class="sub">2 manual steps, then script fills bio</span></div><div><span class="ct-type type-browser">Hybrid</span></div><div class="ct-time">15 min</div><div class="ct-dep">FB Page</div></div>
+        <div class="ct-row" onclick="toggleCheck(this,'astra')"><div class="ct-check pending">✓</div><div class="ct-task">Google Business Profile claimed and verified<span class="sub">Postcard or phone — one-time only</span></div><div><span class="ct-type type-manual">Manual</span></div><div class="ct-time">10 min (+wait)</div><div class="ct-dep">Google account</div></div>
+        <div class="ct-row" onclick="toggleCheck(this,'astra')"><div class="ct-check pending">✓</div><div class="ct-task">FB/IG long-lived Page Access Token obtained<span class="sub">developers.facebook.com/tools/explorer → exchange → page token</span></div><div><span class="ct-type type-api">API</span></div><div class="ct-time">15 min</div><div class="ct-dep">FB Page</div></div>
+        <div class="ct-row" onclick="toggleCheck(this,'astra')"><div class="ct-check pending">✓</div><div class="ct-task">Twilio account funded + UK number purchased<span class="sub">+44 number for review SMS. ~£1/month</span></div><div><span class="ct-type type-manual">Manual</span></div><div class="ct-time">10 min</div><div class="ct-dep">—</div></div>
+        <div class="ct-row" onclick="toggleCheck(this,'astra')"><div class="ct-check pending">✓</div><div class="ct-task">Airtable base created with Social Runs + Leads tables<span class="sub">Schema in airtable-schemas/airtable-schema-astra.json</span></div><div><span class="ct-type type-manual">Manual</span></div><div class="ct-time">20 min</div><div class="ct-dep">—</div></div>
+        <div class="ct-row" onclick="toggleCheck(this,'astra')"><div class="ct-check pending">✓</div><div class="ct-task">n8n env vars set from env-template-astra.env<span class="sub">n8n Settings → Environment Variables</span></div><div><span class="ct-type type-n8n">n8n</span></div><div class="ct-time">10 min</div><div class="ct-dep">All tokens</div></div>
+        <div class="ct-row" onclick="toggleCheck(this,'astra')"><div class="ct-check pending">✓</div><div class="ct-task">astra-magna-workflow.n8n.json imported and activated<span class="sub">n8n Settings → Import Workflow → set active</span></div><div><span class="ct-type type-n8n">n8n</span></div><div class="ct-time">15 min</div><div class="ct-dep">Env vars</div></div>
+        <div class="ct-row" onclick="toggleCheck(this,'astra')"><div class="ct-check pending">✓</div><div class="ct-task">MoveScan webhook URL configured in MoveScan settings<span class="sub">https://[n8n-url]/webhook/movescan-lead</span></div><div><span class="ct-type type-n8n">n8n</span></div><div class="ct-time">5 min</div><div class="ct-dep">n8n workflow</div></div>
+        <div class="ct-row" onclick="toggleCheck(this,'astra')"><div class="ct-check pending">✓</div><div class="ct-task">Test run executed with sample MoveScan payload<span class="sub">Verify FB post published + Airtable record created</span></div><div><span class="ct-type type-n8n">n8n</span></div><div class="ct-time">15 min</div><div class="ct-dep">Full setup</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COACHMENTOR -->
+  <div class="brand-section">
+    <div class="brand-header" style="background:linear-gradient(135deg,var(--s2),var(--s1));">
+      <div class="bh-icon" style="background:var(--coach-d);">⚽</div>
+      <div>
+        <div class="bh-name" style="color:var(--coach)">CoachMentor</div>
+        <div class="bh-sub">TikTok · YouTube · IG · X · n8n 3 workflows · 10-email sequences</div>
+      </div>
+      <div class="bh-progress">
+        <div class="progress-bar"><div class="progress-fill" id="prog-coach" style="background:var(--coach);width:0%"></div></div>
+        <div class="progress-label" id="pct-coach">0%</div>
+      </div>
+    </div>
+    <div class="brand-body">
+      <div class="check-table">
+        <div class="ct-row header"><div></div><div>Task</div><div>Method</div><div>Est. Time</div><div>Depends On</div></div>
+        <div class="ct-row" onclick="toggleCheck(this,'coach')"><div class="ct-check pending">✓</div><div class="ct-task">TikTok account created + phone verified<span class="sub">Manual — phone verification always required</span></div><div><span class="ct-type type-manual">Manual</span></div><div class="ct-time">10 min</div><div class="ct-dep">Phone number</div></div>
+        <div class="ct-row" onclick="toggleCheck(this,'coach')"><div class="ct-check pending">✓</div><div class="ct-task">TikTok switched to Business account + bio filled<span class="sub">Stagehand / in-app. Category: Education</span></div><div><span class="ct-type type-browser">Browser</span></div><div class="ct-time">10 min</div><div class="ct-dep">TikTok account</div></div>
+        <div class="ct-row" onclick="toggleCheck(this,'coach')"><div class="ct-check pending">✓</div><div class="ct-task">TikTok Business API access applied for<span class="sub">Can take 1–2 weeks. Apply early at developers.tiktok.com</span></div><div><span class="ct-type type-manual">Manual</span></div><div class="ct-time">20 min (+wait)</div><div class="ct-dep">Business account</div></div>
+        <div class="ct-row" onclick="toggleCheck(this,'coach')"><div class="ct-check pending">✓</div><div class="ct-task">YouTube Brand Channel created<span class="sub">Google account → brand.youtube.com/channel/create</span></div><div><span class="ct-type type-browser">Browser</span></div><div class="ct-time">10 min</div><div class="ct-dep">Google account</div></div>
+        <div class="ct-row" onclick="toggleCheck(this,'coach')"><div class="ct-check pending">✓</div><div class="ct-task">YouTube channel populated via setup-orchestrator.js<span class="sub">Name, description, website link auto-filled</span></div><div><span class="ct-type type-script">Playwright</span></div><div class="ct-time">10 min</div><div class="ct-dep">Brand channel</div></div>
+        <div class="ct-row" onclick="toggleCheck(this,'coach')"><div class="ct-check pending">✓</div><div class="ct-task">YouTube OAuth refresh token obtained<span class="sub">Google Cloud Console → OAuth flow → store refresh token</span></div><div><span class="ct-type type-api">API</span></div><div class="ct-time">20 min</div><div class="ct-dep">Google Cloud project</div></div>
+        <div class="ct-row" onclick="toggleCheck(this,'coach')"><div class="ct-check pending">✓</div><div class="ct-task">X/Twitter account created + phone verified<span class="sub">Manual. Developer app at developer.twitter.com after</span></div><div><span class="ct-type type-manual">Manual</span></div><div class="ct-time">15 min</div><div class="ct-dep">Phone number</div></div>
+        <div class="ct-row" onclick="toggleCheck(this,'coach')"><div class="ct-check pending">✓</div><div class="ct-task">X/Twitter profile populated (bio, avatar, banner)<span class="sub">setup-orchestrator.js --brand coachmentor auto-fills</span></div><div><span class="ct-type type-script">Playwright</span></div><div class="ct-time">5 min</div><div class="ct-dep">X account</div></div>
+        <div class="ct-row" onclick="toggleCheck(this,'coach')"><div class="ct-check pending">✓</div><div class="ct-task">X Developer App created + API v2 tokens obtained<span class="sub">developer.twitter.com → New App → Keys & Tokens</span></div><div><span class="ct-type type-api">API</span></div><div class="ct-time">15 min</div><div class="ct-dep">X account</div></div>
+        <div class="ct-row" onclick="toggleCheck(this,'coach')"><div class="ct-check pending">✓</div><div class="ct-task">ManyChat connected to IG for DM automation<span class="sub">manychat.com → connect Instagram → build trial offer flow</span></div><div><span class="ct-type type-manual">Manual</span></div><div class="ct-time">30 min</div><div class="ct-dep">IG Business account</div></div>
+        <div class="ct-row" onclick="toggleCheck(this,'coach')"><div class="ct-check pending">✓</div><div class="ct-task">Airtable CoachMentor CRM created (Subscribers + Content Runs)<span class="sub">Schema in airtable-schemas/airtable-schema-coachmentor.json</span></div><div><span class="ct-type type-manual">Manual</span></div><div class="ct-time">20 min</div><div class="ct-dep">—</div></div>
+        <div class="ct-row" onclick="toggleCheck(this,'coach')"><div class="ct-check pending">✓</div><div class="ct-task">coachmentor-workflow.n8n.json imported (all 3 workflows)<span class="sub">Workflows A, B, C all in one file</span></div><div><span class="ct-type type-n8n">n8n</span></div><div class="ct-time">20 min</div><div class="ct-dep">All tokens</div></div>
+        <div class="ct-row" onclick="toggleCheck(this,'coach')"><div class="ct-check pending">✓</div><div class="ct-task">CoachMentor app webhook configured (trial_started, subscribed)<span class="sub">App backend sends to n8n on these events</span></div><div><span class="ct-type type-n8n">n8n</span></div><div class="ct-time">10 min</div><div class="ct-dep">App + n8n</div></div>
+        <div class="ct-row" onclick="toggleCheck(this,'coach')"><div class="ct-check pending">✓</div><div class="ct-task">6-email trial sequence live in Mailchimp/SendGrid<span class="sub">coachmentor-emails.html — all copy ready to paste</span></div><div><span class="ct-type type-manual">Manual</span></div><div class="ct-time">45 min</div><div class="ct-dep">Email platform</div></div>
+        <div class="ct-row" onclick="toggleCheck(this,'coach')"><div class="ct-check pending">✓</div><div class="ct-task">4-email subscriber welcome sequence live<span class="sub">coachmentor-welcome-sequence.html — all copy ready</span></div><div><span class="ct-type type-manual">Manual</span></div><div class="ct-time">30 min</div><div class="ct-dep">Email platform</div></div>
+        <div class="ct-row" onclick="toggleCheck(this,'coach')"><div class="ct-check pending">✓</div><div class="ct-task">Full end-to-end test: TikTok post → DM → trial → email 1<span class="sub">Verify the entire funnel works before going live</span></div><div><span class="ct-type type-n8n">n8n</span></div><div class="ct-time">30 min</div><div class="ct-dep">Full setup</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMMANDS -->
+  <div class="sec-head">
+    <div class="sec-num">04</div>
+    <div class="sec-title">Terminal Commands — Run Order</div>
+    <div class="sec-badge" style="background:var(--magna-d);color:var(--magna);border:1px solid rgba(59,130,246,0.3);">C:/Users/Ricky/Projects/social-setup</div>
+  </div>
+
+  <div class="alert alert-info"><div class="alert-icon">ℹ️</div><div>Run all commands from <strong>C:/Users/Ricky/Projects/social-setup/</strong> in Git Bash or VS Code terminal. Your n8n MCP stack and Playwright MCP are already configured.</div></div>
+
+  <div class="command-grid">
+    <div class="cmd-card">
+      <div class="cmd-head">
+        <div class="cmd-head-title">Step 1 — Install & Generate Configs</div>
+        <span class="cmd-head-badge" style="background:var(--prime-d);color:var(--prime);">Run first</span>
+      </div>
+      <div class="cmd-body">
+        <div class="code-block">
+<span class="cb-comment"># Install dependencies</span><br>
+<span class="cb-cmd">npm</span> install<br><br>
+<span class="cb-comment"># Install Chromium browser for Playwright</span><br>
+<span class="cb-cmd">npx</span> playwright install chromium<br><br>
+<span class="cb-comment"># Generate all config files (no browser needed)</span><br>
+<span class="cb-comment"># Outputs: env-templates/, checklists/, airtable-schemas/</span><br>
+<span class="cb-cmd">npm</span> run tokens:all<br><br>
+<span class="cb-comment"># Check outputs were created</span><br>
+<span class="cb-cmd">ls</span> env-templates/ checklists/ airtable-schemas/
+        </div>
+        <div class="cmd-note">Creates all env template files and checklists. <strong>Do this first</strong> — you'll need the env files when setting up n8n.</div>
+      </div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-head">
+        <div class="cmd-head-title">Step 2 — Run Account Setup per Brand</div>
+        <span class="cmd-head-badge" style="background:var(--astra-d);color:var(--astra);">Browser opens</span>
+      </div>
+      <div class="cmd-body">
+        <div class="code-block">
+<span class="cb-comment"># Run one brand at a time</span><br>
+<span class="cb-comment"># Browser opens — watch + approve manual steps</span><br><br>
+<span class="cb-cmd">npm</span> run setup:astra<br>
+<span class="cb-comment"># → FB Page + IG + Google Business</span><br><br>
+<span class="cb-cmd">npm</span> run setup:magna<br>
+<span class="cb-comment"># → FB Page + IG + LinkedIn + GMB</span><br><br>
+<span class="cb-cmd">npm</span> run setup:primhaul<br>
+<span class="cb-comment"># → FB Page + IG + Pinterest</span><br><br>
+<span class="cb-cmd">npm</span> run setup:coachmentor<br>
+<span class="cb-comment"># → FB + IG + YouTube + X</span>
+        </div>
+        <div class="cmd-note">Browser opens visibly. Auth state saved per brand. Logs written to <strong>setup-logs/</strong>. Manual checkpoints pause — press Enter to proceed.</div>
+      </div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-head">
+        <div class="cmd-head-title">Step 3 — Create Pinterest Boards</div>
+        <span class="cmd-head-badge" style="background:var(--coach-d);color:var(--coach);">After tokens</span>
+      </div>
+      <div class="cmd-body">
+        <div class="code-block">
+<span class="cb-comment"># After adding Pinterest tokens to .env file</span><br>
+<span class="cb-comment"># PINTEREST_ACCESS_TOKEN_PRIMHAUL=...</span><br>
+<span class="cb-comment"># PINTEREST_ACCESS_TOKEN_COACHMENTOR=...</span><br><br>
+<span class="cb-cmd">npm</span> run boards:primhaul<br>
+<span class="cb-comment"># Creates 6 boards: Moving Checklists, Save Money,</span><br>
+<span class="cb-comment"># First Time Buyers, Removal Guides, etc.</span><br><br>
+<span class="cb-cmd">npm</span> run boards:coachmentor<br>
+<span class="cb-comment"># Creates 6 boards: Coaching Tips, Drills,</span><br>
+<span class="cb-comment"># U7-U16, Tactical, Session Plans, etc.</span>
+        </div>
+        <div class="cmd-note">Calls Pinterest API v5 directly. Boards created with SEO descriptions. <strong>Add tokens to .env first.</strong></div>
+      </div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-head">
+        <div class="cmd-head-title">Step 4 — n8n Workflow Imports</div>
+        <span class="cmd-head-badge" style="background:var(--magna-d);color:var(--magna);">n8n UI</span>
+      </div>
+      <div class="cmd-body">
+        <div class="code-block">
+<span class="cb-comment"># In n8n UI: Settings → Import Workflow</span><br><br>
+<span class="cb-comment"># Workflow 1: Astra + Magna cross-brand</span><br>
+<span class="cb-str">astra-magna-workflow.n8n.json</span><br><br>
+<span class="cb-comment"># Workflow 2: CoachMentor (3 workflows)</span><br>
+<span class="cb-str">coachmentor-workflow.n8n.json</span><br><br>
+<span class="cb-comment"># Set env vars for each workflow</span><br>
+<span class="cb-comment"># Copy from: env-templates/env-template-*.env</span><br><br>
+<span class="cb-comment"># Test with manual trigger first</span><br>
+<span class="cb-comment"># Check execution logs in n8n before activating</span>
+        </div>
+        <div class="cmd-note">Set all env variables <strong>before</strong> activating workflows. Test each one manually first using n8n's "Execute workflow" button.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOKEN REFERENCE -->
+  <div class="sec-head">
+    <div class="sec-num">05</div>
+    <div class="sec-title">API Token Quick Reference</div>
+    <div class="sec-badge" style="background:var(--gold-d);color:var(--gold);border:1px solid rgba(245,158,11,0.3);">Get these in Phase 3</div>
+  </div>
+
+  <div class="token-grid">
+    <div class="token-card">
+      <div class="tc-head"><span class="tc-platform">📘</span> Facebook + Instagram</div>
+      <div class="tc-body">
+        <div class="tc-step"><div class="tc-step-num">1</div><div>Go to developers.facebook.com/tools/explorer</div></div>
+        <div class="tc-step"><div class="tc-step-num">2</div><div>Generate User Token with <code style="color:var(--astra)">pages_manage_posts, pages_read_engagement, instagram_basic, instagram_content_publish</code></div></div>
+        <div class="tc-step"><div class="tc-step-num">3</div><div>Exchange for long-lived token (60 day → refresh to never-expire):<br><span class="tc-url">GET /oauth/access_token?grant_type=fb_exchange_token&client_id=APP_ID&client_secret=APP_SECRET&fb_exchange_token=SHORT_TOKEN</span></div></div>
+        <div class="tc-step"><div class="tc-step-num">4</div><div>Get Page token: <span class="tc-url">GET /{PAGE_ID}?fields=access_token&access_token={USER_TOKEN}</span></div></div>
+        <div class="tc-step"><div class="tc-step-num">5</div><div>Get IG Account ID: <span class="tc-url">GET /me/accounts → find instagram_business_account → id</span></div></div>
+      </div>
+    </div>
+
+    <div class="token-card">
+      <div class="tc-head"><span class="tc-platform">▶️</span> YouTube Data API v3</div>
+      <div class="tc-body">
+        <div class="tc-step"><div class="tc-step-num">1</div><div>Google Cloud Console → Create project → Enable YouTube Data API v3</div></div>
+        <div class="tc-step"><div class="tc-step-num">2</div><div>Credentials → Create OAuth 2.0 Client ID → Web application → Add redirect URI: <code style="color:var(--astra)">http://localhost:3000/callback</code></div></div>
+        <div class="tc-step"><div class="tc-step-num">3</div><div>OAuth flow → get authorization code → exchange for tokens → store <code style="color:var(--prime)">refresh_token</code> in n8n env vars</div></div>
+        <div class="tc-step"><div class="tc-step-num">4</div><div>Refresh token is permanent — use it to get short-lived access tokens in n8n before each API call</div></div>
+      </div>
+    </div>
+
+    <div class="token-card">
+      <div class="tc-head"><span class="tc-platform">🐦</span> X / Twitter API v2</div>
+      <div class="tc-body">
+        <div class="tc-step"><div class="tc-step-num">1</div><div>developer.twitter.com → Sign in → Create App</div></div>
+        <div class="tc-step"><div class="tc-step-num">2</div><div>App permissions: Read and Write (for posting). Set callback URL.</div></div>
+        <div class="tc-step"><div class="tc-step-num">3</div><div>Keys & Tokens tab → Generate Access Token + Secret</div></div>
+        <div class="tc-step"><div class="tc-step-num">4</div><div>Free tier = 1,500 posts/month. More than sufficient for CoachMentor's 3 posts/week.</div></div>
+        <div class="tc-step"><div class="tc-step-num">5</div><div>Store: API Key, API Secret, Access Token, Access Token Secret → n8n oAuth1Api credential</div></div>
+      </div>
+    </div>
+
+    <div class="token-card">
+      <div class="tc-head"><span class="tc-platform">💼</span> LinkedIn Company Page</div>
+      <div class="tc-body">
+        <div class="tc-step"><div class="tc-step-num">1</div><div>linkedin.com/developers → Create App → Associate with company page</div></div>
+        <div class="tc-step"><div class="tc-step-num">2</div><div>Request Products: Share on LinkedIn + Sign In with LinkedIn (for posting)</div></div>
+        <div class="tc-step"><div class="tc-step-num">3</div><div>OAuth 2.0 → Authorize → Get access token. LinkedIn tokens expire in 60 days — use refresh token flow</div></div>
+        <div class="tc-step"><div class="tc-step-num">4</div><div>Get Organization URN: <span class="tc-url">GET /v2/organizationalEntityAcls?q=roleAssignee</span></div></div>
+      </div>
+    </div>
+
+    <div class="token-card">
+      <div class="tc-head"><span class="tc-platform">📌</span> Pinterest Business API v5</div>
+      <div class="tc-body">
+        <div class="tc-step"><div class="tc-step-num">1</div><div>developers.pinterest.com → My Apps → Create App</div></div>
+        <div class="tc-step"><div class="tc-step-num">2</div><div>Scopes: boards:read, boards:write, pins:read, pins:write</div></div>
+        <div class="tc-step"><div class="tc-step-num">3</div><div>OAuth flow → access token (valid 30 days) + refresh token (long-lived)</div></div>
+        <div class="tc-step"><div class="tc-step-num">4</div><div>n8n: store refresh token, exchange for access token at runtime. Excellent API — easiest of all platforms.</div></div>
+      </div>
+    </div>
+
+    <div class="token-card">
+      <div class="tc-head"><span class="tc-platform">🌐</span> Google Business Profile</div>
+      <div class="tc-body">
+        <div class="tc-step"><div class="tc-step-num">1</div><div>Same Google Cloud project as YouTube → Enable Business Profile API + My Business Account Management API</div></div>
+        <div class="tc-step"><div class="tc-step-num">2</div><div>OAuth 2.0 same credentials as YouTube. Scopes: <code style="color:var(--astra)">business.manage</code></div></div>
+        <div class="tc-step"><div class="tc-step-num">3</div><div>Get Location ID: <span class="tc-url">GET /v1/accounts/{accountId}/locations</span></div></div>
+        <div class="tc-step"><div class="tc-step-num">4</div><div>After verification, use <span class="tc-url">POST /v1/{name}/localPosts</span> for GMB posts from n8n</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ALL DELIVERABLES -->
+  <div class="sec-head">
+    <div class="sec-num">06</div>
+    <div class="sec-title">Complete Deliverables Index</div>
+    <div class="sec-badge" style="background:var(--complete-d);color:var(--complete);border:1px solid rgba(34,197,94,0.3);">All files built</div>
+  </div>
+
+  <div class="alert alert-success"><div class="alert-icon">✅</div><div>Every file listed below has been built and is ready to use. Open from your outputs folder or the file links above.</div></div>
+
+  <div class="env-table">
+    <div class="env-row header"><div>File</div><div>Purpose</div><div>Brand</div></div>
+    <div class="env-row"><div class="env-key">social-agent-hub.html</div><div class="env-desc">Master dashboard — all 4 brands, content queue, live agent log, platform matrix</div><span class="env-brand" style="background:var(--astra-d);color:var(--astra)">All brands</span></div>
+    <div class="env-row"><div class="env-key">astra-workflow-viz.html</div><div class="env-desc">Interactive Astra n8n workflow — click nodes, inspect config, run simulation</div><span class="env-brand" style="background:var(--astra-d);color:var(--astra)">Astra</span></div>
+    <div class="env-row"><div class="env-key">astra-magna-workflow.n8n.json</div><div class="env-desc">Importable n8n JSON — 9 nodes, MoveScan → social → review SMS</div><span class="env-brand" style="background:var(--astra-d);color:var(--astra)">Astra+Magna</span></div>
+    <div class="env-row"><div class="env-key">magna-movescan-setup-hub.html</div><div class="env-desc">3-tab hub: Magna B2B workflows, MoveScan TikTok engine, account setup guide</div><span class="env-brand" style="background:var(--magna-d);color:var(--magna)">Magna+Prime</span></div>
+    <div class="env-row"><div class="env-key">coachmentor-workflow.html</div><div class="env-desc">CoachMentor workflow visualiser — football pitch aesthetic, 3 tabbed flows</div><span class="env-brand" style="background:var(--coach-d);color:var(--coach)">CoachMentor</span></div>
+    <div class="env-row"><div class="env-key">coachmentor-workflow.n8n.json</div><div class="env-desc">Importable n8n JSON — Workflows A, B, C (content + funnel + fixtures)</div><span class="env-brand" style="background:var(--coach-d);color:var(--coach)">CoachMentor</span></div>
+    <div class="env-row"><div class="env-key">coachmentor-emails.html</div><div class="env-desc">6-email trial onboarding sequence — full preview with metadata panel</div><span class="env-brand" style="background:var(--coach-d);color:var(--coach)">CoachMentor</span></div>
+    <div class="env-row"><div class="env-key">coachmentor-welcome-sequence.html</div><div class="env-desc">4-email subscriber welcome sequence — activation to 30-day retention</div><span class="env-brand" style="background:var(--coach-d);color:var(--coach)">CoachMentor</span></div>
+    <div class="env-row"><div class="env-key">setup-orchestrator.js</div><div class="env-desc">Playwright MCP — browser automation for all 4 brands, all platforms</div><span class="env-brand" style="background:var(--prime-d);color:var(--prime)">All brands</span></div>
+    <div class="env-row"><div class="env-key">setup-api-tokens.js</div><div class="env-desc">Pinterest board creator + env template generator + Airtable schema exporter</div><span class="env-brand" style="background:var(--prime-d);color:var(--prime)">All brands</span></div>
+    <div class="env-row"><div class="env-key">README.md</div><div class="env-desc">Full setup docs — install, run order, token guides, file structure</div><span class="env-brand" style="background:var(--prime-d);color:var(--prime)">All brands</span></div>
+    <div class="env-row"><div class="env-key">package.json</div><div class="env-desc">npm scripts — setup:astra, tokens:all, boards:coachmentor etc.</div><span class="env-brand" style="background:var(--prime-d);color:var(--prime)">All brands</span></div>
+  </div>
+
+</div><!-- /main -->
+</div><!-- /z1 -->
+
+<script>
+  // ── PROGRESS TRACKING ──────────────────────────────────────
+  const brandChecks = { astra: 0, magna: 0, prime: 0, coach: 0 };
+  const brandTotals = { astra: 0, magna: 0, prime: 0, coach: 0 };
+
+  function toggleCheck(row, brand) {
+    const box = row.querySelector('.ct-check');
+    if (!box || row.classList.contains('header')) return;
+
+    if (box.classList.contains('pending')) {
+      box.classList.remove('pending');
+      box.classList.add('done');
+      box.textContent = '✓';
+      brandChecks[brand] = (brandChecks[brand] || 0) + 1;
+    } else if (box.classList.contains('done')) {
+      box.classList.remove('done');
+      box.classList.add('manual');
+      box.textContent = '~';
+    } else {
+      box.classList.remove('manual');
+      box.classList.add('pending');
+      box.textContent = '✓';
+      brandChecks[brand] = Math.max(0, (brandChecks[brand] || 0) - 1);
+    }
+
+    updateProgress(brand);
+    updateMaster();
+  }
+
+  function updateProgress(brand) {
+    const rows = document.querySelectorAll(`[onclick*="'${brand}'"]`);
+    const total = rows.length;
+    const done = Array.from(rows).filter(r => r.querySelector('.ct-check.done')).length;
+    const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+
+    const bar = document.getElementById(`prog-${brand}`);
+    const lbl = document.getElementById(`pct-${brand}`);
+    if (bar) bar.style.width = pct + '%';
+    if (lbl) lbl.textContent = pct + '%';
+
+    brandTotals[brand] = total;
+    brandChecks[brand] = done;
+  }
+
+  function updateMaster() {
+    const totalDone = Object.values(brandChecks).reduce((a, b) => a + b, 0);
+    const totalAll = Object.values(brandTotals).reduce((a, b) => a + b, 0);
+    const pct = totalAll > 0 ? Math.round((totalDone / totalAll) * 100) : 0;
+
+    const fill = document.getElementById('masterFill');
+    const pctEl = document.getElementById('masterPct');
+    const countEl = document.getElementById('masterCount');
+
+    if (fill) fill.style.width = pct + '%';
+    if (pctEl) pctEl.textContent = pct + '%';
+    if (countEl) countEl.textContent = `${totalDone} / ${totalAll} tasks`;
+  }
+
+  // Initialise totals
+  window.addEventListener('load', () => {
+    ['astra', 'magna', 'prime', 'coach'].forEach(b => {
+      const rows = document.querySelectorAll(`[onclick*="'${b}'"]`);
+      brandTotals[b] = rows.length;
+    });
+    updateMaster();
+
+    // Animate progress fill in hero
+    setTimeout(() => {
+      document.getElementById('masterFill').style.width = '0%';
+    }, 200);
+  });
+</script>
+</body>
+</html>

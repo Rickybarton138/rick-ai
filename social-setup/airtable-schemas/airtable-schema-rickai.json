@@ -1,0 +1,40 @@
+{
+  "bases": [
+    {
+      "name": "Rick.AI CRM",
+      "tables": [
+        {
+          "name": "Leads",
+          "fields": [
+            "name (Text) — Contact name",
+            "email (Email) — Contact email",
+            "source (Single select: Website/X/LinkedIn/YouTube/Referral)",
+            "project_description (Long text) — What they want built",
+            "budget_tier (Single select: MVP Sprint/Full Build/Retainer/Unknown)",
+            "status (Single select: New/Contacted/Proposal Sent/Won/Lost)",
+            "created_at (Date)",
+            "last_contacted (Date)",
+            "notes (Long text)"
+          ]
+        },
+        {
+          "name": "Content Automation Runs",
+          "fields": [
+            "week_of (Date)",
+            "workflow_name (Text)",
+            "platform (Single select: X/LinkedIn/YouTube)",
+            "content_type (Single select: Thread/Post/Short/Article)",
+            "post_title (Text)",
+            "topic_pillar (Single select: Build Log/AI Tutorial/Tech Stack/Project Showcase/Industry Insight)",
+            "confidence_score (Number) — Claude originality gate 0-1",
+            "published_at (Date & time)",
+            "impressions_48h (Number)",
+            "engagements_48h (Number)",
+            "link_clicks_48h (Number)",
+            "leads_generated (Number)"
+          ]
+        }
+      ]
+    }
+  ]
+}

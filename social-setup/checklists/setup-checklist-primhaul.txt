@@ -1,0 +1,51 @@
+
+╔══════════════════════════════════════════════════════════════╗
+║  PRIME HAUL / MOVESCAN — Complete Setup Checklist            ║
+╚══════════════════════════════════════════════════════════════╝
+
+PHASE 1 — Account Creation (Manual + Playwright MCP)
+─────────────────────────────────────────────────────
+□ Facebook Business Page created (PrimeHaul — Smart Moving Starts Here)
+□ Instagram Business account created + linked to FB Page
+□ TikTok Business account created (@primhaul or @movescan)
+□ Pinterest Business account created
+□ Run: setup-orchestrator.js --brand primhaul
+
+PHASE 2 — API Access Setup
+──────────────────────────
+□ Meta Developer App created (or shared from Astra)
+□ Long-lived FB Page Access Token generated for PrimeHaul page
+□ Instagram Graph API enabled for PrimeHaul account
+□ TikTok Business API application submitted (1-2 week approval)
+□ TikTok API credentials received and tested
+□ Pinterest Developer App created at developers.pinterest.com
+□ Pinterest access token generated
+□ Pinterest boards created (run: setup-api-tokens.js --brand primhaul --create-boards)
+□ Airtable base created with Social Automation Runs + Leads tables
+
+PHASE 3 — n8n Configuration
+─────────────────────────────
+□ All env variables added (see: env-template-primhaul.env)
+□ Anthropic credential created in n8n (shared)
+□ Meta credential created for PrimeHaul page
+□ TikTok credential created in n8n
+□ Pinterest credential created in n8n
+□ Airtable credential created in n8n (shared)
+□ PrimeHaul workflow imported (when built)
+□ Test run: Sample lead triggers social posts + CRM log
+
+PHASE 4 — Content Assets
+─────────────────────────
+□ Profile photo uploaded across all platforms (PrimeHaul logo, 400x400px)
+□ Facebook cover photo uploaded (moving house imagery, 851x315px)
+□ Instagram profile photo uploaded (110x110px)
+□ TikTok profile photo + bio populated
+□ Pinterest profile photo + business description populated
+□ 5 initial Pinterest pins created across boards (moving tips content)
+□ First Facebook post: "Get your free moving estimate — AI analyses your rooms in seconds"
+□ TikTok content: First 3 short videos scripted (moving hacks theme)
+
+ESTIMATED TIME: ~4 hours total (excluding TikTok API approval)
+
+NOTE: TikTok Business API approval takes 1-2 weeks. Submit application
+in Phase 2 immediately, then continue with other platforms while waiting.

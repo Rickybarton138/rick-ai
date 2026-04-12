@@ -1,0 +1,710 @@
+{
+  "name": "CoachMentor — Complete Social Agent (3 Workflows)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "cronExpression", "expression": "0 7 * * 1" }]
+        }
+      },
+      "id": "cm_a01_cron",
+      "name": "A01 — Monday 07:00 Kick-off",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [240, 300],
+      "notes": "Fires every Monday at 07:00. Starts CoachMentor weekly content planning cycle."
+    },
+
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.search.brave.com/res/v1/web/search",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [{ "name": "Accept", "value": "application/json" }]
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            { "name": "q", "value": "grassroots football coaching tips UK {{ $now.format('MMMM yyyy') }}" },
+            { "name": "count", "value": "5" },
+            { "name": "country", "value": "gb" }
+          ]
+        }
+      },
+      "id": "cm_a02_search_coaching",
+      "name": "A02 — Search: Coaching Trends",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [460, 220],
+      "credentials": { "httpHeaderAuth": { "id": "brave_search_cred", "name": "Brave Search API" } },
+      "notes": "Searches for grassroots coaching news, FA announcements, and coaching method trends this month."
+    },
+
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.search.brave.com/res/v1/web/search",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [{ "name": "Accept", "value": "application/json" }]
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            { "name": "q", "value": "Verwood Town FC fixtures results {{ $now.format('MMMM yyyy') }}" },
+            { "name": "count", "value": "3" },
+            { "name": "country", "value": "gb" }
+          ]
+        }
+      },
+      "id": "cm_a03_search_verwood",
+      "name": "A03 — Search: Verwood FC Fixtures",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [460, 380],
+      "credentials": { "httpHeaderAuth": { "id": "brave_search_cred", "name": "Brave Search API" } },
+      "notes": "Fetches Verwood Town FC fixture and results data for match-week reactive content hooks."
+    },
+
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "coachingResults",
+              "value": "={{ $('A02 — Search: Coaching Trends').item.json.web?.results?.slice(0,3).map(r => r.title + ': ' + r.description).join(' | ') || 'No results' }}"
+            },
+            {
+              "name": "verwoodResults",
+              "value": "={{ $('A03 — Search: Verwood FC Fixtures').item.json.web?.results?.slice(0,2).map(r => r.title + ': ' + r.description).join(' | ') || 'No fixture data' }}"
+            },
+            {
+              "name": "weekCommencing",
+              "value": "={{ $now.startOf('week').toFormat('d MMMM yyyy') }}"
+            },
+            {
+              "name": "monthYear",
+              "value": "={{ $now.toFormat('MMMM yyyy') }}"
+            }
+          ]
+        }
+      },
+      "id": "cm_a04_merge",
+      "name": "A04 — Merge Search Results",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [680, 300],
+      "notes": "Combines search results into clean variables for the Claude prompt."
+    },
+
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "anthropic-version", "value": "2023-06-01" },
+            { "name": "content-type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"claude-sonnet-4-6\",\n  \"max_tokens\": 2000,\n  \"system\": \"You are a social media content creator for CoachMentor — an AI-powered football coaching education app for grassroots coaches in England (primarily FA Level 1/2, working with U7–U16 age groups). Brand voice: knowledgeable but peer-to-peer, encouraging, passionate about grassroots football. You are a fellow coach who loves the game.\\n\\nCRITICAL: ALL content must be 100% original. Never reproduce FA session plans, UEFA coaching materials, or any licensed coaching frameworks. Create original drills, tips, and coaching questions only.\\n\\nReturn ONLY valid JSON, no markdown or extra text.\",\n  \"messages\": [{\n    \"role\": \"user\",\n    \"content\": \"Generate CoachMentor's weekly social media content plan for week commencing {{ $json.weekCommencing }}.\\n\\nCurrent coaching news/trends:\\n{{ $json.coachingResults }}\\n\\nVerwood FC context:\\n{{ $json.verwoodResults }}\\n\\nGenerate this full week plan as JSON with this exact structure:\\n{\\n  \\\"weekTheme\\\": \\\"string — overarching coaching theme for the week\\\",\\n  \\\"tiktok\\\": [\\n    {\\\"day\\\": \\\"Tuesday\\\", \\\"hook\\\": \\\"first 3 seconds\\\", \\\"body\\\": \\\"10-35 second script\\\", \\\"cta\\\": \\\"final 5 seconds\\\", \\\"caption\\\": \\\"caption + hashtags\\\", \\\"originality\\\": 0.0},\\n    {\\\"day\\\": \\\"Thursday\\\", ...},\\n    {\\\"day\\\": \\\"Saturday\\\", ...}\\n  ],\\n  \\\"youtube_shorts\\\": [\\n    {\\\"day\\\": \\\"Wednesday\\\", \\\"title\\\": \\\"...\\\", \\\"script\\\": \\\"...\\\", \\\"description\\\": \\\"...\\\", \\\"tags\\\": [], \\\"originality\\\": 0.0},\\n    {\\\"day\\\": \\\"Friday\\\", ...},\\n    {\\\"day\\\": \\\"Sunday\\\", ...}\\n  ],\\n  \\\"instagram\\\": [\\n    {\\\"day\\\": \\\"Monday\\\", \\\"type\\\": \\\"reel|carousel|post\\\", \\\"caption\\\": \\\"...\\\", \\\"slides\\\": [], \\\"hashtags\\\": [], \\\"originality\\\": 0.0},\\n    {\\\"day\\\": \\\"Wednesday\\\", ...},\\n    {\\\"day\\\": \\\"Friday\\\", ...}\\n  ],\\n  \\\"x_threads\\\": [\\n    {\\\"day\\\": \\\"Monday\\\", \\\"tweets\\\": [\\\"tweet 1\\\", \\\"tweet 2\\\", \\\"tweet 3\\\"], \\\"originality\\\": 0.0},\\n    {\\\"day\\\": \\\"Thursday\\\", ...},\\n    {\\\"day\\\": \\\"Sunday\\\", \\\"type\\\": \\\"coaching_question\\\", \\\"tweets\\\": [...], \\\"originality\\\": 0.0}\\n  ],\\n  \\\"overallConfidence\\\": 0.0\\n}\"\n  }]\n}"
+      },
+      "id": "cm_a05_claude_plan",
+      "name": "A05 — Claude: Generate Weekly Content Plan",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [900, 300],
+      "credentials": { "httpHeaderAuth": { "id": "anthropic_api_cred", "name": "Anthropic API Key" } },
+      "notes": "Main Claude call. Generates full week content plan across TikTok, YouTube Shorts, Instagram, X. Returns structured JSON."
+    },
+
+    {
+      "parameters": {
+        "values": {
+          "object": [
+            {
+              "name": "contentPlan",
+              "value": "={{ JSON.parse($json.content[0].text) }}"
+            }
+          ],
+          "string": [
+            {
+              "name": "weekTheme",
+              "value": "={{ JSON.parse($json.content[0].text).weekTheme }}"
+            },
+            {
+              "name": "overallConfidence",
+              "value": "={{ JSON.parse($json.content[0].text).overallConfidence }}"
+            }
+          ]
+        }
+      },
+      "id": "cm_a06_parse",
+      "name": "A06 — Parse Claude Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [1120, 300],
+      "notes": "Extracts contentPlan object and overall confidence score from Claude's JSON response."
+    },
+
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": false, "leftValue": "", "typeValidation": "loose" },
+          "conditions": [
+            {
+              "id": "conf_check",
+              "leftValue": "={{ $json.overallConfidence }}",
+              "rightValue": 0.8,
+              "operator": { "type": "number", "operation": "gte" }
+            }
+          ],
+          "combinator": "all"
+        }
+      },
+      "id": "cm_a07_originality_gate",
+      "name": "A07 — Copyright / Originality Gate (≥0.80)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1340, 300],
+      "notes": "CRITICAL for CoachMentor: Routes based on Claude's originality/confidence score. ≥0.80 = auto-approved. <0.80 = Slack alert for human review before any publishing."
+    },
+
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://slack.com/api/chat.postMessage",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"channel\": \"{{ $env.SLACK_CHANNEL_COACH_REVIEW }}\",\n  \"text\": \"⚠️ CoachMentor content needs review — originality score {{ $json.overallConfidence }} (below 0.80 threshold)\",\n  \"blocks\": [\n    {\n      \"type\": \"section\",\n      \"text\": {\n        \"type\": \"mrkdwn\",\n        \"text\": \"*CoachMentor Weekly Plan — Review Required*\\nWeek theme: *{{ $json.weekTheme }}*\\nOriginality score: *{{ $json.overallConfidence }}* (below 0.80 threshold)\\n\\nOne or more content items may be too close to FA/UEFA licensed material. Please review and approve or regenerate.\"\n      }\n    },\n    {\n      \"type\": \"actions\",\n      \"elements\": [\n        { \"type\": \"button\", \"text\": { \"type\": \"plain_text\", \"text\": \"✅ Approve\" }, \"style\": \"primary\", \"action_id\": \"approve_cm_content\" },\n        { \"type\": \"button\", \"text\": { \"type\": \"plain_text\", \"text\": \"🔄 Regenerate\" }, \"style\": \"danger\", \"action_id\": \"regen_cm_content\" }\n      ]\n    }\n  ]\n}"
+      },
+      "id": "cm_a08_slack_review",
+      "name": "A08 — Slack: Content Needs Review",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1560, 440],
+      "notes": "Sends Slack alert when originality is below threshold. Blocks publishing until human approves."
+    },
+
+    {
+      "parameters": {
+        "operation": "create",
+        "base": { "__rl": true, "value": "={{ $env.AIRTABLE_BASE_ID_COACHMENTOR }}", "mode": "id" },
+        "table": { "__rl": true, "value": "Content Automation Runs", "mode": "name" },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "week_of": "={{ $now.startOf('week').toISO() }}",
+            "workflow_name": "Weekly Content Engine",
+            "week_theme": "={{ $json.weekTheme }}",
+            "overall_confidence": "={{ $json.overallConfidence }}",
+            "tiktok_count": "={{ $json.contentPlan.tiktok?.length || 0 }}",
+            "youtube_count": "={{ $json.contentPlan.youtube_shorts?.length || 0 }}",
+            "instagram_count": "={{ $json.contentPlan.instagram?.length || 0 }}",
+            "x_count": "={{ $json.contentPlan.x_threads?.length || 0 }}",
+            "status": "Approved",
+            "created_at": "={{ $now.toISO() }}"
+          }
+        }
+      },
+      "id": "cm_a09_log_airtable",
+      "name": "A09 — Log Run to CoachMentor CRM",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2,
+      "position": [1560, 300],
+      "credentials": { "airtableTokenApi": { "id": "airtable_cred", "name": "Airtable API Token" } },
+      "notes": "Logs approved weekly plan to Airtable CRM. Stores week theme, confidence, and content item counts."
+    },
+
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://open.tiktokapis.com/v2/post/publish/video/init/",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "Content-Type", "value": "application/json; charset=UTF-8" }] },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"post_info\": {\n    \"title\": \"{{ $json.contentPlan.tiktok[0].hook }}\",\n    \"description\": \"{{ $json.contentPlan.tiktok[0].caption }}\",\n    \"privacy_level\": \"PUBLIC_TO_EVERYONE\",\n    \"disable_duet\": false,\n    \"disable_stitch\": false,\n    \"disable_comment\": false,\n    \"auto_add_music\": true\n  },\n  \"source_info\": {\n    \"source\": \"FILE_UPLOAD\",\n    \"video_size\": 10485760,\n    \"chunk_size\": 10485760,\n    \"total_chunk_count\": 1\n  }\n}"
+      },
+      "id": "cm_a10_tiktok_queue",
+      "name": "A10 — Queue TikTok Scripts (Wait for Recording)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1780, 200],
+      "notes": "Queues TikTok content. Note: TikTok requires video file upload. Scripts are sent to Notion recording queue for Ricky to record at Verwood FC pitch. Videos then uploaded and published via this node."
+    },
+
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "Bearer {{ $env.YOUTUBE_ACCESS_TOKEN_COACHMENTOR }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"snippet\": {\n    \"title\": \"{{ $json.contentPlan.youtube_shorts[0].title }}\",\n    \"description\": \"{{ $json.contentPlan.youtube_shorts[0].description }}\\n\\n🎯 Try CoachMentor FREE for 7 days: https://coachmentor.co.uk/trial\\n\\n#GrassrootsFootball #FootballCoaching #CoachingTips #FACoach #YouthFootball\",\n    \"tags\": {{ JSON.stringify($json.contentPlan.youtube_shorts[0].tags) }},\n    \"categoryId\": \"17\",\n    \"defaultLanguage\": \"en-GB\"\n  },\n  \"status\": {\n    \"privacyStatus\": \"public\",\n    \"selfDeclaredMadeForKids\": false,\n    \"publishAt\": \"{{ $now.startOf('week').plus({days: 2}).set({hour: 8}).toISO() }}\"\n  }\n}"
+      },
+      "id": "cm_a11_youtube_schedule",
+      "name": "A11 — Schedule YouTube Short (Wednesday 08:00)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1780, 320],
+      "notes": "Schedules YouTube Short for Wednesday 8am. Uses YouTube Data API v3. Video must be pre-uploaded to Supabase/GCS and referenced here."
+    },
+
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v19.0/{{ $env.IG_ACCOUNT_ID_COACHMENTOR }}/media",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"caption\": \"{{ $json.contentPlan.instagram[0].caption }}\\n\\n{{ $json.contentPlan.instagram[0].hashtags.join(' ') }}\",\n  \"image_url\": \"{{ $env.COACHMENTOR_DEFAULT_IMAGE_URL }}\",\n  \"access_token\": \"{{ $env.IG_ACCESS_TOKEN_COACHMENTOR }}\"\n}"
+      },
+      "id": "cm_a12_ig_schedule",
+      "name": "A12 — Schedule IG Post (Monday 19:00)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1780, 440],
+      "notes": "Creates IG media container. Followed by publish step after 30s delay. Scheduled for Monday 7pm — coaches browsing after training."
+    },
+
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.twitter.com/2/tweets",
+        "authentication": "oAuth1Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"text\": \"{{ $json.contentPlan.x_threads[0].tweets[0] }}\"\n}"
+      },
+      "id": "cm_a13_x_thread",
+      "name": "A13 — Post X Thread (Monday 12:00)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1780, 560],
+      "credentials": { "oAuth1Api": { "id": "twitter_cred_coachmentor", "name": "CoachMentor X API" } },
+      "notes": "Posts first tweet of Monday thread. Subsequent tweets in thread use reply_to_tweet_id from this response. Monday 12pm = coaching community peak discussion window."
+    },
+
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "cronExpression", "expression": "0 */6 * * *" }]
+        }
+      },
+      "id": "cm_b01_poll_trigger",
+      "name": "B01 — Poll Engagement (Every 6h)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [240, 700],
+      "notes": "Runs every 6 hours. Checks TikTok and IG for posts crossing the 300-view / 3-comment engagement threshold."
+    },
+
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://open.tiktokapis.com/v2/video/list/?fields=id,title,view_count,comment_count,like_count,share_count",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "Authorization", "value": "Bearer {{ $env.TIKTOK_ACCESS_TOKEN_COACHMENTOR }}" }] }
+      },
+      "id": "cm_b02_tiktok_stats",
+      "name": "B02 — Fetch TikTok Video Stats",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [460, 640],
+      "notes": "Fetches recent video stats from TikTok API. Filters for videos crossing 300 views threshold."
+    },
+
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://graph.facebook.com/v19.0/{{ $env.IG_ACCOUNT_ID_COACHMENTOR }}/media?fields=id,caption,like_count,comments_count,reach&access_token={{ $env.IG_ACCESS_TOKEN_COACHMENTOR }}"
+      },
+      "id": "cm_b03_ig_stats",
+      "name": "B03 — Fetch IG Media Stats",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [460, 760],
+      "notes": "Fetches Instagram media stats. Looks for posts with 300+ reach or 3+ comments."
+    },
+
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "leftValue": "={{ $json.view_count >= 300 || $json.comment_count >= 3 }}",
+              "rightValue": true,
+              "operator": { "type": "boolean", "operation": "true" }
+            }
+          ]
+        }
+      },
+      "id": "cm_b04_threshold_check",
+      "name": "B04 — Threshold Check (300 views / 3 comments)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [680, 700],
+      "notes": "Routes only high-performing content for subscriber funnel. Below threshold content is ignored."
+    },
+
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "anthropic-version", "value": "2023-06-01" },
+            { "name": "content-type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"claude-sonnet-4-6\",\n  \"max_tokens\": 400,\n  \"system\": \"Classify social media engagement for CoachMentor, a football coaching app. Determine the likely intent of commenters based on comment text. Return JSON only.\",\n  \"messages\": [{\n    \"role\": \"user\",\n    \"content\": \"Classify this social media engagement for CoachMentor (football coaching app).\\n\\nPost caption: {{ $json.caption || $json.title }}\\nEngagement stats: {{ $json.view_count || $json.reach }} views, {{ $json.comment_count }} comments\\n\\nReturn JSON: {\\\"intent\\\": \\\"coach|parent|player|unknown\\\", \\\"confidence\\\": 0.0, \\\"dm_recommended\\\": true|false, \\\"dm_angle\\\": \\\"suggested approach for DM\\\"}\"\n  }]\n}"
+      },
+      "id": "cm_b05_claude_classify",
+      "name": "B05 — Claude: Classify Intent",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [900, 700],
+      "credentials": { "httpHeaderAuth": { "id": "anthropic_api_cred", "name": "Anthropic API Key" } },
+      "notes": "Claude classifies engagement intent: coach, parent, player, or unknown. Only coaches get DM offer."
+    },
+
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "leftValue": "={{ JSON.parse($json.content[0].text).intent }}",
+              "rightValue": "coach",
+              "operator": { "type": "string", "operation": "equals" }
+            }
+          ]
+        }
+      },
+      "id": "cm_b06_coach_gate",
+      "name": "B06 — Coach Intent Gate",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1120, 700],
+      "notes": "Only coach-intent users proceed to DM sequence. Parents and players are tagged for lookalike audience only."
+    },
+
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "anthropic-version", "value": "2023-06-01" },
+            { "name": "content-type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"claude-sonnet-4-6\",\n  \"max_tokens\": 200,\n  \"system\": \"Write a friendly, natural DM for CoachMentor — a football coaching app. Sound like a fellow coach, not a brand. Max 3 sentences. Never use exclamation marks more than once. Offer a 7-day free trial naturally.\",\n  \"messages\": [{\n    \"role\": \"user\",\n    \"content\": \"Write a short DM to send to a grassroots football coach who engaged with our content.\\n\\nContent they engaged with: {{ $json.caption || $json.title }}\\nAngle: {{ JSON.parse($('B05 — Claude: Classify Intent').item.json.content[0].text).dm_angle }}\\n\\nThe DM should:\\n1. Reference what they engaged with naturally\\n2. Offer a 7-day free trial of CoachMentor\\n3. Include link: coachmentor.co.uk/trial\\n\\nReturn plain text DM only. No quotes. Max 280 characters.\"\n  }]\n}"
+      },
+      "id": "cm_b07_claude_dm",
+      "name": "B07 — Claude: Generate Personalised DM",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1340, 700],
+      "credentials": { "httpHeaderAuth": { "id": "anthropic_api_cred", "name": "Anthropic API Key" } },
+      "notes": "Generates a personalised, context-aware DM referencing the specific content the person engaged with. Sounds like a real coach, not marketing copy."
+    },
+
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.twitter.com/2/dm_conversations/with/:participant_id/messages",
+        "authentication": "oAuth1Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"text\": \"{{ $json.content[0].text }}\"\n}"
+      },
+      "id": "cm_b08_send_dm",
+      "name": "B08 — Send DM (X/Twitter or IG via ManyChat)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1560, 700],
+      "credentials": { "oAuth1Api": { "id": "twitter_cred_coachmentor", "name": "CoachMentor X API" } },
+      "notes": "Sends DM via X API v2 for X engagements. For IG engagements, this calls ManyChat API to trigger the trial offer flow. Switch URL based on platform variable."
+    },
+
+    {
+      "parameters": {
+        "amount": 48,
+        "unit": "hours"
+      },
+      "id": "cm_b09_wait_48h",
+      "name": "B09 — Wait 48h (Conversion Check)",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [1780, 700],
+      "notes": "Waits 48 hours after DM send before checking if trial was started. Maximum 1 follow-up DM if no conversion."
+    },
+
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.airtable.com/v0/{{ $env.AIRTABLE_BASE_ID_COACHMENTOR }}/Subscribers?filterByFormula=AND({platform_user_id}='{{ $json.userId }}',{trial_started}=1)",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "Authorization", "value": "Bearer {{ $env.AIRTABLE_API_TOKEN }}" }] }
+      },
+      "id": "cm_b10_check_trial",
+      "name": "B10 — Check Trial Started in CRM",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [2000, 700],
+      "notes": "Checks Airtable Subscribers table for trial_started flag. CoachMentor app backend writes this record when a trial begins."
+    },
+
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "cronExpression", "expression": "0 15 * * 5" }]
+        }
+      },
+      "id": "cm_c01_friday_trigger",
+      "name": "C01 — Friday 15:00 Fixture Check",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [240, 1100],
+      "notes": "Fires every Friday at 3pm. Checks Verwood FC fixture list for weekend and scans for FA/grassroots events."
+    },
+
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.search.brave.com/res/v1/web/search",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "Accept", "value": "application/json" }] },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            { "name": "q", "value": "Verwood Town FC Saturday fixture {{ $now.plus({days:1}).toFormat('d MMMM yyyy') }}" },
+            { "name": "count", "value": "3" }
+          ]
+        }
+      },
+      "id": "cm_c02_fixture_search",
+      "name": "C02 — Search: Weekend Fixture",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [460, 1100],
+      "credentials": { "httpHeaderAuth": { "id": "brave_search_cred", "name": "Brave Search API" } },
+      "notes": "Searches for this weekend's Verwood Town FC fixture. Used as context for reactive match-day content."
+    },
+
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "anthropic-version", "value": "2023-06-01" },
+            { "name": "content-type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"claude-sonnet-4-6\",\n  \"max_tokens\": 1200,\n  \"system\": \"You are a social media content creator for CoachMentor, a grassroots football coaching app. Create match-week reactive content. All content must be 100% original — never reproduce FA session plans or licensed materials. Return JSON only.\",\n  \"messages\": [{\n    \"role\": \"user\",\n    \"content\": \"Generate match-day weekend content for CoachMentor.\\n\\nVerwood FC context: {{ $json.web?.results?.[0]?.description || 'Weekend fixture upcoming' }}\\n\\nGenerate: {\\n  \\\"saturday_tiktok\\\": {\\\"time\\\": \\\"07:30\\\", \\\"hook\\\": \\\"...\\\", \\\"body\\\": \\\"...\\\", \\\"cta\\\": \\\"...\\\", \\\"originality\\\": 0.0},\\n  \\\"saturday_x\\\": {\\\"time\\\": \\\"08:00\\\", \\\"tweets\\\": [\\\"tweet1\\\", \\\"tweet2\\\", \\\"tweet3\\\"], \\\"originality\\\": 0.0},\\n  \\\"saturday_ig_story\\\": {\\\"time\\\": \\\"09:00\\\", \\\"text\\\": \\\"coaching question sticker text\\\", \\\"originality\\\": 0.0},\\n  \\\"sunday_x_thread\\\": {\\\"time\\\": \\\"18:00\\\", \\\"type\\\": \\\"coaching_question\\\", \\\"tweets\\\": [\\\"question tweet\\\", \\\"context tweet\\\", \\\"cta tweet\\\"], \\\"originality\\\": 0.0}\\n}\"\n  }]\n}"
+      },
+      "id": "cm_c03_claude_matchday",
+      "name": "C03 — Claude: Match-Day Content",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [680, 1100],
+      "credentials": { "httpHeaderAuth": { "id": "anthropic_api_cred", "name": "Anthropic API Key" } },
+      "notes": "Generates Sat 7:30am TikTok, 8am X thread, 9am IG story question, and Sun 6pm coaching question thread."
+    },
+
+    {
+      "parameters": {
+        "resumeType": "specificTime",
+        "resumeTime": "={{ $now.startOf('week').plus({days:5}).set({hour:7,minute:30}).toISO() }}"
+      },
+      "id": "cm_c04_wait_saturday",
+      "name": "C04 — Wait Until Saturday 07:30",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [900, 1100],
+      "notes": "Holds until Saturday 7:30am — optimal time to catch coaches as they prepare for morning kickoffs."
+    },
+
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.twitter.com/2/tweets",
+        "authentication": "oAuth1Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"text\": \"{{ JSON.parse($('C03 — Claude: Match-Day Content').item.json.content[0].text).saturday_x.tweets[0] }}\"\n}"
+      },
+      "id": "cm_c05_saturday_x",
+      "name": "C05 — Post Saturday X Thread (08:00)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1120, 1100],
+      "credentials": { "oAuth1Api": { "id": "twitter_cred_coachmentor", "name": "CoachMentor X API" } },
+      "notes": "Posts Saturday morning tactical tip thread. Times to land in coaches' feeds before they leave for the pitch."
+    },
+
+    {
+      "parameters": {
+        "resumeType": "specificTime",
+        "resumeTime": "={{ $now.startOf('week').plus({days:6}).set({hour:18,minute:0}).toISO() }}"
+      },
+      "id": "cm_c06_wait_sunday",
+      "name": "C06 — Wait Until Sunday 18:00",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [1340, 1100],
+      "notes": "Holds until Sunday 6pm — coaches reflecting on the day, highest engagement window for coaching discussion on X."
+    },
+
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.twitter.com/2/tweets",
+        "authentication": "oAuth1Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"text\": \"{{ JSON.parse($('C03 — Claude: Match-Day Content').item.json.content[0].text).sunday_x_thread.tweets[0] }}\"\n}"
+      },
+      "id": "cm_c07_sunday_question",
+      "name": "C07 — Post Sunday Coaching Question (18:00)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1560, 1100],
+      "credentials": { "oAuth1Api": { "id": "twitter_cred_coachmentor", "name": "CoachMentor X API" } },
+      "notes": "Posts the weekly 'Coaching Question of the Week' thread Sunday 6pm. Replies from coaches feed into B01 subscriber funnel via engagement monitoring."
+    }
+
+  ],
+
+  "connections": {
+    "A01 — Monday 07:00 Kick-off": {
+      "main": [[
+        { "node": "A02 — Search: Coaching Trends", "type": "main", "index": 0 },
+        { "node": "A03 — Search: Verwood FC Fixtures", "type": "main", "index": 0 }
+      ]]
+    },
+    "A02 — Search: Coaching Trends": { "main": [[{ "node": "A04 — Merge Search Results", "type": "main", "index": 0 }]] },
+    "A03 — Search: Verwood FC Fixtures": { "main": [[{ "node": "A04 — Merge Search Results", "type": "main", "index": 0 }]] },
+    "A04 — Merge Search Results": { "main": [[{ "node": "A05 — Claude: Generate Weekly Content Plan", "type": "main", "index": 0 }]] },
+    "A05 — Claude: Generate Weekly Content Plan": { "main": [[{ "node": "A06 — Parse Claude Response", "type": "main", "index": 0 }]] },
+    "A06 — Parse Claude Response": { "main": [[{ "node": "A07 — Copyright / Originality Gate (≥0.80)", "type": "main", "index": 0 }]] },
+    "A07 — Copyright / Originality Gate (≥0.80)": {
+      "main": [
+        [{ "node": "A09 — Log Run to CoachMentor CRM", "type": "main", "index": 0 }],
+        [{ "node": "A08 — Slack: Content Needs Review", "type": "main", "index": 0 }]
+      ]
+    },
+    "A09 — Log Run to CoachMentor CRM": {
+      "main": [[
+        { "node": "A10 — Queue TikTok Scripts (Wait for Recording)", "type": "main", "index": 0 },
+        { "node": "A11 — Schedule YouTube Short (Wednesday 08:00)", "type": "main", "index": 0 },
+        { "node": "A12 — Schedule IG Post (Monday 19:00)", "type": "main", "index": 0 },
+        { "node": "A13 — Post X Thread (Monday 12:00)", "type": "main", "index": 0 }
+      ]]
+    },
+    "B01 — Poll Engagement (Every 6h)": {
+      "main": [[
+        { "node": "B02 — Fetch TikTok Video Stats", "type": "main", "index": 0 },
+        { "node": "B03 — Fetch IG Media Stats", "type": "main", "index": 0 }
+      ]]
+    },
+    "B02 — Fetch TikTok Video Stats": { "main": [[{ "node": "B04 — Threshold Check (300 views / 3 comments)", "type": "main", "index": 0 }]] },
+    "B03 — Fetch IG Media Stats": { "main": [[{ "node": "B04 — Threshold Check (300 views / 3 comments)", "type": "main", "index": 0 }]] },
+    "B04 — Threshold Check (300 views / 3 comments)": { "main": [[{ "node": "B05 — Claude: Classify Intent", "type": "main", "index": 0 }]] },
+    "B05 — Claude: Classify Intent": { "main": [[{ "node": "B06 — Coach Intent Gate", "type": "main", "index": 0 }]] },
+    "B06 — Coach Intent Gate": { "main": [[{ "node": "B07 — Claude: Generate Personalised DM", "type": "main", "index": 0 }]] },
+    "B07 — Claude: Generate Personalised DM": { "main": [[{ "node": "B08 — Send DM (X/Twitter or IG via ManyChat)", "type": "main", "index": 0 }]] },
+    "B08 — Send DM (X/Twitter or IG via ManyChat)": { "main": [[{ "node": "B09 — Wait 48h (Conversion Check)", "type": "main", "index": 0 }]] },
+    "B09 — Wait 48h (Conversion Check)": { "main": [[{ "node": "B10 — Check Trial Started in CRM", "type": "main", "index": 0 }]] },
+    "C01 — Friday 15:00 Fixture Check": { "main": [[{ "node": "C02 — Search: Weekend Fixture", "type": "main", "index": 0 }]] },
+    "C02 — Search: Weekend Fixture": { "main": [[{ "node": "C03 — Claude: Match-Day Content", "type": "main", "index": 0 }]] },
+    "C03 — Claude: Match-Day Content": { "main": [[{ "node": "C04 — Wait Until Saturday 07:30", "type": "main", "index": 0 }]] },
+    "C04 — Wait Until Saturday 07:30": { "main": [[{ "node": "C05 — Post Saturday X Thread (08:00)", "type": "main", "index": 0 }]] },
+    "C05 — Post Saturday X Thread (08:00)": { "main": [[{ "node": "C06 — Wait Until Sunday 18:00", "type": "main", "index": 0 }]] },
+    "C06 — Wait Until Sunday 18:00": { "main": [[{ "node": "C07 — Post Sunday Coaching Question (18:00)", "type": "main", "index": 0 }]] }
+  },
+
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "errorWorkflow": "coachmentor-error-handler"
+  },
+  "tags": ["coachmentor", "social-media", "football", "coaching", "claude-api"],
+
+  "_readme": {
+    "workflow_name": "CoachMentor — Complete Social Agent",
+    "version": "1.0",
+    "created_for": "Ricky — CoachMentor / coachmentor.co.uk",
+    "workflows_included": [
+      "A: Weekly Content Engine (Mon 07:00 cron)",
+      "B: Subscriber Funnel (Every 6h engagement poll)",
+      "C: Fixture Hooks (Fri 15:00 cron)"
+    ],
+    "required_credentials": [
+      "Brave Search API — httpHeaderAuth (x-subscription-token header)",
+      "Anthropic API Key — httpHeaderAuth (x-api-key header)",
+      "TikTok Access Token — httpHeaderAuth",
+      "YouTube OAuth — Google OAuth2",
+      "Instagram/Facebook — FB Graph API token",
+      "X/Twitter — oAuth1Api",
+      "Airtable API Token",
+      "Slack Bot Token (optional, for review alerts)"
+    ],
+    "required_env_vars": [
+      "AIRTABLE_BASE_ID_COACHMENTOR",
+      "IG_ACCOUNT_ID_COACHMENTOR",
+      "IG_ACCESS_TOKEN_COACHMENTOR",
+      "TIKTOK_ACCESS_TOKEN_COACHMENTOR",
+      "YOUTUBE_ACCESS_TOKEN_COACHMENTOR",
+      "COACHMENTOR_DEFAULT_IMAGE_URL",
+      "SLACK_CHANNEL_COACH_REVIEW",
+      "AIRTABLE_API_TOKEN"
+    ],
+    "copyright_note": "The originality gate (Node A07) is critical. All content must score ≥0.80 before publishing. This protects against accidentally reproducing FA or UEFA licensed coaching materials."
+  }
+}

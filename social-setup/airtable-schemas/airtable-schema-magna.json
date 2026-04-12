@@ -1,0 +1,95 @@
+{
+  "bases": [
+    {
+      "name": "Magna Park CRM",
+      "tables": [
+        {
+          "name": "Social Automation Runs",
+          "description": "Logs every n8n workflow execution for Magna Park social posts",
+          "fields": [
+            "run_id (Text) — Unique workflow run ID",
+            "content_type (Single select: Availability Update/Seasonal Campaign/Testimonial/Tips & Guides/Cross-Promo Astra)",
+            "platform (Single select: Facebook/Instagram/LinkedIn/Google My Business)",
+            "post_content (Long text)",
+            "image_url (URL) — Generated or stock image used",
+            "unit_type_featured (Single select: 10ft/20ft/40ft/Custom)",
+            "location_targeting (Text) — Postcode areas targeted (BH/DT/SP)",
+            "seasonal_tag (Single select: New Year Declutter/Spring Clean/Summer Holiday/Student Storage/Christmas/None)",
+            "confidence_score (Number) — Claude confidence 0-1",
+            "fb_post_id (Text)",
+            "ig_media_id (Text)",
+            "linkedin_post_id (Text)",
+            "gmb_post_id (Text)",
+            "published_at (Date & time)",
+            "impressions_48h (Number)",
+            "engagements_48h (Number)",
+            "link_clicks_48h (Number)",
+            "enquiries_generated (Number)",
+            "workflow_version (Text)"
+          ]
+        },
+        {
+          "name": "Unit Availability",
+          "description": "Current container unit inventory and availability status",
+          "fields": [
+            "unit_id (Text) — Unique unit identifier",
+            "unit_type (Single select: 10ft/20ft/40ft/Custom)",
+            "status (Single select: Available/Reserved/Occupied/Maintenance)",
+            "monthly_rate (Currency) — GBP per month",
+            "tenant_name (Text)",
+            "tenant_email (Email)",
+            "tenant_phone (Phone)",
+            "lease_start (Date)",
+            "lease_end (Date)",
+            "notice_given (Checkbox)",
+            "notice_date (Date)",
+            "use_type (Single select: Trade/Personal/Student/Seasonal)",
+            "notes (Long text)"
+          ]
+        },
+        {
+          "name": "Enquiries",
+          "description": "All storage enquiries from social, website, and phone",
+          "fields": [
+            "enquiry_id (Text)",
+            "source (Single select: Facebook/Instagram/LinkedIn/Google My Business/Website/Phone/Astra Referral)",
+            "status (Single select: New/Contacted/Site Visit Booked/Quoted/Won/Lost)",
+            "contact_name (Text)",
+            "contact_email (Email)",
+            "contact_phone (Phone)",
+            "unit_type_requested (Single select: 10ft/20ft/40ft/Any)",
+            "use_type (Single select: Trade/Personal/Student/Seasonal)",
+            "duration_estimate (Single select: 1-3 months/3-6 months/6-12 months/12+ months/Unsure)",
+            "postcode (Text) — Customer's postcode",
+            "move_date (Date) — When they need storage from",
+            "astra_referral (Checkbox) — Referred by Astra Removals",
+            "social_post_id (Text) — Which social post drove the enquiry",
+            "site_visit_date (Date)",
+            "quoted_rate (Currency)",
+            "created_at (Date & time)",
+            "notes (Long text)"
+          ]
+        },
+        {
+          "name": "Seasonal Campaigns",
+          "description": "Planned and executed seasonal marketing campaigns",
+          "fields": [
+            "campaign_name (Text)",
+            "season (Single select: New Year Declutter/Spring Clean/Summer Holiday/Student Storage/Christmas/Ongoing)",
+            "start_date (Date)",
+            "end_date (Date)",
+            "status (Single select: Planning/Active/Complete)",
+            "platforms (Multiple select: Facebook/Instagram/LinkedIn/Google My Business)",
+            "target_postcodes (Text) — BH, DT, SP areas",
+            "offer_text (Text) — e.g. 'First month half price'",
+            "total_posts (Number)",
+            "total_impressions (Number)",
+            "total_enquiries (Number)",
+            "conversion_rate (Number) — Percentage",
+            "notes (Long text)"
+          ]
+        }
+      ]
+    }
+  ]
+}

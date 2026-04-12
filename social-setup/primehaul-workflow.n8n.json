@@ -1,0 +1,562 @@
+{
+  "name": "Prime Haul — MoveScan Social Proof Engine",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "movescan-complete",
+        "authentication": "headerAuth",
+        "options": {
+          "responseMode": "responseNode"
+        }
+      },
+      "id": "ph_01_webhook",
+      "name": "01 — MoveScan Survey Complete Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "primhaul-movescan-complete",
+      "notes": "Receives POST from MoveScan when a homeowner completes a survey and gets matched with removal companies. Payload: survey_id, customer_first_name, origin_postcode, dest_postcode, move_date, bedrooms, quotes_sent, matched_companies[], cbm_volume"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{ \"status\": \"received\", \"message\": \"Social proof generation started\" }",
+        "options": {}
+      },
+      "id": "ph_02_respond",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [240, 460],
+      "notes": "Immediately returns 200 so MoveScan doesn't time out. Processing continues asynchronously."
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "surveyId",
+              "value": "={{ $json.body.survey_id }}"
+            },
+            {
+              "name": "customerFirstName",
+              "value": "={{ $json.body.customer_first_name }}"
+            },
+            {
+              "name": "originPostcode",
+              "value": "={{ $json.body.origin_postcode.toUpperCase() }}"
+            },
+            {
+              "name": "destPostcode",
+              "value": "={{ $json.body.dest_postcode.toUpperCase() }}"
+            },
+            {
+              "name": "originArea",
+              "value": "={{ $json.body.origin_postcode.split(' ')[0].toUpperCase() }}"
+            },
+            {
+              "name": "destArea",
+              "value": "={{ $json.body.dest_postcode.split(' ')[0].toUpperCase() }}"
+            },
+            {
+              "name": "moveDateFormatted",
+              "value": "={{ DateTime.fromISO($json.body.move_date).toFormat('d MMMM yyyy') }}"
+            },
+            {
+              "name": "moveDate",
+              "value": "={{ $json.body.move_date }}"
+            },
+            {
+              "name": "volumeCategory",
+              "value": "={{ $json.body.bedrooms <= 2 ? 'small' : $json.body.bedrooms <= 4 ? 'medium' : 'large' }}"
+            },
+            {
+              "name": "bedrooms",
+              "value": "={{ $json.body.bedrooms }}"
+            },
+            {
+              "name": "quotesSent",
+              "value": "={{ $json.body.quotes_sent }}"
+            },
+            {
+              "name": "matchedCompanies",
+              "value": "={{ $json.body.matched_companies?.join(', ') || 'local removal companies' }}"
+            },
+            {
+              "name": "cbmVolume",
+              "value": "={{ $json.body.cbm_volume || '' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ph_02_extract",
+      "name": "02 — Extract & Format Survey Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [460, 300],
+      "notes": "Maps raw webhook payload to clean named variables for downstream nodes. Normalises postcodes, formats dates, categorises volume."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            },
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"claude-sonnet-4-6\",\n  \"max_tokens\": 1200,\n  \"system\": \"You are a social media manager for Prime Haul (primhaul.co.uk), a removal leads marketplace powered by MoveScan technology. You write social proof content that shows real people getting instant removal quotes. Tone: helpful, modern, consumer-friendly. Never mention surnames or full addresses. Your goal is to make moving house feel easy and show how fast MoveScan works. Always include a CTA to try MoveScan.\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": \"Generate social media posts celebrating a successful MoveScan survey completion.\\n\\nSurvey details:\\n- Moving from: {{ $json.originArea }} area\\n- Moving to: {{ $json.destArea }} area\\n- Home size: {{ $json.volumeCategory }} ({{ $json.bedrooms }} bedroom{{ $json.bedrooms > 1 ? 's' : '' }})\\n- Move date: {{ $json.moveDateFormatted }}\\n- Quotes sent to: {{ $json.quotesSent }} removal companies\\n- Matched with: {{ $json.matchedCompanies }}\\n\\nGenerate 4 platform-specific posts as JSON:\\n\\n1. Facebook post: 80-120 words, social proof angle (\\\"Another happy mover just got X quotes in 90 seconds!\\\"), warm and relatable, include emoji, end with CTA to primhaul.co.uk\\n2. Instagram caption: 50-80 words, punchier, include 5-7 hashtags (#PrimeHaul #MoveScan #MovingHouse #RemovalQuotes #UKMoving + location-specific)\\n3. Pinterest pin description: 40-60 words, SEO-optimised, helpful moving tip angle that links back to getting quotes\\n4. TikTok caption: 20-40 words, Gen-Z/millennial friendly, casual tone, trending hashtag style, include #MovingHouseTips #MoveScan\\n\\nReturn ONLY valid JSON:\\n{\\\"fb_post\\\": \\\"...\\\", \\\"ig_post\\\": \\\"...\\\", \\\"pinterest_desc\\\": \\\"...\\\", \\\"tiktok_caption\\\": \\\"...\\\", \\\"confidence\\\": 0.0}\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "id": "ph_04_claude",
+      "name": "03 — Claude: Generate Social Proof Content",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [680, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "anthropic_api_cred",
+          "name": "Anthropic API Key"
+        }
+      },
+      "notes": "Calls Claude claude-sonnet-4-6 with structured prompt. Returns JSON with fb_post, ig_post, pinterest_desc, tiktok_caption, and confidence score. Set ANTHROPIC_API_KEY in n8n credentials."
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "fb_post",
+              "value": "={{ JSON.parse($json.content[0].text).fb_post }}"
+            },
+            {
+              "name": "ig_post",
+              "value": "={{ JSON.parse($json.content[0].text).ig_post }}"
+            },
+            {
+              "name": "pinterest_desc",
+              "value": "={{ JSON.parse($json.content[0].text).pinterest_desc }}"
+            },
+            {
+              "name": "tiktok_caption",
+              "value": "={{ JSON.parse($json.content[0].text).tiktok_caption }}"
+            }
+          ],
+          "number": [
+            {
+              "name": "confidence",
+              "value": "={{ JSON.parse($json.content[0].text).confidence }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ph_05_parse",
+      "name": "Parse Claude Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [900, 300],
+      "notes": "Extracts fb_post, ig_post, pinterest_desc, tiktok_caption, and confidence score from Claude's JSON response."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "condition_confidence",
+              "leftValue": "={{ $json.confidence }}",
+              "rightValue": 0.75,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "all"
+        },
+        "options": {}
+      },
+      "id": "ph_06_gate",
+      "name": "04 — Confidence Score Gate (>= 0.75)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1120, 300],
+      "notes": "Routes based on Claude's confidence. >= 0.75 = auto-publish. < 0.75 = Slack review required."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://slack.com/api/chat.postMessage",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"channel\": \"{{ $env.SLACK_CHANNEL_SOCIAL_REVIEW }}\",\n  \"text\": \"Prime Haul social post needs review (confidence: {{ $json.confidence }})\",\n  \"blocks\": [\n    {\n      \"type\": \"section\",\n      \"text\": {\n        \"type\": \"mrkdwn\",\n        \"text\": \"*Prime Haul / MoveScan — Social Post Review Required*\\nConfidence score: *{{ $json.confidence }}* (below 0.75 threshold)\\nSurvey: {{ $json.surveyId }}\\n\\n*Facebook:*\\n{{ $json.fb_post }}\\n\\n*Instagram:*\\n{{ $json.ig_post }}\\n\\n*Pinterest:*\\n{{ $json.pinterest_desc }}\\n\\n*TikTok:*\\n{{ $json.tiktok_caption }}\"\n      }\n    },\n    {\n      \"type\": \"actions\",\n      \"elements\": [\n        {\n          \"type\": \"button\",\n          \"text\": { \"type\": \"plain_text\", \"text\": \"Approve & Publish\" },\n          \"style\": \"primary\",\n          \"action_id\": \"approve_ph_post\",\n          \"value\": \"{{ $json.surveyId }}\"\n        },\n        {\n          \"type\": \"button\",\n          \"text\": { \"type\": \"plain_text\", \"text\": \"Reject\" },\n          \"style\": \"danger\",\n          \"action_id\": \"reject_ph_post\"\n        }\n      ]\n    }\n  ]\n}",
+        "options": {}
+      },
+      "id": "ph_07_slack",
+      "name": "Slack: Human Review Required",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1340, 440],
+      "notes": "Sends post draft to Slack #social-review channel with approve/reject buttons. Requires Slack bot token in credentials."
+    },
+    {
+      "parameters": {
+        "amount": 1,
+        "unit": "hours",
+        "resumeType": "specificTime",
+        "resumeTime": "={{ \n  (() => {\n    const now = DateTime.now().setZone('Europe/London');\n    const day = now.weekday;\n    const hour = now.hour;\n    \n    // Weekend leads → Monday 8am\n    if (day >= 6) {\n      const mon = now.plus({ days: (8 - day) });\n      return mon.set({ hour: 8, minute: 0, second: 0 }).toISO();\n    }\n    \n    // Weekday before 6pm → same day 7pm (evening scroll time)\n    if (hour < 18) {\n      return now.set({ hour: 19, minute: 0, second: 0 }).toISO();\n    }\n    \n    // Weekday after 6pm → next morning 8am\n    const nextDay = now.plus({ days: 1 });\n    return nextDay.set({ hour: 8, minute: 0, second: 0 }).toISO();\n  })()\n}}"
+      },
+      "id": "ph_08_scheduler",
+      "name": "05 — Smart Scheduler (Optimal Time)",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [1340, 300],
+      "notes": "Waits until optimal publishing time. Weekday evening 7pm for same-day leads. Monday 8am for weekend leads. Uses luxon DateTime with Europe/London timezone."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v19.0/{{ $env.FB_PAGE_ID_PRIMHAUL }}/feed",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"message\": \"{{ $json.fb_post }}\",\n  \"access_token\": \"{{ $env.FB_PAGE_ACCESS_TOKEN_PRIMHAUL }}\"\n}",
+        "options": {}
+      },
+      "id": "ph_09_fb",
+      "name": "06a — Publish to Facebook",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1560, 180],
+      "notes": "Posts to Prime Haul Facebook page via Graph API. Set FB_PAGE_ID_PRIMHAUL and FB_PAGE_ACCESS_TOKEN_PRIMHAUL as n8n environment variables."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v19.0/{{ $env.IG_ACCOUNT_ID_PRIMHAUL }}/media",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"caption\": \"{{ $json.ig_post }}\",\n  \"image_url\": \"{{ $env.PRIMHAUL_DEFAULT_IMAGE_URL }}\",\n  \"access_token\": \"{{ $env.IG_ACCESS_TOKEN_PRIMHAUL }}\"\n}",
+        "options": {}
+      },
+      "id": "ph_10_ig_container",
+      "name": "06b — Create IG Media Container",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1560, 300],
+      "notes": "Step 1 of 2-step Instagram publish. Creates media container. Requires a default branded image URL (PRIMHAUL_DEFAULT_IMAGE_URL env var). Set IG_ACCOUNT_ID_PRIMHAUL and IG_ACCESS_TOKEN_PRIMHAUL."
+    },
+    {
+      "parameters": {
+        "amount": 30,
+        "unit": "seconds"
+      },
+      "id": "ph_11_ig_wait",
+      "name": "Wait 30s (IG Processing)",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [1780, 300],
+      "notes": "Instagram requires a brief wait after container creation before publishing."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v19.0/{{ $env.IG_ACCOUNT_ID_PRIMHAUL }}/media_publish",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"creation_id\": \"{{ $json.id }}\",\n  \"access_token\": \"{{ $env.IG_ACCESS_TOKEN_PRIMHAUL }}\"\n}",
+        "options": {}
+      },
+      "id": "ph_12_ig_publish",
+      "name": "06c — Publish IG Post",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [2000, 300],
+      "notes": "Step 2: publishes the IG media container. Returns ig_media_id for logging."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.pinterest.com/v5/pins",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"board_id\": \"{{ $env.PINTEREST_BOARD_ID_PRIMHAUL_TIPS }}\",\n  \"title\": \"Moving from {{ $json.originArea }} to {{ $json.destArea }} — Get instant quotes\",\n  \"description\": \"{{ $json.pinterest_desc }}\",\n  \"link\": \"https://primhaul.co.uk?utm_source=pinterest&utm_medium=social&utm_campaign=movescan_proof\",\n  \"media_source\": {\n    \"source_type\": \"image_url\",\n    \"url\": \"{{ $env.PRIMHAUL_PINTEREST_IMAGE_URL }}\"\n  }\n}",
+        "options": {}
+      },
+      "id": "ph_13_pinterest",
+      "name": "06d — Create Pinterest Pin",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1560, 420],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "pinterest_cred_primhaul",
+          "name": "Pinterest API Token"
+        }
+      },
+      "notes": "Creates a pin on the Prime Haul 'Moving House Tips' board via Pinterest API v5. Set PINTEREST_BOARD_ID_PRIMHAUL_TIPS and PRIMHAUL_PINTEREST_IMAGE_URL env vars. Auth via Bearer token in httpHeaderAuth credential."
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "tiktok_status",
+              "value": "PLACEHOLDER — TikTok API approval pending. Caption saved for manual posting."
+            },
+            {
+              "name": "tiktok_caption_saved",
+              "value": "={{ $json.tiktok_caption }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ph_14_tiktok_placeholder",
+      "name": "06e — TikTok Placeholder (API Pending)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [1560, 540],
+      "notes": "PLACEHOLDER NODE: TikTok Business API requires app approval (1-2 week process). Once approved, replace this with TikTok Content Posting API call (POST https://open.tiktokapis.com/v2/post/publish/content/init/). For now, the caption is saved to Airtable for manual TikTok posting."
+    },
+    {
+      "parameters": {
+        "mode": "waitForAll",
+        "numberInputs": 4,
+        "options": {}
+      },
+      "id": "ph_16_merge",
+      "name": "Merge All Publish Results",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [2220, 360],
+      "notes": "Waits for all 4 publishing branches (Facebook, Instagram, Pinterest, TikTok) to complete before passing a single combined item to the Airtable log node. Prevents duplicate Airtable rows."
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "{{ $env.AIRTABLE_BASE_ID_PRIMHAUL }}",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "Social Automation Runs",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "survey_id": "={{ $json.surveyId }}",
+            "customer_first_name": "={{ $json.customerFirstName }}",
+            "origin_postcode": "={{ $json.originPostcode }}",
+            "dest_postcode": "={{ $json.destPostcode }}",
+            "volume_category": "={{ $json.volumeCategory }}",
+            "bedrooms": "={{ $json.bedrooms }}",
+            "move_date": "={{ $json.moveDate }}",
+            "quotes_sent": "={{ $json.quotesSent }}",
+            "matched_companies": "={{ $json.matchedCompanies }}",
+            "confidence_score": "={{ $json.confidence }}",
+            "fb_post_content": "={{ $json.fb_post }}",
+            "ig_post_content": "={{ $json.ig_post }}",
+            "pinterest_desc": "={{ $json.pinterest_desc }}",
+            "tiktok_caption": "={{ $json.tiktok_caption }}",
+            "fb_post_id": "={{ $json.fb_post_id || '' }}",
+            "ig_media_id": "={{ $json.ig_media_id || '' }}",
+            "pinterest_pin_id": "={{ $json.pinterest_pin_id || '' }}",
+            "tiktok_status": "={{ $json.tiktok_status || 'API pending' }}",
+            "published_at": "={{ DateTime.now().toISO() }}",
+            "run_id": "={{ $json.surveyId }}_{{ $now.toMillis() }}",
+            "workflow_version": "1.0"
+          }
+        },
+        "options": {}
+      },
+      "id": "ph_15_airtable",
+      "name": "07 — Log Run to Prime Haul CRM",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2,
+      "position": [2420, 360],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "airtable_cred",
+          "name": "Airtable API Token"
+        }
+      },
+      "notes": "Logs every workflow run to Airtable Prime Haul CRM. Set AIRTABLE_BASE_ID_PRIMHAUL env var. Create 'Social Automation Runs' table with matching field names."
+    }
+  ],
+  "connections": {
+    "01 — MoveScan Survey Complete Webhook": {
+      "main": [
+        [
+          { "node": "Respond to Webhook", "type": "main", "index": 0 },
+          { "node": "02 — Extract & Format Survey Data", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "02 — Extract & Format Survey Data": {
+      "main": [
+        [{ "node": "03 — Claude: Generate Social Proof Content", "type": "main", "index": 0 }]
+      ]
+    },
+    "03 — Claude: Generate Social Proof Content": {
+      "main": [
+        [{ "node": "Parse Claude Response", "type": "main", "index": 0 }]
+      ]
+    },
+    "Parse Claude Response": {
+      "main": [
+        [{ "node": "04 — Confidence Score Gate (>= 0.75)", "type": "main", "index": 0 }]
+      ]
+    },
+    "04 — Confidence Score Gate (>= 0.75)": {
+      "main": [
+        [{ "node": "05 — Smart Scheduler (Optimal Time)", "type": "main", "index": 0 }],
+        [{ "node": "Slack: Human Review Required", "type": "main", "index": 0 }]
+      ]
+    },
+    "05 — Smart Scheduler (Optimal Time)": {
+      "main": [
+        [
+          { "node": "06a — Publish to Facebook", "type": "main", "index": 0 },
+          { "node": "06b — Create IG Media Container", "type": "main", "index": 0 },
+          { "node": "06d — Create Pinterest Pin", "type": "main", "index": 0 },
+          { "node": "06e — TikTok Placeholder (API Pending)", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "06b — Create IG Media Container": {
+      "main": [
+        [{ "node": "Wait 30s (IG Processing)", "type": "main", "index": 0 }]
+      ]
+    },
+    "Wait 30s (IG Processing)": {
+      "main": [
+        [{ "node": "06c — Publish IG Post", "type": "main", "index": 0 }]
+      ]
+    },
+    "06a — Publish to Facebook": {
+      "main": [
+        [{ "node": "Merge All Publish Results", "type": "main", "index": 0 }]
+      ]
+    },
+    "06c — Publish IG Post": {
+      "main": [
+        [{ "node": "Merge All Publish Results", "type": "main", "index": 1 }]
+      ]
+    },
+    "06d — Create Pinterest Pin": {
+      "main": [
+        [{ "node": "Merge All Publish Results", "type": "main", "index": 2 }]
+      ]
+    },
+    "06e — TikTok Placeholder (API Pending)": {
+      "main": [
+        [{ "node": "Merge All Publish Results", "type": "main", "index": 3 }]
+      ]
+    },
+    "Merge All Publish Results": {
+      "main": [
+        [{ "node": "07 — Log Run to Prime Haul CRM", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "primhaul-workflow-error-handler"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "instanceId": "primhaul-social-automation"
+  },
+  "tags": ["primhaul", "movescan", "social-media", "automation", "claude-api", "pinterest"],
+  "_readme": {
+    "workflow_name": "Prime Haul — MoveScan Social Proof Engine",
+    "version": "1.0",
+    "created_for": "Ricky — Prime Haul / MoveScan / primhaul.co.uk",
+    "n8n_version": "1.x",
+    "trigger": "Webhook — fires when a MoveScan survey is completed and quotes are sent to removal companies",
+    "platforms": ["Facebook", "Instagram", "Pinterest", "TikTok (placeholder)"],
+    "required_credentials": [
+      "Anthropic API Key (httpHeaderAuth) — x-api-key header",
+      "Facebook Page Access Token (env: FB_PAGE_ACCESS_TOKEN_PRIMHAUL)",
+      "Instagram Access Token (env: IG_ACCESS_TOKEN_PRIMHAUL)",
+      "Pinterest API Token (httpHeaderAuth) — Bearer token",
+      "Airtable API Token (airtableTokenApi)",
+      "Slack Bot Token (httpHeaderAuth) — optional, for review workflow"
+    ],
+    "required_env_vars": [
+      "FB_PAGE_ID_PRIMHAUL — Prime Haul Facebook Page ID",
+      "FB_PAGE_ACCESS_TOKEN_PRIMHAUL — Long-lived FB page token",
+      "IG_ACCOUNT_ID_PRIMHAUL — Instagram Business Account ID",
+      "IG_ACCESS_TOKEN_PRIMHAUL — Instagram access token",
+      "PINTEREST_BOARD_ID_PRIMHAUL_TIPS — Board ID for moving tips pins",
+      "PRIMHAUL_DEFAULT_IMAGE_URL — Public URL of default branded image for IG posts",
+      "PRIMHAUL_PINTEREST_IMAGE_URL — Public URL of Pinterest pin image (2:3 ratio recommended)",
+      "AIRTABLE_BASE_ID_PRIMHAUL — Airtable base ID for Prime Haul CRM",
+      "SLACK_CHANNEL_SOCIAL_REVIEW — Slack channel for low-confidence reviews",
+      "MOVESCAN_WEBHOOK_SECRET — Webhook auth token shared with MoveScan"
+    ],
+    "setup_steps": [
+      "1. Import this JSON into n8n (Settings > Import Workflow)",
+      "2. Set all environment variables in n8n Settings > Environment Variables",
+      "3. Create credentials for Anthropic, Pinterest, Airtable",
+      "4. Create 'Social Automation Runs' table in your Airtable base (see airtable-schema-primhaul.json)",
+      "5. Point MoveScan completion webhook to: https://your-n8n.domain.com/webhook/movescan-complete",
+      "6. Add MOVESCAN_WEBHOOK_SECRET to webhook header auth",
+      "7. Upload branded images to public CDN/Supabase for IG and Pinterest defaults",
+      "8. Test with a manual webhook trigger using sample payload",
+      "9. Enable workflow",
+      "10. Once TikTok API is approved, replace placeholder node with TikTok Content Posting API call"
+    ],
+    "tiktok_note": "TikTok Business API requires app approval (1-2 weeks). Once approved: replace node 06e with POST to https://open.tiktokapis.com/v2/post/publish/content/init/ with video upload flow. Caption is stored in Airtable for manual posting until then.",
+    "airtable_table_fields": [
+      "survey_id (Text)", "customer_first_name (Text)", "origin_postcode (Text)",
+      "dest_postcode (Text)", "volume_category (Single select: small/medium/large)",
+      "bedrooms (Number)", "move_date (Date)", "quotes_sent (Number)",
+      "matched_companies (Text)", "confidence_score (Number)",
+      "fb_post_content (Long text)", "ig_post_content (Long text)",
+      "pinterest_desc (Long text)", "tiktok_caption (Long text)",
+      "fb_post_id (Text)", "ig_media_id (Text)", "pinterest_pin_id (Text)",
+      "tiktok_status (Text)", "published_at (Date & time)", "run_id (Text)",
+      "workflow_version (Text)"
+    ]
+  }
+}

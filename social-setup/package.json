@@ -1,0 +1,24 @@
+{
+  "name": "rick-ai-social-setup",
+  "version": "1.0.0",
+  "description": "Social media account setup automation for Astra Removals, Magna Park, Prime Haul & CoachMentor",
+  "type": "module",
+  "scripts": {
+    "setup:astra": "node setup-orchestrator.js --brand astra",
+    "setup:magna": "node setup-orchestrator.js --brand magna",
+    "setup:primhaul": "node setup-orchestrator.js --brand primhaul",
+    "setup:coachmentor": "node setup-orchestrator.js --brand coachmentor",
+    "setup:all": "node setup-orchestrator.js --brand all",
+    "tokens:all": "node setup-api-tokens.js --brand all",
+    "tokens:astra": "node setup-api-tokens.js --brand astra",
+    "tokens:coachmentor": "node setup-api-tokens.js --brand coachmentor",
+    "boards:all": "node setup-api-tokens.js --brand all --create-boards",
+    "boards:primhaul": "node setup-api-tokens.js --brand primhaul --create-boards",
+    "boards:coachmentor": "node setup-api-tokens.js --brand coachmentor --create-boards"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.24.0",
+    "dotenv": "^16.4.0",
+    "playwright": "^1.44.0"
+  }
+}

@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CoachMentor — 6-Email Onboarding Sequence</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #06090a;
+    --s1: #0d1419;
+    --s2: #111c22;
+    --s3: #162028;
+    --border: #1c2e38;
+    --border2: #243a47;
+    --text: #ddeef5;
+    --muted: #3d5a6b;
+    --muted2: #5c8090;
+    --green: #16a34a;
+    --green-b: #22c55e;
+    --green-d: rgba(22,163,74,0.12);
+    --lime: #65a30d;
+    --white: #f0faf5;
+    --amber: #d97706;
+    --amber-b: #f59e0b;
+    --amber-d: rgba(217,119,6,0.12);
+    --purple: #7c3aed;
+    --purple-b: #a855f7;
+    --purple-d: rgba(124,58,237,0.12);
+    --blue: #0369a1;
+    --blue-b: #38bdf8;
+    --blue-d: rgba(3,105,161,0.12);
+    --orange: #c2410c;
+    --orange-b: #fb923c;
+    --orange-d: rgba(194,65,12,0.12);
+    --red: #b91c1c;
+    --red-b: #f87171;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Outfit', sans-serif;
+    min-height: 100vh;
+  }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    background: var(--s1);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky; top: 0; z-index: 100;
+  }
+
+  .topbar-brand {
+    display: flex; align-items: center; gap: 12px;
+  }
+
+  .tb-ball {
+    width: 32px; height: 32px;
+    background: var(--green-b);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.9rem;
+    box-shadow: 0 0 16px rgba(34,197,94,0.35);
+  }
+
+  .tb-name {
+    font-weight: 800;
+    font-size: 0.95rem;
+    letter-spacing: -0.01em;
+  }
+  .tb-name span { color: var(--green-b); }
+
+  .tb-sub {
+    font-size: 0.6rem;
+    color: var(--muted2);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .sequence-pills {
+    display: flex;
+    gap: 4px;
+  }
+
+  .pill {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.65rem;
+    font-weight: 700;
+    cursor: pointer;
+    border: 2px solid var(--border2);
+    background: var(--s2);
+    color: var(--muted2);
+    transition: all 0.2s;
+  }
+
+  .pill:hover { border-color: var(--green-b); color: var(--green-b); }
+  .pill.active { background: var(--green-b); border-color: var(--green-b); color: #000; }
+  .pill.sent { background: var(--green-d); border-color: rgba(34,197,94,0.4); color: var(--green-b); }
+
+  /* ── LAYOUT ── */
+  .layout {
+    display: grid;
+    grid-template-columns: 280px 1fr 300px;
+    min-height: calc(100vh - 65px);
+  }
+
+  /* ── LEFT NAV ── */
+  .leftnav {
+    background: var(--s1);
+    border-right: 1px solid var(--border);
+    padding: 24px 0;
+    overflow-y: auto;
+  }
+
+  .ln-label {
+    font-size: 0.58rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0 20px;
+    margin-bottom: 12px;
+    font-weight: 600;
+  }
+
+  .email-nav-item {
+    padding: 14px 20px;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+    transition: all 0.2s;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .email-nav-item:hover { background: var(--s2); }
+  .email-nav-item.active {
+    background: var(--s2);
+    border-left-color: var(--green-b);
+  }
+
+  .en-day {
+    font-size: 0.58rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+    font-weight: 600;
+  }
+
+  .en-subject {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.3;
+    margin-bottom: 4px;
+  }
+
+  .en-goal {
+    font-size: 0.6rem;
+    color: var(--muted2);
+    line-height: 1.4;
+  }
+
+  .en-badge {
+    display: inline-block;
+    font-size: 0.52rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-top: 5px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* ── EMAIL PREVIEW ── */
+  .preview {
+    background: #f5f5f0;
+    overflow-y: auto;
+    padding: 32px;
+  }
+
+  .email-wrapper {
+    max-width: 600px;
+    margin: 0 auto;
+    background: #ffffff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 40px rgba(0,0,0,0.15);
+    font-family: -apple-system, 'Segoe UI', sans-serif;
+  }
+
+  /* Email header */
+  .em-header {
+    padding: 32px 40px 28px;
+    text-align: center;
+  }
+
+  .em-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 0;
+  }
+
+  .em-ball {
+    width: 36px; height: 36px;
+    background: #16a34a;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    color: white;
+  }
+
+  .em-brand {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #111;
+    letter-spacing: -0.01em;
+  }
+
+  .em-brand span { color: #16a34a; }
+
+  /* Hero */
+  .em-hero {
+    padding: 40px 40px 32px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .em-tag {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+  }
+
+  .em-headline {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #111;
+    line-height: 1.25;
+    margin-bottom: 16px;
+    letter-spacing: -0.02em;
+  }
+
+  .em-body {
+    font-size: 0.95rem;
+    color: #374151;
+    line-height: 1.7;
+  }
+
+  .em-body p { margin-bottom: 14px; }
+  .em-body p:last-child { margin-bottom: 0; }
+  .em-body strong { color: #111; font-weight: 600; }
+  .em-body em { color: #16a34a; font-style: normal; font-weight: 600; }
+
+  /* CTA button */
+  .em-cta-wrap {
+    text-align: center;
+    padding: 28px 40px;
+  }
+
+  .em-cta {
+    display: inline-block;
+    padding: 14px 32px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    text-decoration: none;
+    letter-spacing: -0.01em;
+  }
+
+  /* Feature blocks */
+  .em-features {
+    padding: 0 40px 28px;
+  }
+
+  .feature-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+    padding: 16px;
+    border-radius: 8px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+  }
+
+  .feature-icon {
+    font-size: 1.4rem;
+    flex-shrink: 0;
+    width: 40px;
+    text-align: center;
+    margin-top: 2px;
+  }
+
+  .feature-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #111;
+    margin-bottom: 4px;
+  }
+
+  .feature-desc {
+    font-size: 0.78rem;
+    color: #6b7280;
+    line-height: 1.5;
+  }
+
+  /* Quote block */
+  .em-quote {
+    margin: 0 40px 28px;
+    padding: 20px 24px;
+    border-left: 4px solid #16a34a;
+    background: #f0fdf4;
+    border-radius: 0 8px 8px 0;
+  }
+
+  .em-quote-text {
+    font-size: 0.95rem;
+    color: #166534;
+    font-style: italic;
+    line-height: 1.6;
+    margin-bottom: 8px;
+  }
+
+  .em-quote-attr {
+    font-size: 0.75rem;
+    color: #16a34a;
+    font-weight: 600;
+  }
+
+  /* Drill block */
+  .em-drill {
+    margin: 0 40px 28px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .drill-header {
+    padding: 12px 16px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .drill-body {
+    padding: 16px;
+    font-size: 0.82rem;
+    color: #374151;
+    line-height: 1.7;
+  }
+
+  .drill-detail {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 6px;
+    align-items: flex-start;
+  }
+
+  .dd-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    min-width: 60px;
+    padding-top: 2px;
+  }
+
+  /* Footer */
+  .em-footer {
+    background: #f9fafb;
+    border-top: 1px solid #e5e7eb;
+    padding: 24px 40px;
+    text-align: center;
+  }
+
+  .em-footer p {
+    font-size: 0.72rem;
+    color: #9ca3af;
+    line-height: 1.6;
+    margin-bottom: 4px;
+  }
+
+  .em-footer a { color: #6b7280; text-decoration: underline; }
+
+  /* Checklist */
+  .em-checklist {
+    padding: 0 40px 28px;
+  }
+
+  .checklist-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #111;
+    margin-bottom: 12px;
+  }
+
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 0.82rem;
+    color: #374151;
+    line-height: 1.4;
+  }
+
+  .check-item:last-child { border-bottom: none; }
+
+  .check-box {
+    width: 18px; height: 18px;
+    border: 2px solid #d1fae5;
+    border-radius: 4px;
+    background: #d1fae5;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.6rem;
+    color: #16a34a;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .check-box.empty { background: white; border-color: #d1d5db; color: transparent; }
+
+  /* Stats row */
+  .em-stats {
+    display: flex;
+    margin: 0 40px 28px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .em-stat {
+    flex: 1;
+    padding: 16px 12px;
+    text-align: center;
+    border-right: 1px solid #e5e7eb;
+  }
+  .em-stat:last-child { border-right: none; }
+
+  .es-val {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #111;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .es-lbl {
+    font-size: 0.65rem;
+    color: #9ca3af;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* ── RIGHT PANEL ── */
+  .rightpanel {
+    background: var(--s1);
+    border-left: 1px solid var(--border);
+    padding: 24px 20px;
+    overflow-y: auto;
+  }
+
+  .rp-section { margin-bottom: 28px; }
+
+  .rp-title {
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+    font-weight: 600;
+  }
+
+  .rp-meta {
+    background: var(--s2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 0.63rem;
+    line-height: 1.8;
+    color: var(--muted2);
+  }
+
+  .rp-meta strong { color: var(--text); font-weight: 600; }
+  .rp-meta .hl { color: var(--green-b); font-weight: 600; }
+
+  .rp-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.62rem;
+  }
+  .rp-row:last-child { border-bottom: none; }
+  .rp-row-label { color: var(--muted2); }
+  .rp-row-val { color: var(--text); font-weight: 600; }
+  .rp-row-val.green { color: var(--green-b); }
+  .rp-row-val.amber { color: var(--amber-b); }
+
+  .trigger-box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.58rem;
+    color: var(--muted2);
+    line-height: 1.8;
+  }
+
+  .trigger-box .kw { color: var(--purple-b); }
+  .trigger-box .str { color: var(--green-b); }
+  .trigger-box .num { color: var(--amber-b); }
+  .trigger-box .cm { color: var(--muted); font-style: italic; }
+
+  .ab-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+
+  .ab-chip {
+    flex: 1;
+    background: var(--s2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 0.6rem;
+    text-align: center;
+  }
+
+  .ab-chip-val { font-weight: 700; color: var(--text); font-size: 0.8rem; margin-bottom: 2px; }
+  .ab-chip-lbl { color: var(--muted2); font-size: 0.55rem; }
+
+  /* Tab display */
+  .email-page { display: none; }
+  .email-page.active { display: block; }
+
+  /* Divider */
+  .em-divider {
+    height: 1px;
+    background: #e5e7eb;
+    margin: 0 40px 24px;
+  }
+
+  .em-ps {
+    padding: 0 40px 24px;
+    font-size: 0.8rem;
+    color: #6b7280;
+    font-style: italic;
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-brand">
+    <div class="tb-ball">⚽</div>
+    <div>
+      <div class="tb-name">Coach<span>Mentor</span> Onboarding</div>
+      <div class="tb-sub">6-Email Trial Sequence · £7.99/mo Conversion</div>
+    </div>
+  </div>
+  <div class="sequence-pills">
+    <div class="pill active" onclick="showEmail(0,this)" title="Day 0 — Welcome">1</div>
+    <div class="pill sent" onclick="showEmail(1,this)" title="Day 1 — First Drill">2</div>
+    <div class="pill sent" onclick="showEmail(2,this)" title="Day 3 — Social Proof">3</div>
+    <div class="pill sent" onclick="showEmail(3,this)" title="Day 5 — Feature Deep-Dive">4</div>
+    <div class="pill sent" onclick="showEmail(4,this)" title="Day 6 — Urgency">5</div>
+    <div class="pill sent" onclick="showEmail(5,this)" title="Day 7 — Final CTA">6</div>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- ── LEFT NAV ── -->
+  <div class="leftnav">
+    <div class="ln-label">Email Sequence</div>
+
+    <div class="email-nav-item active" onclick="showEmail(0,null)">
+      <div class="en-day" style="color:#22c55e">Day 0 — Immediate</div>
+      <div class="en-subject">Welcome to CoachMentor ⚽</div>
+      <div class="en-goal">Warm welcome, set expectations, first CTA to open the app</div>
+      <span class="en-badge" style="background:rgba(34,197,94,0.12);color:#22c55e;">Onboarding</span>
+    </div>
+
+    <div class="email-nav-item" onclick="showEmail(1,null)">
+      <div class="en-day" style="color:#f59e0b">Day 1 — 24h Later</div>
+      <div class="en-subject">Your first drill is waiting 🎯</div>
+      <div class="en-goal">Deliver immediate value — a complete original drill to use this week</div>
+      <span class="en-badge" style="background:rgba(245,158,11,0.12);color:#f59e0b;">Value</span>
+    </div>
+
+    <div class="email-nav-item" onclick="showEmail(2,null)">
+      <div class="en-day" style="color:#38bdf8">Day 3</div>
+      <div class="en-subject">What 150+ coaches said about CoachMentor</div>
+      <div class="en-goal">Social proof, testimonials, build trust and FOMO</div>
+      <span class="en-badge" style="background:rgba(56,189,248,0.12);color:#38bdf8;">Social Proof</span>
+    </div>
+
+    <div class="email-nav-item" onclick="showEmail(3,null)">
+      <div class="en-day" style="color:#a855f7">Day 5</div>
+      <div class="en-subject">The AI feature that coaches can't stop using</div>
+      <div class="en-goal">Showcase the AI mentor feature — key differentiator from free resources</div>
+      <span class="en-badge" style="background:rgba(168,85,247,0.12);color:#a855f7;">Feature</span>
+    </div>
+
+    <div class="email-nav-item" onclick="showEmail(4,null)">
+      <div class="en-day" style="color:#fb923c">Day 6</div>
+      <div class="en-subject">48 hours left on your free trial</div>
+      <div class="en-goal">Soft urgency, address objections, lower the barrier to subscribe</div>
+      <span class="en-badge" style="background:rgba(251,146,60,0.12);color:#fb923c;">Urgency</span>
+    </div>
+
+    <div class="email-nav-item" onclick="showEmail(5,null)">
+      <div class="en-day" style="color:#f87171">Day 7 — Final</div>
+      <div class="en-subject">This is your last chance, coach</div>
+      <div class="en-goal">Hard CTA, final objection handling, last push to £7.99/mo</div>
+      <span class="en-badge" style="background:rgba(248,113,113,0.12);color:#f87171;">Convert</span>
+    </div>
+  </div>
+
+  <!-- ── EMAIL PREVIEW AREA ── -->
+  <div class="preview">
+
+    <!-- EMAIL 1: WELCOME -->
+    <div class="email-page active" id="email-0">
+      <div class="email-wrapper">
+        <div class="em-header" style="background:#f0fdf4;">
+          <div class="em-logo">
+            <div class="em-ball">⚽</div>
+            <div class="em-brand">Coach<span>Mentor</span></div>
+          </div>
+        </div>
+        <div class="em-hero">
+          <span class="em-tag" style="background:#dcfce7;color:#16a34a;">Welcome to the squad</span>
+          <div class="em-headline">You're in, coach. Let's make this week's session your best yet.</div>
+          <div class="em-body">
+            <p>Hi [First Name],</p>
+            <p>Welcome to CoachMentor. You've just joined <em>150+ grassroots coaches</em> across England who are using AI to plan better sessions, handle tricky situations on the touchline, and grow as coaches.</p>
+            <p>Your <strong>7-day free trial</strong> starts now. Here's what's waiting for you inside the app:</p>
+          </div>
+        </div>
+        <div class="em-features">
+          <div class="feature-row">
+            <div class="feature-icon">📋</div>
+            <div>
+              <div class="feature-title">Session Plan Library</div>
+              <div class="feature-desc">Dozens of ready-to-use session plans for every age group (U7–U16) and formation. Tap, adapt, coach.</div>
+            </div>
+          </div>
+          <div class="feature-row">
+            <div class="feature-icon">🤖</div>
+            <div>
+              <div class="feature-title">Your AI Coaching Mentor</div>
+              <div class="feature-desc">Ask anything. "How do I deal with a disruptive player?" "What's a good pressing drill for U12s?" Get answers instantly.</div>
+            </div>
+          </div>
+          <div class="feature-row">
+            <div class="feature-icon">🎯</div>
+            <div>
+              <div class="feature-title">Drill Library</div>
+              <div class="feature-desc">Original drills for every coaching objective — pressing, possession, transitions, and set-pieces. All with clear setup diagrams.</div>
+            </div>
+          </div>
+        </div>
+        <div class="em-cta-wrap" style="background:#f0fdf4;margin:0 0 0 0;padding:32px 40px;">
+          <a href="https://coachmentor.co.uk/app" class="em-cta" style="background:#16a34a;color:white;">Open CoachMentor Now →</a>
+          <p style="font-size:0.75rem;color:#6b7280;margin-top:12px;">Your trial ends in 7 days. No card needed until you decide to stay.</p>
+        </div>
+        <div class="em-hero" style="border-top:1px solid #e5e7eb;border-bottom:none;">
+          <div class="em-body">
+            <p>Over the next 7 days, I'll send you a coaching tip, a drill, and some ideas to make the most of your trial. Tomorrow: <strong>a pressing drill your U10s will actually understand.</strong></p>
+            <p style="color:#6b7280;">— Ricky & the CoachMentor team 👋</p>
+          </div>
+        </div>
+        <div class="em-footer">
+          <p>CoachMentor · coachmentor.co.uk · Built for grassroots coaches in England</p>
+          <p><a href="#">Unsubscribe</a> · <a href="#">View in browser</a> · <a href="#">Privacy Policy</a></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- EMAIL 2: FIRST DRILL -->
+    <div class="email-page" id="email-1">
+      <div class="email-wrapper">
+        <div class="em-header" style="background:#fefce8;">
+          <div class="em-logo">
+            <div class="em-ball">⚽</div>
+            <div class="em-brand">Coach<span>Mentor</span></div>
+          </div>
+        </div>
+        <div class="em-hero">
+          <span class="em-tag" style="background:#fef9c3;color:#a16207;">Day 1 · Free Drill</span>
+          <div class="em-headline">The 3v2 pressing drill your players will actually get</div>
+          <div class="em-body">
+            <p>Hi [First Name],</p>
+            <p>Here's something you can use <em>this week</em>. No setup headache, works with any age group from U9 upwards.</p>
+            <p>This is a sample of the kind of content waiting for you in CoachMentor every time you open the app.</p>
+          </div>
+        </div>
+        <div class="em-drill">
+          <div class="drill-header" style="background:#fef9c3;color:#a16207;">⚡ This Week's Drill — 3v2 Pressing Trigger</div>
+          <div class="drill-body">
+            <div class="drill-detail">
+              <span class="dd-label" style="color:#a16207;">Age</span>
+              <span>U9 and above</span>
+            </div>
+            <div class="drill-detail">
+              <span class="dd-label" style="color:#a16207;">Time</span>
+              <span>15–20 minutes</span>
+            </div>
+            <div class="drill-detail">
+              <span class="dd-label" style="color:#a16207;">Players</span>
+              <span>9+ (split into groups of 5)</span>
+            </div>
+            <div class="drill-detail">
+              <span class="dd-label" style="color:#a16207;">Setup</span>
+              <span>20x15 yard grid. 3 attackers vs 2 defenders. Server outside grid with 3 spare balls.</span>
+            </div>
+            <div class="drill-detail">
+              <span class="dd-label" style="color:#a16207;">Task</span>
+              <span>Defenders must press as a pair — trigger = server's body opens to play. First defender pressures, second covers. Attackers score in small goal if they survive 8 seconds.</span>
+            </div>
+            <div class="drill-detail">
+              <span class="dd-label" style="color:#a16207;">Key Q.</span>
+              <span><em>"When is the right moment to press? What tells you it's time to go?"</em></span>
+            </div>
+            <div class="drill-detail">
+              <span class="dd-label" style="color:#a16207;">Progress</span>
+              <span>Add a third defender. Reduce time to 6 seconds. Allow defenders to counter-attack after a win.</span>
+            </div>
+          </div>
+        </div>
+        <div class="em-hero" style="border-top:none;padding-top:0;">
+          <div class="em-body">
+            <p>Inside CoachMentor, every drill has a full diagram, a video prompt guide, and a <strong>linked coaching question</strong> to use with your players. This is just the text version.</p>
+            <p>There are <em>over 60 original drills</em> in the app right now, organised by age group, session objective, and formation. New ones added every week.</p>
+          </div>
+        </div>
+        <div class="em-cta-wrap">
+          <a href="https://coachmentor.co.uk/app/drills" class="em-cta" style="background:#ca8a04;color:white;">See All Drills in the App →</a>
+        </div>
+        <div class="em-ps">P.S. If you used this drill on Saturday, reply and let me know how it went. I read every reply.</div>
+        <div class="em-footer">
+          <p>CoachMentor · coachmentor.co.uk · 6 days left on your free trial</p>
+          <p><a href="#">Unsubscribe</a> · <a href="#">View in browser</a></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- EMAIL 3: SOCIAL PROOF -->
+    <div class="email-page" id="email-2">
+      <div class="email-wrapper">
+        <div class="em-header" style="background:#eff6ff;">
+          <div class="em-logo">
+            <div class="em-ball">⚽</div>
+            <div class="em-brand">Coach<span>Mentor</span></div>
+          </div>
+        </div>
+        <div class="em-hero">
+          <span class="em-tag" style="background:#dbeafe;color:#1d4ed8;">Day 3 · Social Proof</span>
+          <div class="em-headline">What 150 grassroots coaches said when we asked them honestly</div>
+          <div class="em-body">
+            <p>Hi [First Name],</p>
+            <p>We ran a survey last month. We asked coaches who'd used CoachMentor for 30+ days one question: <strong>"What changed about your coaching?"</strong></p>
+            <p>Here's what they said.</p>
+          </div>
+        </div>
+        <div class="em-quote">
+          <div class="em-quote-text">"I used to spend Sunday evening dreading Monday's session. Now I open CoachMentor on the drive home from the match and I've got next week planned before I get to the motorway."</div>
+          <div class="em-quote-attr">— Dave, U11s coach, Dorset (FA Level 2)</div>
+        </div>
+        <div class="em-quote">
+          <div class="em-quote-text">"The AI mentor is the bit I didn't expect to use but now can't live without. I had a lad who kept switching off in training. Asked CoachMentor what to do. Got three practical ideas I'd never have thought of."</div>
+          <div class="em-quote-attr">— Sarah, U8s coach, Hampshire</div>
+        </div>
+        <div class="em-quote">
+          <div class="em-quote-text">"£7.99 a month is nothing. I spend more on shin pads for players who lose them every week. This has made me a better coach."</div>
+          <div class="em-quote-attr">— Marcus, U13s, West Midlands (FA Level 1)</div>
+        </div>
+        <div class="em-stats">
+          <div class="em-stat">
+            <div class="es-val" style="color:#16a34a;">89%</div>
+            <div class="es-lbl">feel more confident planning sessions</div>
+          </div>
+          <div class="em-stat">
+            <div class="es-val" style="color:#1d4ed8;">3.4×</div>
+            <div class="es-lbl">more likely to try a new drill</div>
+          </div>
+          <div class="em-stat">
+            <div class="es-val" style="color:#7c3aed;">94%</div>
+            <div class="es-lbl">would recommend to another coach</div>
+          </div>
+        </div>
+        <div class="em-hero" style="padding-top:0;">
+          <div class="em-body">
+            <p>You've got <em>4 days left on your free trial</em>. These coaches made the decision to stay at £7.99/mo. Most of them say they can't imagine going back to planning sessions from scratch.</p>
+          </div>
+        </div>
+        <div class="em-cta-wrap">
+          <a href="https://coachmentor.co.uk/app" class="em-cta" style="background:#1d4ed8;color:white;">Continue My Trial →</a>
+        </div>
+        <div class="em-footer">
+          <p>CoachMentor · coachmentor.co.uk · 4 days left on your free trial</p>
+          <p><a href="#">Unsubscribe</a> · <a href="#">View in browser</a></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- EMAIL 4: AI FEATURE -->
+    <div class="email-page" id="email-3">
+      <div class="email-wrapper">
+        <div class="em-header" style="background:#faf5ff;">
+          <div class="em-logo">
+            <div class="em-ball">⚽</div>
+            <div class="em-brand">Coach<span>Mentor</span></div>
+          </div>
+        </div>
+        <div class="em-hero">
+          <span class="em-tag" style="background:#f3e8ff;color:#7c3aed;">Day 5 · Key Feature</span>
+          <div class="em-headline">The AI feature 73% of coaches say is their favourite</div>
+          <div class="em-body">
+            <p>Hi [First Name],</p>
+            <p>If you haven't used the <strong>AI Coaching Mentor</strong> inside CoachMentor yet, this is the one thing I want you to try before your trial ends.</p>
+            <p>Here's exactly how it works — and three questions coaches use it for every week.</p>
+          </div>
+        </div>
+        <div class="em-features">
+          <div class="feature-row" style="background:#faf5ff;border-color:#e9d5ff;">
+            <div class="feature-icon">🤖</div>
+            <div>
+              <div class="feature-title" style="color:#7c3aed;">Ask anything about coaching</div>
+              <div class="feature-desc">Type any coaching challenge. The AI understands grassroots football context — age groups, ability levels, pitch sizes, behaviour management. It gives you <strong>practical, specific answers</strong>, not generic advice.</div>
+            </div>
+          </div>
+        </div>
+        <div style="padding:0 40px 28px;">
+          <div style="font-size:0.85rem;font-weight:700;color:#111;margin-bottom:14px;">Three questions coaches ask every week:</div>
+          <div style="background:#faf5ff;border:1px solid #e9d5ff;border-radius:8px;padding:16px;margin-bottom:12px;">
+            <div style="font-size:0.75rem;font-weight:700;color:#7c3aed;margin-bottom:6px;">💬 Question 1</div>
+            <div style="font-size:0.85rem;color:#374151;font-style:italic;">"One of my U10 players completely switches off after making a mistake. How do I help them bounce back in the moment?"</div>
+          </div>
+          <div style="background:#faf5ff;border:1px solid #e9d5ff;border-radius:8px;padding:16px;margin-bottom:12px;">
+            <div style="font-size:0.75rem;font-weight:700;color:#7c3aed;margin-bottom:6px;">💬 Question 2</div>
+            <div style="font-size:0.85rem;color:#374151;font-style:italic;">"We keep conceding in the last 10 minutes of matches. What can I work on in training to fix this?"</div>
+          </div>
+          <div style="background:#faf5ff;border:1px solid #e9d5ff;border-radius:8px;padding:16px;">
+            <div style="font-size:0.75rem;font-weight:700;color:#7c3aed;margin-bottom:6px;">💬 Question 3</div>
+            <div style="font-size:0.85rem;color:#374151;font-style:italic;">"I've got a session on Thursday with only 8 players and no cones. Give me a full 60-minute plan."</div>
+          </div>
+        </div>
+        <div class="em-hero" style="padding-top:0;">
+          <div class="em-body">
+            <p>The AI Mentor isn't a chatbot. It's been built specifically for grassroots coaches — it knows the difference between coaching a U7 and a U16, understands FA guidelines, and gives you answers you can actually use on a muddy pitch at 9am on a Saturday.</p>
+            <p>You have <em>2 days left to try it for free.</em></p>
+          </div>
+        </div>
+        <div class="em-cta-wrap">
+          <a href="https://coachmentor.co.uk/app/mentor" class="em-cta" style="background:#7c3aed;color:white;">Try the AI Mentor Now →</a>
+        </div>
+        <div class="em-footer">
+          <p>CoachMentor · coachmentor.co.uk · 2 days left on your free trial</p>
+          <p><a href="#">Unsubscribe</a> · <a href="#">View in browser</a></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- EMAIL 5: URGENCY -->
+    <div class="email-page" id="email-4">
+      <div class="email-wrapper">
+        <div class="em-header" style="background:#fff7ed;">
+          <div class="em-logo">
+            <div class="em-ball">⚽</div>
+            <div class="em-brand">Coach<span>Mentor</span></div>
+          </div>
+        </div>
+        <div class="em-hero">
+          <span class="em-tag" style="background:#ffedd5;color:#c2410c;">Day 6 · 48 Hours Left</span>
+          <div class="em-headline">48 hours left on your trial — here's what happens next</div>
+          <div class="em-body">
+            <p>Hi [First Name],</p>
+            <p>Your free trial ends tomorrow. I wanted to be straight with you about what happens.</p>
+          </div>
+        </div>
+        <div class="em-checklist">
+          <div class="checklist-title">If you subscribe (£7.99/month):</div>
+          <div class="check-item"><div class="check-box">✓</div><span>Keep everything you've saved — drills, session plans, your AI conversation history</span></div>
+          <div class="check-item"><div class="check-box">✓</div><span>Full access to 60+ drills and every new one we add</span></div>
+          <div class="check-item"><div class="check-box">✓</div><span>Unlimited AI Mentor questions — no daily limits</span></div>
+          <div class="check-item"><div class="check-box">✓</div><span>Cancel any time, no minimum contract</span></div>
+          <div class="check-item"><div class="check-box">✓</div><span>Less than a match ball a month</span></div>
+        </div>
+        <div class="em-checklist" style="padding-top:0;">
+          <div class="checklist-title">If you don't subscribe:</div>
+          <div class="check-item"><div class="check-box empty">✗</div><span>Access ends tomorrow. Your saved content is held for 30 days in case you change your mind.</span></div>
+          <div class="check-item"><div class="check-box empty">✗</div><span>You go back to planning sessions from scratch every week</span></div>
+          <div class="check-item"><div class="check-box empty">✗</div><span>No AI mentor when you hit a coaching challenge on a Thursday night</span></div>
+        </div>
+        <div class="em-hero" style="padding-top:0;">
+          <div class="em-body">
+            <p>I'm not going to pressure you. But I do think if you've been using the app this week, you already know whether it's worth £7.99 to you.</p>
+            <p>Most coaches who don't subscribe say it's because they <em>"haven't had time to explore it properly yet."</em> If that's you — <strong>use today to explore it.</strong> The AI mentor is the best place to start.</p>
+          </div>
+        </div>
+        <div class="em-cta-wrap">
+          <a href="https://coachmentor.co.uk/subscribe" class="em-cta" style="background:#c2410c;color:white;">Subscribe — £7.99/month →</a>
+          <p style="font-size:0.75rem;color:#9ca3af;margin-top:10px;">Cancel any time. No minimum term. No fuss.</p>
+        </div>
+        <div class="em-footer">
+          <p>CoachMentor · coachmentor.co.uk · Trial ends tomorrow</p>
+          <p><a href="#">Unsubscribe</a> · <a href="#">View in browser</a></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- EMAIL 6: FINAL CTA -->
+    <div class="email-page" id="email-5">
+      <div class="email-wrapper">
+        <div class="em-header" style="background:#fef2f2;">
+          <div class="em-logo">
+            <div class="em-ball">⚽</div>
+            <div class="em-brand">Coach<span>Mentor</span></div>
+          </div>
+        </div>
+        <div class="em-hero">
+          <span class="em-tag" style="background:#fee2e2;color:#b91c1c;">Day 7 · Final Email</span>
+          <div class="em-headline">Your trial ends today, coach. Here's my honest take.</div>
+          <div class="em-body">
+            <p>Hi [First Name],</p>
+            <p>This is the last email in your trial sequence — and I'll keep it short because you don't need the hard sell. You've had 7 days to decide.</p>
+            <p>Here's my honest take:</p>
+          </div>
+        </div>
+        <div class="em-quote" style="border-left-color:#b91c1c;background:#fef2f2;">
+          <div class="em-quote-text" style="color:#991b1b;">"CoachMentor isn't going to make you a perfect coach. Nothing will. But it will make you a more <strong>prepared</strong> coach — which is the thing you actually control."</div>
+          <div class="em-quote-attr" style="color:#b91c1c;">— Ricky, founder</div>
+        </div>
+        <div class="em-hero" style="padding-top:0;">
+          <div class="em-body">
+            <p>Grassroots coaching is hard. You're doing it on top of a full-time job, for kids who are counting on you to make Saturday morning worth getting up for. <em>You deserve better tools.</em></p>
+            <p>At <strong>£7.99 a month</strong>, that's <strong>£0.27 a day</strong>. Less than a packet of chewing gum. Cancel any time with one tap.</p>
+            <p>If you want to keep access, tap the button below. If you're not ready, no hard feelings — your content is saved for 30 days.</p>
+            <p>Either way: <strong>thank you for being a grassroots coach.</strong> What you do matters.</p>
+          </div>
+        </div>
+        <div class="em-cta-wrap" style="background:#fef2f2;margin:0;padding:32px 40px 24px;">
+          <a href="https://coachmentor.co.uk/subscribe" class="em-cta" style="background:#b91c1c;color:white;display:block;text-align:center;">Keep My CoachMentor Access →</a>
+          <p style="font-size:0.75rem;color:#9ca3af;margin-top:10px;text-align:center;">£7.99/month · Cancel any time · No contracts</p>
+        </div>
+        <div class="em-divider"></div>
+        <div class="em-ps">P.S. If you decide not to subscribe today, I'll send one final email in 7 days with a 20% discount. But the best time to subscribe is when you're in the habit of using it — which is right now.</div>
+        <div class="em-footer">
+          <p>CoachMentor · coachmentor.co.uk · Built for grassroots coaches in England</p>
+          <p><a href="#">Unsubscribe</a> · <a href="#">View in browser</a> · <a href="#">Privacy Policy</a></p>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /preview -->
+
+  <!-- ── RIGHT PANEL ── -->
+  <div class="rightpanel">
+
+    <div class="rp-section">
+      <div class="rp-title">Email Metadata</div>
+      <div class="rp-meta" id="emailMeta">
+        <div class="rp-row"><span class="rp-row-label">Send trigger</span><span class="rp-row-val green">Trial signup</span></div>
+        <div class="rp-row"><span class="rp-row-label">Delay</span><span class="rp-row-val">Immediate</span></div>
+        <div class="rp-row"><span class="rp-row-label">Subject</span><span class="rp-row-val">Welcome to CoachMentor ⚽</span></div>
+        <div class="rp-row"><span class="rp-row-label">Preview text</span><span class="rp-row-val">Your 7-day trial starts now</span></div>
+        <div class="rp-row"><span class="rp-row-label">Primary goal</span><span class="rp-row-val amber">App open</span></div>
+        <div class="rp-row"><span class="rp-row-label">CTA</span><span class="rp-row-val">Open App</span></div>
+      </div>
+    </div>
+
+    <div class="rp-section">
+      <div class="rp-title">n8n Trigger (Mailchimp/SendGrid)</div>
+      <div class="trigger-box">
+        <span class="cm">// Triggered by CoachMentor app</span><br>
+        <span class="cm">// webhook: trial_started event</span><br><br>
+        <span class="kw">POST</span> /webhook/trial-started<br>
+        {<br>
+        &nbsp;&nbsp;<span class="str">"email"</span>: <span class="str">"<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="16757977757e56737b777f7a3875797b">[email&#160;protected]</a>"</span>,<br>
+        &nbsp;&nbsp;<span class="str">"firstName"</span>: <span class="str">"Dave"</span>,<br>
+        &nbsp;&nbsp;<span class="str">"trialStart"</span>: <span class="str">"2026-03-15"</span>,<br>
+        &nbsp;&nbsp;<span class="str">"platform"</span>: <span class="str">"tiktok"</span>,<br>
+        &nbsp;&nbsp;<span class="str">"ageGroup"</span>: <span class="str">"U11"</span><br>
+        }<br><br>
+        <span class="cm">// n8n sends via Mailchimp/SendGrid</span><br>
+        <span class="cm">// at calculated delay per email</span>
+      </div>
+    </div>
+
+    <div class="rp-section">
+      <div class="rp-title">Send Schedule</div>
+      <div class="rp-meta">
+        <div class="rp-row"><span class="rp-row-label">Email 1</span><span class="rp-row-val green">Day 0 · Immediate</span></div>
+        <div class="rp-row"><span class="rp-row-label">Email 2</span><span class="rp-row-val">Day 1 · +24h</span></div>
+        <div class="rp-row"><span class="rp-row-label">Email 3</span><span class="rp-row-val">Day 3 · +72h</span></div>
+        <div class="rp-row"><span class="rp-row-label">Email 4</span><span class="rp-row-val">Day 5 · +120h</span></div>
+        <div class="rp-row"><span class="rp-row-label">Email 5</span><span class="rp-row-val amber">Day 6 · +144h</span></div>
+        <div class="rp-row"><span class="rp-row-label">Email 6</span><span class="rp-row-val" style="color:var(--red-b)">Day 7 · +168h</span></div>
+      </div>
+    </div>
+
+    <div class="rp-section">
+      <div class="rp-title">Conversion Benchmarks</div>
+      <div class="ab-row">
+        <div class="ab-chip">
+          <div class="ab-chip-val" style="color:var(--green-b)">~25%</div>
+          <div class="ab-chip-lbl">Trial → Paid (industry avg)</div>
+        </div>
+        <div class="ab-chip">
+          <div class="ab-chip-val" style="color:var(--amber-b)">~45%</div>
+          <div class="ab-chip-lbl">Nurtured email CVR</div>
+        </div>
+      </div>
+      <div class="ab-row">
+        <div class="ab-chip">
+          <div class="ab-chip-val">40–55%</div>
+          <div class="ab-chip-lbl">Email 1 open rate</div>
+        </div>
+        <div class="ab-chip">
+          <div class="ab-chip-val">18–28%</div>
+          <div class="ab-chip-lbl">Email 6 open rate</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rp-section">
+      <div class="rp-title">Stop Condition</div>
+      <div class="rp-meta">
+        If <strong class="hl">trial_converted = true</strong> fires from CoachMentor app at any point during sequence, n8n stops all remaining emails and triggers the <strong>subscriber welcome sequence</strong> instead.
+      </div>
+    </div>
+
+  </div>
+
+</div><!-- /layout -->
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  const emailMeta = [
+    { trigger:'Trial signup', delay:'Immediate', subject:'Welcome to CoachMentor ⚽', preview:'Your 7-day trial starts now', goal:'App open', cta:'Open App' },
+    { trigger:'Day 1 (+24h)', delay:'+24 hours', subject:'Your first drill is waiting 🎯', preview:'Use it this Saturday', goal:'Value delivery', cta:'See All Drills' },
+    { trigger:'Day 3 (+72h)', delay:'+72 hours', subject:'What 150 coaches said...', preview:'Real feedback from real coaches', goal:'Trust / FOMO', cta:'Continue Trial' },
+    { trigger:'Day 5 (+120h)', delay:'+120 hours', subject:'The AI feature coaches love', preview:"Try this before your trial ends", goal:'Feature adoption', cta:'Try AI Mentor' },
+    { trigger:'Day 6 (+144h)', delay:'+144 hours', subject:'48 hours left on trial', preview:'Here\'s what happens next', goal:'Urgency', cta:'Subscribe £7.99/mo' },
+    { trigger:'Day 7 (+168h)', delay:'+168 hours', subject:"Your trial ends today, coach", preview:'My honest take', goal:'Convert', cta:'Keep Access' },
+  ];
+
+  function showEmail(idx, btn) {
+    document.querySelectorAll('.email-page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.email-nav-item').forEach(n => n.classList.remove('active'));
+    document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+
+    document.getElementById(`email-${idx}`).classList.add('active');
+    document.querySelectorAll('.email-nav-item')[idx].classList.add('active');
+    document.querySelectorAll('.pill')[idx].classList.add('active');
+
+    // Update right panel meta
+    const m = emailMeta[idx];
+    const metaEl = document.getElementById('emailMeta');
+    metaEl.innerHTML = `
+      <div class="rp-row"><span class="rp-row-label">Send trigger</span><span class="rp-row-val green">${m.trigger}</span></div>
+      <div class="rp-row"><span class="rp-row-label">Delay</span><span class="rp-row-val">${m.delay}</span></div>
+      <div class="rp-row"><span class="rp-row-label">Subject</span><span class="rp-row-val">${m.subject}</span></div>
+      <div class="rp-row"><span class="rp-row-label">Preview text</span><span class="rp-row-val">${m.preview}</span></div>
+      <div class="rp-row"><span class="rp-row-l

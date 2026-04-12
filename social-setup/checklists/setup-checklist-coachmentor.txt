@@ -1,0 +1,44 @@
+
+╔══════════════════════════════════════════════════════════════╗
+║  COACHMENTOR — Complete Setup Checklist                      ║
+╚══════════════════════════════════════════════════════════════╝
+
+PHASE 1 — Account Creation
+───────────────────────────
+□ TikTok account created (manual — phone verify required)
+□ TikTok switched to Business account (in-app)
+□ Instagram Business account created + linked to FB Page
+□ YouTube Brand Channel created (Google account)
+□ X/Twitter account created (manual — phone verify)
+□ Facebook Page created
+
+PHASE 2 — API Access
+─────────────────────
+□ TikTok Developer App created + Business API access applied for
+□ TikTok posting API approved (can take 1-2 weeks)
+□ YouTube Data API v3 enabled in Google Cloud Console
+□ YouTube OAuth refresh token obtained
+□ Twitter Developer App created at developer.twitter.com
+□ Twitter API v2 access (Free tier = 1500 posts/month — sufficient)
+□ ManyChat account created + IG connected for DM automation
+□ CoachMentor app webhook configured for subscriber events
+
+PHASE 3 — Pinterest Boards (run setup-api-tokens.js)
+──────────────────────────────────────────────────────
+□ Pinterest Business account created
+□ Pinterest Developer App created
+□ Access token obtained
+□ run: node setup-api-tokens.js --brand coachmentor --create-boards
+   Creates: Grassroots Coaching Tips, Training Drills, U7-U16 Tips,
+            Tactical Coaching, Session Planning, Coaching Mindset
+
+PHASE 4 — n8n Workflows
+─────────────────────────
+□ All env variables added (env-template-coachmentor.env)
+□ CoachMentor content engine workflow imported
+□ Subscriber funnel workflow imported
+□ Fixture hooks workflow imported
+□ Copyright guard IF node tested
+□ Test run with sample content
+
+ESTIMATED TIME: ~4 hours (TikTok API approval may add 1-2 weeks)

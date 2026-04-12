@@ -1,0 +1,1847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Claude Code Playbook — Rick.AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Fira+Code:wght@300..700&display=swap" rel="stylesheet">
+<style>
+/* ============================================
+   CSS RESET & BASE
+   ============================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #03080a;
+  --bg-card: #0b161c;
+  --bg-card-hover: #0f1e27;
+  --border: #132030;
+  --border-light: #1a2d42;
+  --text: #cce4f0;
+  --text-dim: #7a9bb5;
+  --text-bright: #e8f4fb;
+  --purple: #a855f7;
+  --purple-dim: #7c3aed;
+  --purple-glow: rgba(168, 85, 247, 0.15);
+  --cyan: #06b6d4;
+  --cyan-dim: #0891b2;
+  --cyan-glow: rgba(6, 182, 212, 0.15);
+  --gradient: linear-gradient(135deg, #a855f7, #06b6d4);
+  --gradient-subtle: linear-gradient(135deg, rgba(168,85,247,0.1), rgba(6,182,212,0.1));
+  --gradient-text: linear-gradient(135deg, #c084fc, #22d3ee);
+  --green: #10b981;
+  --red: #ef4444;
+  --amber: #f59e0b;
+  --pink: #ec4899;
+  --sidebar-w: 280px;
+  --content-max: 860px;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --radius-xs: 6px;
+  --glass-bg: rgba(11, 22, 28, 0.7);
+  --glass-border: rgba(19, 32, 48, 0.6);
+  --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html { scroll-behavior: smooth; scrollbar-color: var(--border-light) var(--bg); }
+body {
+  font-family: 'Bricolage Grotesque', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  font-size: 17px;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ============================================
+   SCROLLBAR
+   ============================================ */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+
+/* ============================================
+   PROGRESS BAR
+   ============================================ */
+#progress-bar {
+  position: fixed; top: 0; left: 0; height: 3px; z-index: 1000;
+  background: var(--gradient);
+  width: 0%;
+  transition: width 0.1s linear;
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.5);
+}
+
+/* ============================================
+   SIDEBAR / TABLE OF CONTENTS
+   ============================================ */
+#sidebar {
+  position: fixed; top: 0; left: 0;
+  width: var(--sidebar-w); height: 100vh;
+  background: rgba(3, 8, 10, 0.95);
+  backdrop-filter: blur(20px);
+  border-right: 1px solid var(--border);
+  padding: 28px 0;
+  overflow-y: auto;
+  z-index: 100;
+  transition: transform var(--transition);
+}
+#sidebar .logo {
+  padding: 0 24px 24px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 16px;
+}
+#sidebar .logo h2 {
+  font-size: 18px; font-weight: 700;
+  background: var(--gradient-text); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+#sidebar .logo span { font-size: 12px; color: var(--text-dim); display: block; margin-top: 2px; }
+#sidebar nav a {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 24px;
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 13.5px; font-weight: 500;
+  transition: all var(--transition);
+  border-left: 2px solid transparent;
+}
+#sidebar nav a:hover, #sidebar nav a.active {
+  color: var(--text-bright);
+  background: var(--gradient-subtle);
+  border-left-color: var(--purple);
+}
+#sidebar nav a .ch-num {
+  font-family: 'Fira Code', monospace;
+  font-size: 11px;
+  color: var(--purple);
+  min-width: 22px;
+}
+
+/* Mobile menu toggle */
+#menu-toggle {
+  display: none;
+  position: fixed; top: 14px; left: 14px; z-index: 200;
+  width: 42px; height: 42px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-xs); color: var(--text);
+  font-size: 20px; cursor: pointer;
+  align-items: center; justify-content: center;
+}
+
+/* ============================================
+   MAIN CONTENT
+   ============================================ */
+#main {
+  margin-left: var(--sidebar-w);
+  padding: 48px 48px 100px;
+  max-width: calc(var(--content-max) + 96px + var(--sidebar-w));
+}
+
+/* ============================================
+   TYPOGRAPHY
+   ============================================ */
+h1, h2, h3, h4 { color: var(--text-bright); line-height: 1.3; }
+h1 { font-size: 2.8rem; font-weight: 800; margin-bottom: 16px; }
+h2 {
+  font-size: 2rem; font-weight: 700; margin: 80px 0 28px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+h2::after {
+  content: ''; position: absolute; bottom: -1px; left: 0;
+  width: 80px; height: 2px;
+  background: var(--gradient);
+}
+h3 { font-size: 1.35rem; font-weight: 600; margin: 40px 0 16px; }
+h4 { font-size: 1.1rem; font-weight: 600; margin: 28px 0 12px; }
+p { margin-bottom: 16px; }
+a { color: var(--cyan); text-decoration: none; }
+a:hover { text-decoration: underline; }
+strong { color: var(--text-bright); font-weight: 600; }
+em { color: var(--text-dim); font-style: italic; }
+
+code {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.88em;
+  background: rgba(168, 85, 247, 0.1);
+  color: var(--purple);
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(168, 85, 247, 0.15);
+}
+pre {
+  background: #060e13;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 20px 24px;
+  overflow-x: auto;
+  margin: 16px 0 24px;
+  line-height: 1.6;
+}
+pre code {
+  background: none; border: none; padding: 0; color: var(--text); font-size: 0.85rem;
+}
+
+/* ============================================
+   CARDS
+   ============================================ */
+.card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  padding: 28px 32px;
+  margin: 20px 0;
+  transition: all var(--transition);
+}
+.card:hover {
+  border-color: var(--border-light);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+.card.highlight {
+  border-left: 3px solid var(--purple);
+}
+.card.cyan-highlight {
+  border-left: 3px solid var(--cyan);
+}
+
+/* ============================================
+   INFOGRAPHIC BASE
+   ============================================ */
+.infographic {
+  background: linear-gradient(145deg, rgba(11,22,28,0.9), rgba(3,8,10,0.95));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 36px;
+  margin: 32px 0;
+  position: relative;
+  overflow: hidden;
+}
+.infographic::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: var(--gradient);
+}
+.infographic-title {
+  font-size: 1.1rem; font-weight: 700; color: var(--text-bright);
+  text-transform: uppercase; letter-spacing: 1.5px;
+  margin-bottom: 28px;
+  font-size: 0.85rem;
+}
+
+/* ============================================
+   COMPARISON TABLE / SIDE BY SIDE
+   ============================================ */
+.comparison {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+}
+.compare-col {
+  background: rgba(3,8,10,0.6);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 24px;
+}
+.compare-col.bad { border-top: 3px solid var(--red); }
+.compare-col.good { border-top: 3px solid var(--green); }
+.compare-col h4 {
+  font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;
+  margin: 0 0 16px; display: flex; align-items: center; gap: 8px;
+}
+.compare-col.bad h4 { color: var(--red); }
+.compare-col.good h4 { color: var(--green); }
+.compare-col ul { list-style: none; }
+.compare-col li {
+  padding: 8px 0; border-bottom: 1px solid var(--border);
+  font-size: 0.95rem;
+}
+.compare-col li:last-child { border-bottom: none; }
+
+/* ============================================
+   PROMPT EXAMPLES
+   ============================================ */
+.prompt-example {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+  margin: 16px 0;
+}
+.prompt-box {
+  background: rgba(3,8,10,0.6);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 20px;
+  position: relative;
+}
+.prompt-box.bad { border-left: 3px solid var(--red); }
+.prompt-box.good { border-left: 3px solid var(--green); }
+.prompt-label {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 4px;
+}
+.prompt-box.bad .prompt-label { background: rgba(239,68,68,0.15); color: var(--red); }
+.prompt-box.good .prompt-label { background: rgba(16,185,129,0.15); color: var(--green); }
+.prompt-text {
+  font-size: 0.95rem;
+  color: var(--text);
+  font-style: italic;
+  line-height: 1.6;
+}
+.prompt-box.good .prompt-text { color: var(--text-bright); }
+
+/* ============================================
+   HUB & SPOKE DIAGRAM
+   ============================================ */
+.hub-spoke {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 20px 0;
+  position: relative;
+}
+.hub-center {
+  width: 140px; height: 140px;
+  background: var(--gradient);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 0.95rem; color: #fff;
+  text-align: center;
+  box-shadow: 0 0 60px rgba(168,85,247,0.3), 0 0 120px rgba(6,182,212,0.15);
+  position: relative; z-index: 2;
+  line-height: 1.3;
+}
+.spokes {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px; width: 100%; margin-top: 32px;
+}
+.spoke-card {
+  background: rgba(3,8,10,0.6);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 18px 16px;
+  text-align: center;
+  transition: all var(--transition);
+  position: relative;
+}
+.spoke-card::before {
+  content: '';
+  position: absolute; top: -16px; left: 50%;
+  width: 2px; height: 16px;
+  background: var(--gradient);
+}
+.spoke-card:hover {
+  border-color: var(--purple);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+.spoke-icon { font-size: 1.8rem; margin-bottom: 8px; }
+.spoke-name { font-weight: 600; font-size: 0.9rem; color: var(--text-bright); margin-bottom: 4px; }
+.spoke-desc { font-size: 0.78rem; color: var(--text-dim); }
+
+/* ============================================
+   COMMAND GRID
+   ============================================ */
+.cmd-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px;
+}
+.cmd-card {
+  background: rgba(3,8,10,0.6);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 22px;
+  transition: all var(--transition);
+}
+.cmd-card:hover {
+  border-color: var(--cyan);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(6,182,212,0.1);
+}
+.cmd-name {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.95rem;
+  color: var(--cyan);
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.cmd-desc { font-size: 0.88rem; color: var(--text-dim); }
+
+/* ============================================
+   FILE TREE
+   ============================================ */
+.file-tree {
+  background: #060e13;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 24px 28px;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.85rem;
+  line-height: 2;
+  margin: 20px 0;
+}
+.file-tree .folder { color: var(--cyan); }
+.file-tree .file { color: var(--text); }
+.file-tree .annotation { color: var(--text-dim); font-style: italic; font-size: 0.78rem; }
+.file-tree .highlight-file { color: var(--purple); font-weight: 600; }
+
+/* ============================================
+   MEMORY TAXONOMY
+   ============================================ */
+.memory-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+}
+.memory-card {
+  background: rgba(3,8,10,0.5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 22px;
+  transition: all var(--transition);
+}
+.memory-card:hover { border-color: var(--border-light); }
+.memory-icon { font-size: 2rem; margin-bottom: 10px; }
+.memory-type { font-weight: 600; color: var(--text-bright); margin-bottom: 6px; }
+.memory-desc { font-size: 0.88rem; color: var(--text-dim); }
+
+/* ============================================
+   TIMELINE
+   ============================================ */
+.timeline {
+  position: relative; padding-left: 36px; margin: 20px 0;
+}
+.timeline::before {
+  content: ''; position: absolute; left: 14px; top: 0; bottom: 0;
+  width: 2px; background: var(--gradient);
+}
+.timeline-step {
+  position: relative; margin-bottom: 24px;
+}
+.timeline-step::before {
+  content: attr(data-step);
+  position: absolute; left: -36px;
+  width: 28px; height: 28px;
+  background: var(--gradient);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.75rem; font-weight: 700; color: #fff;
+  text-align: center; line-height: 28px;
+}
+.timeline-step h4 { margin: 0 0 6px; font-size: 1rem; }
+.timeline-step p { margin: 0; font-size: 0.92rem; color: var(--text-dim); }
+
+/* ============================================
+   PROJECT DASHBOARD
+   ============================================ */
+.project-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px;
+}
+.project-card {
+  background: rgba(3,8,10,0.6);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 22px;
+  transition: all var(--transition);
+}
+.project-card:hover {
+  border-color: var(--purple);
+  box-shadow: 0 4px 20px rgba(168,85,247,0.08);
+}
+.project-name {
+  font-weight: 700; font-size: 1.05rem; color: var(--text-bright);
+  margin-bottom: 6px;
+}
+.project-desc { font-size: 0.85rem; color: var(--text-dim); margin-bottom: 10px; }
+.project-stack {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px;
+}
+.project-stack span {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.7rem;
+  background: rgba(168,85,247,0.1);
+  color: var(--purple);
+  padding: 2px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(168,85,247,0.15);
+}
+.project-status {
+  font-size: 0.78rem; font-weight: 600;
+  display: inline-block;
+  padding: 3px 12px;
+  border-radius: 20px;
+}
+.project-status.active { background: rgba(16,185,129,0.12); color: var(--green); }
+.project-status.new { background: rgba(168,85,247,0.12); color: var(--purple); }
+.project-status.stable { background: rgba(6,182,212,0.12); color: var(--cyan); }
+
+/* ============================================
+   TIPS CARDS
+   ============================================ */
+.tips-list {
+  counter-reset: tip;
+}
+.tip-card {
+  counter-increment: tip;
+  background: rgba(3,8,10,0.5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 22px 22px 22px 74px;
+  margin-bottom: 14px;
+  position: relative;
+  transition: all var(--transition);
+}
+.tip-card:hover {
+  border-color: var(--border-light);
+  background: rgba(11,22,28,0.6);
+}
+.tip-card::before {
+  content: counter(tip, decimal-leading-zero);
+  position: absolute; left: 22px; top: 20px;
+  font-family: 'Fira Code', monospace;
+  font-size: 1.4rem; font-weight: 700;
+  background: var(--gradient-text);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.tip-card h4 { margin: 0 0 6px; font-size: 1rem; }
+.tip-card p { margin: 0; font-size: 0.9rem; color: var(--text-dim); }
+
+/* ============================================
+   CHEAT SHEET
+   ============================================ */
+.cheat-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+}
+.cheat-section {
+  background: rgba(3,8,10,0.5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 22px;
+}
+.cheat-section h4 {
+  font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;
+  color: var(--purple); margin: 0 0 14px;
+  padding-bottom: 8px; border-bottom: 1px solid var(--border);
+}
+.cheat-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding: 6px 0; border-bottom: 1px solid rgba(19,32,48,0.4);
+  font-size: 0.85rem;
+}
+.cheat-row:last-child { border-bottom: none; }
+.cheat-key {
+  font-family: 'Fira Code', monospace;
+  color: var(--cyan);
+  font-size: 0.8rem;
+}
+.cheat-val { color: var(--text-dim); text-align: right; max-width: 55%; }
+
+/* ============================================
+   COLLAPSIBLE SECTIONS
+   ============================================ */
+details {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  margin: 12px 0;
+  transition: all var(--transition);
+}
+details[open] {
+  border-color: var(--border-light);
+}
+summary {
+  padding: 16px 22px;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--text-bright);
+  list-style: none;
+  display: flex; align-items: center; gap: 10px;
+  user-select: none;
+}
+summary::-webkit-details-marker { display: none; }
+summary::before {
+  content: '\25B6'; font-size: 0.7rem; color: var(--purple);
+  transition: transform var(--transition);
+  display: inline-block;
+}
+details[open] summary::before { transform: rotate(90deg); }
+details .detail-content { padding: 0 22px 20px; }
+
+/* ============================================
+   FLOW CHART (CSS-only)
+   ============================================ */
+.flow {
+  display: flex; flex-direction: column; align-items: center; gap: 0; margin: 20px 0;
+}
+.flow-step {
+  background: rgba(3,8,10,0.6);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 28px;
+  text-align: center;
+  font-size: 0.92rem;
+  min-width: 280px;
+  position: relative;
+}
+.flow-arrow {
+  width: 2px; height: 24px;
+  background: var(--gradient);
+  position: relative;
+}
+.flow-arrow::after {
+  content: ''; position: absolute; bottom: -4px; left: -4px;
+  width: 0; height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid var(--cyan);
+}
+
+/* ============================================
+   SPECTRUM BAR
+   ============================================ */
+.spectrum {
+  margin: 20px 0; position: relative;
+}
+.spectrum-bar {
+  height: 12px;
+  background: linear-gradient(90deg, var(--red), var(--amber), var(--green));
+  border-radius: 6px;
+  margin: 12px 0 8px;
+}
+.spectrum-labels {
+  display: flex; justify-content: space-between;
+  font-size: 0.78rem; color: var(--text-dim);
+}
+.spectrum-markers {
+  display: flex; justify-content: space-between; margin-top: 16px;
+}
+.spectrum-point {
+  text-align: center; font-size: 0.8rem; max-width: 140px;
+}
+.spectrum-point .dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  margin: 0 auto 6px;
+}
+
+/* ============================================
+   PARALLEL vs SEQUENTIAL DIAGRAM
+   ============================================ */
+.exec-diagram { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.exec-col h4 {
+  font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;
+  margin-bottom: 16px; text-align: center;
+}
+.exec-col.seq h4 { color: var(--red); }
+.exec-col.par h4 { color: var(--green); }
+.exec-bar {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 8px;
+}
+.exec-bar .bar {
+  height: 28px;
+  border-radius: 4px;
+  display: flex; align-items: center; padding: 0 10px;
+  font-family: 'Fira Code', monospace; font-size: 0.72rem; color: #fff;
+  white-space: nowrap;
+}
+.exec-bar .time {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  min-width: 30px;
+}
+.bar-a { background: var(--purple); }
+.bar-b { background: var(--cyan); }
+.bar-c { background: var(--pink); }
+.exec-total {
+  text-align: center; margin-top: 12px;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.85rem; font-weight: 600;
+}
+
+/* ============================================
+   HERO / COVER
+   ============================================ */
+.hero {
+  text-align: center;
+  padding: 60px 20px 50px;
+  position: relative;
+}
+.hero::after {
+  content: '';
+  position: absolute; bottom: 0; left: 10%; right: 10%; height: 1px;
+  background: var(--gradient);
+}
+.hero-badge {
+  display: inline-block;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.75rem;
+  color: var(--purple);
+  background: rgba(168,85,247,0.1);
+  border: 1px solid rgba(168,85,247,0.2);
+  padding: 4px 16px;
+  border-radius: 20px;
+  margin-bottom: 24px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.hero h1 {
+  font-size: 3.2rem;
+  background: var(--gradient-text);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 16px;
+}
+.hero .subtitle {
+  font-size: 1.2rem;
+  color: var(--text-dim);
+  max-width: 540px;
+  margin: 0 auto 32px;
+}
+.hero-meta {
+  display: flex; justify-content: center; gap: 32px;
+  font-size: 0.85rem; color: var(--text-dim);
+}
+.hero-meta span { display: flex; align-items: center; gap: 6px; }
+
+/* ============================================
+   CALLOUT
+   ============================================ */
+.callout {
+  border-radius: var(--radius-sm);
+  padding: 18px 22px;
+  margin: 20px 0;
+  font-size: 0.92rem;
+  display: flex; gap: 14px; align-items: flex-start;
+}
+.callout-icon { font-size: 1.3rem; flex-shrink: 0; margin-top: 1px; }
+.callout.info {
+  background: rgba(6,182,212,0.08);
+  border: 1px solid rgba(6,182,212,0.2);
+}
+.callout.tip {
+  background: rgba(16,185,129,0.08);
+  border: 1px solid rgba(16,185,129,0.2);
+}
+.callout.warning {
+  background: rgba(245,158,11,0.08);
+  border: 1px solid rgba(245,158,11,0.2);
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+footer {
+  text-align: center;
+  padding: 48px 24px;
+  border-top: 1px solid var(--border);
+  margin-top: 80px;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+}
+footer .footer-brand {
+  font-weight: 700;
+  background: var(--gradient-text);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 900px) {
+  #sidebar { transform: translateX(-100%); }
+  #sidebar.open { transform: translateX(0); }
+  #menu-toggle { display: flex; }
+  #main { margin-left: 0; padding: 24px 20px 80px; }
+  .hero h1 { font-size: 2.2rem; }
+  h2 { font-size: 1.6rem; }
+  .comparison, .prompt-example, .exec-diagram, .memory-grid, .cheat-grid { grid-template-columns: 1fr; }
+  .spokes { grid-template-columns: 1fr 1fr; }
+  .cmd-grid { grid-template-columns: 1fr; }
+  .project-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 500px) {
+  .spokes { grid-template-columns: 1fr; }
+  .hero-meta { flex-direction: column; gap: 8px; }
+}
+
+/* ============================================
+   PRINT
+   ============================================ */
+@media print {
+  #sidebar, #menu-toggle, #progress-bar { display: none !important; }
+  #main { margin-left: 0; padding: 20px; max-width: 100%; }
+  body { background: #fff; color: #222; font-size: 11pt; }
+  .card, .infographic, details, .prompt-box, .cmd-card, .project-card, .tip-card, .cheat-section, .compare-col, .spoke-card, .memory-card, .flow-step {
+    background: #f8f8f8; border-color: #ddd; color: #222;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    break-inside: avoid;
+  }
+  h1, h2, h3, h4 { color: #111; }
+  .hero h1 { -webkit-text-fill-color: #6d28d9; }
+  code { background: #f0f0f0; color: #6d28d9; }
+  pre { background: #f5f5f5; }
+  pre code { color: #333; }
+  a { color: #6d28d9; }
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.animate-in {
+  animation: fadeUp 0.5s ease-out both;
+}
+</style>
+</head>
+<body>
+
+<!-- Progress Bar -->
+<div id="progress-bar"></div>
+
+<!-- Mobile Menu Toggle -->
+<button id="menu-toggle" aria-label="Toggle menu">&#9776;</button>
+
+<!-- Sidebar -->
+<aside id="sidebar">
+  <div class="logo">
+    <h2>The Claude Code Playbook</h2>
+    <span>by Rick.AI &middot; 2026 Edition</span>
+  </div>
+  <nav id="toc">
+    <a href="#cover"><span class="ch-num"></span>Cover</a>
+    <a href="#ch1"><span class="ch-num">01</span>Welcome to Claude Code</a>
+    <a href="#ch2"><span class="ch-num">02</span>Talking to Claude</a>
+    <a href="#ch3"><span class="ch-num">03</span>Your Super Stack</a>
+    <a href="#ch4"><span class="ch-num">04</span>Slash Commands</a>
+    <a href="#ch5"><span class="ch-num">05</span>Project Management</a>
+    <a href="#ch6"><span class="ch-num">06</span>Memory System</a>
+    <a href="#ch7"><span class="ch-num">07</span>Advanced Techniques</a>
+    <a href="#ch8"><span class="ch-num">08</span>Real-World Workflows</a>
+    <a href="#ch9"><span class="ch-num">09</span>Your Projects</a>
+    <a href="#ch10"><span class="ch-num">10</span>Tips &amp; Best Practices</a>
+    <a href="#ch11"><span class="ch-num">11</span>Quick Reference</a>
+  </nav>
+</aside>
+
+<!-- Main Content -->
+<div id="main">
+
+  <!-- =============================================
+       COVER
+       ============================================= -->
+  <section id="cover" class="hero">
+    <div class="hero-badge">Rick.AI &middot; 2026 Edition</div>
+    <h1>The Claude Code Playbook</h1>
+    <p class="subtitle">Your complete guide to building software with AI. From first prompt to production deploy &mdash; no coding degree required.</p>
+    <div class="hero-meta">
+      <span>&#128214; 11 Chapters</span>
+      <span>&#9889; Claude Opus 4.6</span>
+      <span>&#127760; 1M Context Window</span>
+    </div>
+  </section>
+
+  <!-- =============================================
+       CHAPTER 1: Welcome to Claude Code
+       ============================================= -->
+  <h2 id="ch1">Chapter 1: Welcome to Claude Code</h2>
+
+  <h3>What Is Claude Code?</h3>
+  <p>Claude Code is an AI pair programmer that lives directly in your terminal (that black window where you type commands). Instead of writing code yourself, you <strong>describe what you want in plain English</strong>, and Claude writes the code, edits files, runs commands, manages your projects, and even deploys them &mdash; all while you watch.</p>
+
+  <p>Think of it like having a senior software developer sitting next to you 24/7, who never gets tired, never forgets context, and can read your entire codebase in seconds.</p>
+
+  <div class="callout info">
+    <span class="callout-icon">&#128161;</span>
+    <div><strong>Your Setup:</strong> You are running <code>Claude Opus 4.6</code> with a <strong>1 million token context window</strong>. That means Claude can read and understand roughly 750,000 words of code at once &mdash; equivalent to about 15 full novels. Your entire project history, every file, every configuration &mdash; it all fits.</div>
+  </div>
+
+  <h3>Traditional Coding vs Claude Code</h3>
+
+  <div class="infographic">
+    <div class="infographic-title">Infographic: How Building Software Has Changed</div>
+    <div class="comparison">
+      <div class="compare-col bad">
+        <h4>&#128104;&#8205;&#128187; Traditional Development</h4>
+        <ul>
+          <li>Learn a programming language (months/years)</li>
+          <li>Set up development environment manually</li>
+          <li>Write every line of code yourself</li>
+          <li>Debug by reading stack traces</li>
+          <li>Google error messages endlessly</li>
+          <li>Manually manage files and folders</li>
+          <li>Deploy with complex terminal commands</li>
+          <li>Context switching between 10+ browser tabs</li>
+        </ul>
+      </div>
+      <div class="compare-col good">
+        <h4>&#9889; With Claude Code</h4>
+        <ul>
+          <li>Describe what you want in English</li>
+          <li><code>/bootstrap</code> &mdash; setup done in seconds</li>
+          <li>Claude writes, edits, and refactors code</li>
+          <li>Claude reads errors, finds root causes, and fixes</li>
+          <li>Claude searches docs and the web for you</li>
+          <li>Claude manages your project structure</li>
+          <li><code>/deploy</code> &mdash; one command to production</li>
+          <li>Everything happens in one conversation</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <h3>What Makes It Different from ChatGPT or Copilot?</h3>
+
+  <div class="card highlight">
+    <p><strong>ChatGPT</strong> gives you code snippets you have to copy-paste into the right files yourself. It cannot see your project or run commands.</p>
+    <p><strong>GitHub Copilot</strong> autocompletes single lines inside a code editor. It helps with typing, not thinking.</p>
+    <p><strong>Claude Code</strong> lives inside your project. It can read every file, understand how they connect, edit multiple files at once, run your application, check if things work, search the internet, manage your GitHub repos, post to social media, and deploy your code &mdash; all from one conversation.</p>
+    <p style="margin-bottom:0">It does not just <em>suggest</em> code. It <strong>does the work</strong>.</p>
+  </div>
+
+  <!-- =============================================
+       CHAPTER 2: Talking to Claude
+       ============================================= -->
+  <h2 id="ch2">Chapter 2: The Basics &mdash; Talking to Claude</h2>
+
+  <h3>How to Start a Conversation</h3>
+  <p>When you open Claude Code, you see a text prompt. Just type what you want, like sending a message. There is no special syntax or programming language to learn. Claude understands natural language.</p>
+
+  <pre><code>$ claude
+&#10;Welcome to Claude Code! How can I help you today?
+&#10;&gt; I need a landing page for my removal company with a booking form</code></pre>
+
+  <p>That is it. Claude will ask clarifying questions if needed, then get to work.</p>
+
+  <h3>The Art of Good Prompts</h3>
+  <p>The quality of what Claude builds depends heavily on how well you describe what you want. Think of it like giving instructions to a builder &mdash; "make it nice" is not as helpful as "use oak flooring, white walls, and brass fixtures."</p>
+
+  <div class="infographic">
+    <div class="infographic-title">Infographic: The Prompt Quality Spectrum</div>
+    <div class="spectrum">
+      <div class="spectrum-bar"></div>
+      <div class="spectrum-labels">
+        <span>&#128308; Vague</span>
+        <span>&#128992; Decent</span>
+        <span>&#128994; Precise</span>
+      </div>
+      <div class="spectrum-markers" style="margin-top: 24px;">
+        <div class="spectrum-point">
+          <div class="dot" style="background:var(--red);"></div>
+          <strong style="color:var(--red);">"Fix the bug"</strong><br>
+          <span style="font-size:0.78rem; color:var(--text-dim);">Claude has to guess everything</span>
+        </div>
+        <div class="spectrum-point">
+          <div class="dot" style="background:var(--amber);"></div>
+          <strong style="color:var(--amber);">"Fix the login bug"</strong><br>
+          <span style="font-size:0.78rem; color:var(--text-dim);">Better, but still ambiguous</span>
+        </div>
+        <div class="spectrum-point">
+          <div class="dot" style="background:var(--green);"></div>
+          <strong style="color:var(--green);">"The login form returns 401 with valid credentials. Check JWT middleware in auth.py"</strong><br>
+          <span style="font-size:0.78rem; color:var(--text-dim);">Claude goes straight to the fix</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Real Prompt Examples</h3>
+
+  <h4>Example 1: Fixing a Bug</h4>
+  <div class="prompt-example">
+    <div class="prompt-box bad">
+      <div class="prompt-label">&#10060; Vague Prompt</div>
+      <div class="prompt-text">"Fix the login bug"</div>
+    </div>
+    <div class="prompt-box good">
+      <div class="prompt-label">&#9989; Precise Prompt</div>
+      <div class="prompt-text">"The login form on /auth/login returns a 401 error even with valid credentials. Check the JWT middleware in auth.py &mdash; I think the token expiry might be wrong."</div>
+    </div>
+  </div>
+
+  <h4>Example 2: Improving Design</h4>
+  <div class="prompt-example">
+    <div class="prompt-box bad">
+      <div class="prompt-label">&#10060; Vague Prompt</div>
+      <div class="prompt-text">"Make it look better"</div>
+    </div>
+    <div class="prompt-box good">
+      <div class="prompt-label">&#9989; Precise Prompt</div>
+      <div class="prompt-text">"Update the hero section to use a purple-to-cyan gradient background with glassmorphism cards, matching the Rick.AI brand. Use Bricolage Grotesque for headings."</div>
+    </div>
+  </div>
+
+  <h4>Example 3: Adding a Feature</h4>
+  <div class="prompt-example">
+    <div class="prompt-box bad">
+      <div class="prompt-label">&#10060; Vague Prompt</div>
+      <div class="prompt-text">"Add social media"</div>
+    </div>
+    <div class="prompt-box good">
+      <div class="prompt-label">&#9989; Precise Prompt</div>
+      <div class="prompt-text">"Add an Instagram feed section to the Magna Park homepage that shows the 6 most recent posts. Pull from the Instagram API using the existing social media MCP server."</div>
+    </div>
+  </div>
+
+  <h3>When to Be Specific vs When to Let Claude Explore</h3>
+
+  <div class="card">
+    <p><strong>Be specific when:</strong></p>
+    <ul style="margin-left: 20px; margin-bottom: 16px;">
+      <li>You know exactly what you want (design specs, specific bugs, file paths)</li>
+      <li>You have a particular style or brand to match</li>
+      <li>There is a technical constraint Claude needs to know about</li>
+    </ul>
+    <p><strong>Let Claude explore when:</strong></p>
+    <ul style="margin-left: 20px; margin-bottom: 0;">
+      <li>You are starting a new project and want best practices</li>
+      <li>You are not sure what the best approach is</li>
+      <li>You want Claude to audit existing code and find issues</li>
+    </ul>
+  </div>
+
+  <div class="callout tip">
+    <span class="callout-icon">&#128640;</span>
+    <div><strong>Pro tip:</strong> You can always start broad and refine. Say "Build a booking form for Astra Removals" and then follow up with "Make the date picker use a calendar widget instead of a text input."</div>
+  </div>
+
+  <!-- =============================================
+       CHAPTER 3: Your Super Stack — MCP Servers
+       ============================================= -->
+  <h2 id="ch3">Chapter 3: Your Super Stack &mdash; MCP Servers</h2>
+
+  <p>Your Claude Code setup is supercharged with <strong>MCP servers</strong> (Model Context Protocol). Think of these as special powers that Claude can use. You do not need to invoke them manually &mdash; just talk naturally, and Claude picks the right tool automatically.</p>
+
+  <div class="infographic">
+    <div class="infographic-title">Infographic: Your Connected Super Stack</div>
+    <div class="hub-spoke">
+      <div class="hub-center">Claude<br>Code</div>
+      <div class="spokes">
+        <div class="spoke-card">
+          <div class="spoke-icon">&#128218;</div>
+          <div class="spoke-name">Context7</div>
+          <div class="spoke-desc">Library documentation and code examples. Claude reads official docs before answering.</div>
+        </div>
+        <div class="spoke-card">
+          <div class="spoke-icon">&#128025;</div>
+          <div class="spoke-name">GitHub</div>
+          <div class="spoke-desc">Create repos, branches, pull requests, manage issues, push code &mdash; all from chat.</div>
+        </div>
+        <div class="spoke-card">
+          <div class="spoke-icon">&#128269;</div>
+          <div class="spoke-name">Brave Search</div>
+          <div class="spoke-desc">Search the web in real time. Claude finds current info, tutorials, and solutions.</div>
+        </div>
+        <div class="spoke-card">
+          <div class="spoke-icon">&#127760;</div>
+          <div class="spoke-name">Fetch</div>
+          <div class="spoke-desc">Read any URL's content. Claude can pull data from websites and APIs directly.</div>
+        </div>
+        <div class="spoke-card">
+          <div class="spoke-icon">&#128246;</div>
+          <div class="spoke-name">Social Media</div>
+          <div class="spoke-desc">Post to X, Instagram, Facebook, LinkedIn. Generate content, track analytics.</div>
+        </div>
+        <div class="spoke-card">
+          <div class="spoke-icon">&#127912;</div>
+          <div class="spoke-name">Canva</div>
+          <div class="spoke-desc">Create and edit designs, export graphics, manage brand assets programmatically.</div>
+        </div>
+        <div class="spoke-card">
+          <div class="spoke-icon">&#128197;</div>
+          <div class="spoke-name">Google Calendar</div>
+          <div class="spoke-desc">View events, find free time, create meetings, manage your schedule.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h3>How It Works in Practice</h3>
+  <p>You never have to say "use the GitHub MCP server." Just talk naturally:</p>
+
+  <details>
+    <summary>&#128025; Example: GitHub &mdash; Creating a Repository</summary>
+    <div class="detail-content">
+      <pre><code>&gt; Create a GitHub repo called "magna-park" with a description
+  "Magna Park Self Storage - Website &amp; Social Automation"
+
+Claude automatically:
+  1. Uses the GitHub MCP to create the repo
+  2. Sets the description
+  3. Initialises it with your standard setup
+  4. Reports back with the URL</code></pre>
+    </div>
+  </details>
+
+  <details>
+    <summary>&#128269; Example: Brave Search &mdash; Finding Solutions</summary>
+    <div class="detail-content">
+      <pre><code>&gt; My Vercel deployment is failing with "edge function size exceeded".
+  What are the current size limits and how do I fix this?
+
+Claude automatically:
+  1. Searches the web for current Vercel edge function limits
+  2. Finds the most up-to-date documentation
+  3. Gives you a solution based on real, current info</code></pre>
+    </div>
+  </details>
+
+  <details>
+    <summary>&#128246; Example: Social Media &mdash; Posting Content</summary>
+    <div class="detail-content">
+      <pre><code>&gt; Create a social media post for Magna Park about our January
+  storage special - 50% off first month. Post to X and LinkedIn.
+
+Claude automatically:
+  1. Generates branded copy for each platform
+  2. Adjusts tone/length for X vs LinkedIn
+  3. Posts to both platforms via the Social Media MCP
+  4. Reports back with post links</code></pre>
+    </div>
+  </details>
+
+  <details>
+    <summary>&#128218; Example: Context7 &mdash; Library Documentation</summary>
+    <div class="detail-content">
+      <pre><code>&gt; Add Supabase authentication to the ai-trainer project.
+  Use the latest API for email/password sign-up.
+
+Claude automatically:
+  1. Uses Context7 to pull the latest Supabase auth docs
+  2. Checks the current API (not outdated info from training data)
+  3. Implements it using the correct, current method</code></pre>
+    </div>
+  </details>
+
+  <details>
+    <summary>&#127912; Example: Canva &mdash; Creating Designs</summary>
+    <div class="detail-content">
+      <pre><code>&gt; Create a promotional banner for Astra Removals' spring
+  moving special. Use the brand kit.
+
+Claude automatically:
+  1. Pulls your Canva brand kit (colours, logos, fonts)
+  2. Generates a design matching your brand
+  3. Exports it for social media use</code></pre>
+    </div>
+  </details>
+
+  <!-- =============================================
+       CHAPTER 4: Slash Commands
+       ============================================= -->
+  <h2 id="ch4">Chapter 4: Slash Commands &mdash; Your Automation Toolkit</h2>
+
+  <p>Slash commands are shortcuts for common workflows. Instead of explaining a multi-step task each time, you type a single command and Claude handles everything. Think of them as <strong>one-button automations</strong> for your most frequent needs.</p>
+
+  <div class="infographic">
+    <div class="infographic-title">Infographic: Your Command Toolkit</div>
+    <div class="cmd-grid">
+      <div class="cmd-card">
+        <div class="cmd-name">/bootstrap</div>
+        <div class="cmd-desc">Full project setup &mdash; CLAUDE.md, tasks folder, git repo, GitHub remote, environment, scaffolding. Everything from zero to ready.</div>
+      </div>
+      <div class="cmd-card">
+        <div class="cmd-name">/new-project</div>
+        <div class="cmd-desc">Fast-track project creation. One question from Claude, then it auto-scaffolds everything based on your answer.</div>
+      </div>
+      <div class="cmd-card">
+        <div class="cmd-name">/deploy</div>
+        <div class="cmd-desc">Pre-deploy checks, push to GitHub, monitor the build, run health checks, and report back. Hands-free deployment.</div>
+      </div>
+      <div class="cmd-card">
+        <div class="cmd-name">/audit</div>
+        <div class="cmd-desc">Full health scan &mdash; tests, env vars, security, code quality, dependencies. Like an MOT for your project.</div>
+      </div>
+      <div class="cmd-card">
+        <div class="cmd-name">/env-sync</div>
+        <div class="cmd-desc">Compares environment variables across your codebase, .env file, .env.example, and deployment. Finds missing or mismatched vars.</div>
+      </div>
+      <div class="cmd-card">
+        <div class="cmd-name">/social-setup</div>
+        <div class="cmd-desc">Guided social media platform setup. Connects accounts, tests connections, and verifies everything works.</div>
+      </div>
+      <div class="cmd-card">
+        <div class="cmd-name">/social-onboard</div>
+        <div class="cmd-desc">Fully autonomous social media agent. Does everything itself, only asks you for browser logins.</div>
+      </div>
+      <div class="cmd-card">
+        <div class="cmd-name">/seo-autopilot</div>
+        <div class="cmd-desc">Generates SEO + GEO + Social content automatically for FastAPI projects. Metadata, sitemaps, and social posts.</div>
+      </div>
+      <div class="cmd-card">
+        <div class="cmd-name">/watchdog</div>
+        <div class="cmd-desc">Health check all deployed projects at once. One command to see what is up, what is down, and what needs attention.</div>
+      </div>
+      <div class="cmd-card">
+        <div class="cmd-name">/pdf</div>
+        <div class="cmd-desc">Adobe-quality PDF toolkit. Read, create, and manipulate PDF documents with professional formatting.</div>
+      </div>
+    </div>
+  </div>
+
+  <h3>When to Use Each Command</h3>
+
+  <details>
+    <summary>&#127959;&#65039; /bootstrap &mdash; Starting a Brand New Project</summary>
+    <div class="detail-content">
+      <p>Use this when you have a blank folder and want the full treatment. It creates everything:</p>
+      <ul style="margin-left: 20px;">
+        <li>CLAUDE.md with project identity and agent rules</li>
+        <li>tasks/ folder with todo.md and lessons.md</li>
+        <li>Git repository initialised locally</li>
+        <li>GitHub remote repository created</li>
+        <li>Environment configuration</li>
+        <li>Project scaffolding based on your tech stack</li>
+      </ul>
+      <p><strong>Real example:</strong> When you started the transport-manager project, <code>/bootstrap</code> set up the entire FastAPI project structure, database models, and deployment config in one go.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>&#128640; /deploy &mdash; Shipping to Production</summary>
+    <div class="detail-content">
+      <p>Use this when you are ready to go live. Claude will:</p>
+      <ol style="margin-left: 20px;">
+        <li>Run pre-deploy checks (tests, linting, build)</li>
+        <li>Push your code to GitHub</li>
+        <li>Monitor the build process on Vercel/Railway</li>
+        <li>Run a health check on the live URL</li>
+        <li>Report back with a summary</li>
+      </ol>
+      <p>If anything fails, Claude tells you what went wrong and offers to fix it.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>&#128270; /audit &mdash; Project Health Check</summary>
+    <div class="detail-content">
+      <p>Run this periodically to catch problems before they bite. It checks:</p>
+      <ul style="margin-left: 20px;">
+        <li>Test coverage and failing tests</li>
+        <li>Missing or outdated environment variables</li>
+        <li>Security vulnerabilities in dependencies</li>
+        <li>Code quality issues</li>
+        <li>Dependency updates available</li>
+      </ul>
+      <p><strong>Real example:</strong> Running <code>/audit</code> on primehaul-leads caught three missing env vars that would have caused crashes in production.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>&#128225; /social-onboard &mdash; Full Social Media Setup</summary>
+    <div class="detail-content">
+      <p>This is the fully autonomous version. Claude does everything itself and only interrupts you when it needs you to:</p>
+      <ul style="margin-left: 20px;">
+        <li>Log into a social media platform in the browser</li>
+        <li>Approve app permissions</li>
+        <li>Copy an access token</li>
+      </ul>
+      <p>It batches questions together to minimise interruptions. Everything else &mdash; configuring accounts, testing connections, verifying posts &mdash; is handled automatically.</p>
+    </div>
+  </details>
+
+  <!-- =============================================
+       CHAPTER 5: Project Management
+       ============================================= -->
+  <h2 id="ch5">Chapter 5: Project Management with Claude</h2>
+
+  <h3>The CLAUDE.md File &mdash; Your Project's Brain</h3>
+  <p>Every project you work on has a special file called <code>CLAUDE.md</code> at its root. This is like a briefing document that tells Claude everything it needs to know about the project: what it is, how it works, what the rules are, and how you like things done.</p>
+
+  <p>When Claude opens any project, the <strong>first thing it reads</strong> is CLAUDE.md. This is why Claude already knows about your projects, your preferences, and your tech stack without you having to explain every time.</p>
+
+  <div class="infographic">
+    <div class="infographic-title">Infographic: Anatomy of a Project</div>
+    <div class="file-tree">
+      <span class="folder">your-project/</span><br>
+      &#9500;&#9472;&#9472; <span class="highlight-file">CLAUDE.md</span> <span class="annotation">&larr; Project brain &mdash; identity, rules, tech stack</span><br>
+      &#9500;&#9472;&#9472; <span class="folder">tasks/</span><br>
+      &#9474;&nbsp;&nbsp; &#9500;&#9472;&#9472; <span class="highlight-file">todo.md</span> <span class="annotation">&larr; Current tasks and progress</span><br>
+      &#9474;&nbsp;&nbsp; &#9492;&#9472;&#9472; <span class="highlight-file">lessons.md</span> <span class="annotation">&larr; Patterns learned from mistakes</span><br>
+      &#9500;&#9472;&#9472; <span class="folder">src/</span> <span class="annotation">&larr; Your application code</span><br>
+      &#9500;&#9472;&#9472; <span class="file">.env</span> <span class="annotation">&larr; Secret keys and config</span><br>
+      &#9500;&#9472;&#9472; <span class="file">package.json</span> <span class="annotation">&larr; Dependencies</span><br>
+      &#9492;&#9472;&#9472; <span class="file">...</span>
+    </div>
+  </div>
+
+  <h3>What Goes in CLAUDE.md?</h3>
+  <div class="card">
+    <p><strong>Identity:</strong> Project name, one-line description, owner (you!), tech stack.</p>
+    <p><strong>Agent Behaviour Rules:</strong> How Claude should work &mdash; plan before building, verify before marking done, use sub-agents for research, update lessons after mistakes.</p>
+    <p><strong>Core Principles:</strong> Simplicity first, find root causes, senior-level code standards.</p>
+    <p style="margin-bottom:0"><strong>Project-Specific Notes:</strong> API keys to use, deployment targets, brand guidelines, special requirements.</p>
+  </div>
+
+  <div class="callout info">
+    <span class="callout-icon">&#128161;</span>
+    <div>You never need to create CLAUDE.md manually. Your global rules automatically create one when Claude enters a new project directory. If you want to add project-specific notes, just tell Claude: "Add to CLAUDE.md that this project uses Supabase for auth."</div>
+  </div>
+
+  <h3>Task Management: todo.md</h3>
+  <p>The <code>tasks/todo.md</code> file is where Claude tracks what needs to be done, what is in progress, and what is complete. This persists between conversations, so when you come back the next day, Claude picks up exactly where it left off.</p>
+
+  <pre><code># Todo
+
+## In Progress
+- [ ] Add booking calendar to Astra Removals homepage
+- [ ] Fix mobile nav overlap on coach-mentor
+
+## Done
+- [x] Set up social media automation for Magna Park
+- [x] Deploy transport-manager to Railway
+- [x] Create PDF quote generator for primehaul-survey</code></pre>
+
+  <h3>The Self-Improvement Loop: lessons.md</h3>
+  <p>Whenever Claude makes a mistake and you correct it, it writes down what went wrong in <code>tasks/lessons.md</code>. Next time, it checks this file first and avoids repeating the same error. This means Claude literally gets better at working with <em>your</em> projects over time.</p>
+
+  <pre><code># Lessons Learned
+
+## 2026-03-15 — Vercel Edge Functions
+- Pattern: Large dependencies break edge function size limits
+- Solution: Use dynamic imports and tree-shake unused modules
+- Rule: Always check bundle size before deploying to Vercel
+
+## 2026-03-10 — Supabase RLS
+- Pattern: Forgetting Row Level Security policies causes 403 errors
+- Solution: Always create RLS policies when adding new tables
+- Rule: Never create a Supabase table without an RLS policy</code></pre>
+
+  <!-- =============================================
+       CHAPTER 6: Memory System
+       ============================================= -->
+  <h2 id="ch6">Chapter 6: Memory &mdash; How Claude Remembers You</h2>
+
+  <p>Claude Code has a persistent memory system. This is not like ChatGPT where every conversation starts fresh. Claude remembers who you are, what projects you are working on, how you like things done, and what has happened in previous conversations.</p>
+
+  <div class="infographic">
+    <div class="infographic-title">Infographic: Memory Types</div>
+    <div class="memory-grid">
+      <div class="memory-card">
+        <div class="memory-icon">&#129489;</div>
+        <div class="memory-type">User Memories</div>
+        <div class="memory-desc">Who you are, your name (Ricky), your email, your role as a business owner. Applies across all projects.</div>
+      </div>
+      <div class="memory-card">
+        <div class="memory-icon">&#128172;</div>
+        <div class="memory-type">Feedback Memories</div>
+        <div class="memory-desc">How you like to work &mdash; "please do not ask for human permissions", your preferred code style, design preferences (dark theme, glassmorphism).</div>
+      </div>
+      <div class="memory-card">
+        <div class="memory-icon">&#128203;</div>
+        <div class="memory-type">Project Memories</div>
+        <div class="memory-desc">What each project is, its current status, tech stack, deployment target, and recent changes. Stored in MEMORY.md and project CLAUDE.md files.</div>
+      </div>
+      <div class="memory-card">
+        <div class="memory-icon">&#128279;</div>
+        <div class="memory-type">Reference Memories</div>
+        <div class="memory-desc">Where to find things &mdash; shared modules location, slash command paths, MCP server configurations, deployment URLs.</div>
+      </div>
+    </div>
+  </div>
+
+  <h3>How Memory Persists</h3>
+  <p>Memory is stored in two places:</p>
+
+  <div class="card">
+    <p><strong>Global Memory</strong> (<code>~/.claude/projects/.../MEMORY.md</code>): Your identity, preferences, and cross-project knowledge. This follows you everywhere.</p>
+    <p><strong>Project Memory</strong> (<code>CLAUDE.md</code> + <code>tasks/</code>): Project-specific context. This stays with the project and is read whenever Claude enters that directory.</p>
+    <p style="margin-bottom:0">There is also a <code>PROGRESS.md</code> file that Claude checks at the start of every session to pick up where you left off. This is like leaving a note for yourself about exactly what you were doing when you stopped.</p>
+  </div>
+
+  <h3>Managing Your Memory</h3>
+
+  <div class="callout tip">
+    <span class="callout-icon">&#128161;</span>
+    <div>
+      <p style="margin-bottom:8px"><strong>To make Claude remember something:</strong></p>
+      <p style="margin-bottom:8px"><code>"Remember that I always want dark theme with purple/cyan gradients for Rick.AI projects."</code></p>
+      <p style="margin-bottom:8px"><strong>To check what Claude remembers:</strong></p>
+      <p style="margin-bottom:8px"><code>"What do you know about my projects?"</code></p>
+      <p style="margin-bottom:0"><strong>To update memory:</strong></p>
+      <p style="margin-bottom:0"><code>"Update the Magna Park project status to deployed."</code></p>
+    </div>
+  </div>
+
+  <!-- =============================================
+       CHAPTER 7: Advanced Techniques
+       ============================================= -->
+  <h2 id="ch7">Chapter 7: Advanced Techniques</h2>
+
+  <h3>Agents &amp; Parallel Work</h3>
+  <p>For complex tasks, Claude can launch <strong>sub-agents</strong> &mdash; think of them as assistants that each handle one piece of a bigger job. This is like having a team instead of a single person.</p>
+
+  <div class="infographic">
+    <div class="infographic-title">Infographic: Sequential vs Parallel Execution</div>
+    <div class="exec-diagram">
+      <div class="exec-col seq">
+        <h4>&#128308; Sequential (One at a Time)</h4>
+        <div class="exec-bar">
+          <span class="time">0s</span>
+          <div class="bar bar-a" style="width: 120px;">Search docs</div>
+        </div>
+        <div class="exec-bar">
+          <span class="time">5s</span>
+          <div class="bar bar-b" style="width: 160px;">Read 8 files</div>
+        </div>
+        <div class="exec-bar">
+          <span class="time">12s</span>
+          <div class="bar bar-c" style="width: 140px;">Edit 3 files</div>
+        </div>
+        <div class="exec-total" style="color:var(--red);">Total: ~20 seconds</div>
+      </div>
+      <div class="exec-col par">
+        <h4>&#128994; Parallel (All at Once)</h4>
+        <div class="exec-bar">
+          <span class="time">0s</span>
+          <div class="bar bar-a" style="width: 120px;">Search docs</div>
+        </div>
+        <div class="exec-bar">
+          <span class="time">0s</span>
+          <div class="bar bar-b" style="width: 160px;">Read 8 files</div>
+        </div>
+        <div class="exec-bar">
+          <span class="time">0s</span>
+          <div class="bar bar-c" style="width: 140px;">Edit 3 files</div>
+        </div>
+        <div class="exec-total" style="color:var(--green);">Total: ~8 seconds</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout tip">
+    <span class="callout-icon">&#9889;</span>
+    <div><strong>Trigger parallel work by saying:</strong> "Do all of these in parallel" or "Handle these simultaneously." Claude will launch multiple operations at once when they do not depend on each other.</div>
+  </div>
+
+  <h3>Plan Mode</h3>
+  <p>For tasks with three or more steps, Claude automatically enters <strong>plan mode</strong>. Instead of diving straight in, it outlines what it intends to do and waits for your approval. This prevents wasted work on misunderstood requirements.</p>
+
+  <pre><code>&gt; Add a complete booking system to Astra Removals with
+  calendar, quote calculator, and email confirmation.
+
+Claude responds:
+  "Here's my plan for the booking system:
+   1. Create BookingForm component with date/time picker
+   2. Build quote calculator (distance x volume x date)
+   3. Add email confirmation via SendGrid API
+   4. Create booking confirmation page
+   5. Add admin dashboard for managing bookings
+   6. Write tests for the calculator logic
+
+   Shall I proceed with this plan?"</code></pre>
+
+  <p>You can approve the plan, modify it ("skip step 6 for now"), or ask Claude to rethink ("I want Resend instead of SendGrid").</p>
+
+  <h3>Autonomous Mode</h3>
+  <p>When you trust Claude to handle a task end-to-end without checking in, give it <strong>full permission</strong>:</p>
+
+  <pre><code>&gt; You have full permission. Build the entire landing page for
+  Magna Park Self Storage. Use the Rick.AI dark theme. Deploy
+  when done. Do not ask for human permissions.</code></pre>
+
+  <p>Claude will work through the entire task autonomously &mdash; creating files, writing code, testing, committing to git, and deploying &mdash; only stopping if it hits an actual error it cannot resolve.</p>
+
+  <div class="callout warning">
+    <span class="callout-icon">&#9888;&#65039;</span>
+    <div><strong>Use autonomous mode when:</strong> You know what you want and trust the outcome. <strong>Stay hands-on when:</strong> You are experimenting, working with sensitive data, or the task is ambiguous.</div>
+  </div>
+
+  <h3>Git &amp; GitHub Integration</h3>
+  <p>Claude handles all your version control. You never need to remember git commands:</p>
+
+  <div class="card">
+    <p><strong>"Commit this work"</strong> &mdash; Claude stages the right files, writes a clear commit message, and creates the commit.</p>
+    <p><strong>"Create a PR for this feature"</strong> &mdash; Claude pushes to GitHub, creates a pull request with a proper title and description, and gives you the URL.</p>
+    <p><strong>"What changed since yesterday?"</strong> &mdash; Claude shows you a summary of recent commits and changes.</p>
+    <p style="margin-bottom:0"><strong>"Review the code in this PR"</strong> &mdash; Claude reads the PR changes and gives you a detailed code review with suggestions.</p>
+  </div>
+
+  <!-- =============================================
+       CHAPTER 8: Real-World Workflows
+       ============================================= -->
+  <h2 id="ch8">Chapter 8: Real-World Workflows</h2>
+
+  <p>Here are the workflows you will use most often, shown as step-by-step flows.</p>
+
+  <h3>&#127959;&#65039; Starting a New Project</h3>
+  <div class="infographic">
+    <div class="flow">
+      <div class="flow-step">Type <code>/new-project</code> or <code>/bootstrap</code></div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step">Claude asks one question: "What are you building?"</div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step">Describe it: <em>"A self-storage website for Magna Park, Bournemouth"</em></div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step">Claude creates CLAUDE.md, tasks/, git repo, GitHub remote</div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step">Claude scaffolds the project (files, folders, config, deps)</div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step" style="border-color: var(--green);">&#9989; Project is ready to build</div>
+    </div>
+  </div>
+
+  <h3>&#128027; Fixing a Bug</h3>
+  <div class="infographic">
+    <div class="flow">
+      <div class="flow-step">Describe the symptom: <em>"The pricing page shows NaN for monthly costs"</em></div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step">Claude reads relevant files, traces the data flow</div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step">Claude finds root cause: <em>"Price is a string, not a number, from the API"</em></div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step">Claude fixes the code (adds parseFloat, updates type)</div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step">Claude verifies the fix works</div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step" style="border-color: var(--green);">&#9989; Bug resolved &mdash; commit ready</div>
+    </div>
+  </div>
+
+  <h3>&#128296; Adding a Feature</h3>
+  <div class="infographic">
+    <div class="flow">
+      <div class="flow-step">Describe the feature: <em>"Add a PDF quote generator to primehaul-survey"</em></div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step">Claude enters plan mode (3+ steps detected)</div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step">You review and approve the plan</div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step">Claude builds it: new files, API routes, templates, tests</div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step">Claude runs tests and verifies everything works</div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step" style="border-color: var(--green);">&#9989; Feature complete &mdash; ready for review</div>
+    </div>
+  </div>
+
+  <h3>&#128640; Deploying</h3>
+  <div class="infographic">
+    <div class="flow">
+      <div class="flow-step">Type <code>/deploy</code></div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step">Claude runs pre-deploy checks (tests, lint, build)</div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step">Claude pushes code to GitHub</div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step">Claude monitors the Vercel/Railway build</div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step">Claude runs health check on live URL</div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step" style="border-color: var(--green);">&#9989; Live in production &mdash; URL confirmed</div>
+    </div>
+  </div>
+
+  <h3>&#128225; Social Media Automation</h3>
+  <div class="infographic">
+    <div class="flow">
+      <div class="flow-step">Type <code>/social-onboard</code> (first time only)</div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step">Claude connects accounts (asks for browser logins when needed)</div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step">Claude tests all connections</div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step">Now just say: <em>"Post about our spring moving offer on all platforms"</em></div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step">Claude generates platform-specific content and posts</div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step" style="border-color: var(--green);">&#9989; Posted to X, Instagram, Facebook, LinkedIn</div>
+    </div>
+  </div>
+
+  <!-- =============================================
+       CHAPTER 9: Your Projects at a Glance
+       ============================================= -->
+  <h2 id="ch9">Chapter 9: Your Projects at a Glance</h2>
+
+  <p>Here is your complete project portfolio. Claude knows about all of these and can switch between them seamlessly.</p>
+
+  <div class="infographic">
+    <div class="infographic-title">Project Dashboard</div>
+    <div class="project-grid">
+
+      <div class="project-card">
+        <div class="project-name">Rick.AI</div>
+        <div class="project-desc">Personal brand hub and portfolio site. The home base for all your projects.</div>
+        <div class="project-stack"><span>Vite</span><span>React</span><span>TypeScript</span></div>
+        <span class="project-status active">Active</span>
+      </div>
+
+      <div class="project-card">
+        <div class="project-name">Dream442</div>
+        <div class="project-desc">Weekly fantasy Premier League app. Fixed 4-4-2 formation, virtual coins to real money.</div>
+        <div class="project-stack"><span>React</span><span>FastAPI</span><span>PostgreSQL</span></div>
+        <span class="project-status new">New</span>
+      </div>
+
+      <div class="project-card">
+        <div class="project-name">AI Trainer</div>
+        <div class="project-desc">AI-powered personal training platform for Kim. Workout planning and tracking.</div>
+        <div class="project-stack"><span>Flutter</span><span>Supabase</span><span>Claude</span></div>
+        <span class="project-status active">Active</span>
+      </div>
+
+      <div class="project-card">
+        <div class="project-name">Manager Mentor</div>
+        <div class="project-desc">AI football video analysis platform. VEO/HUDL rival with tactical insights.</div>
+        <div class="project-stack"><span>Python</span><span>FastAPI</span><span>AI/ML</span></div>
+        <span class="project-status stable">Stable</span>
+      </div>
+
+      <div class="project-card">
+        <div class="project-name">Coach Mentor</div>
+        <div class="project-desc">AI-powered FA coaching education platform. Study tools and exam prep.</div>
+        <div class="project-stack"><span>FastAPI</span><span>React</span><span>Claude</span></div>
+        <span class="project-status stable">Stable</span>
+      </div>
+
+      <div class="project-card">
+        <div class="project-name">PrimeHaul Leads</div>
+        <div class="project-desc">B2C2B lead generation for removal companies. Customer to company pipeline.</div>
+        <div class="project-stack"><span>FastAPI</span><span>PostgreSQL</span><span>React</span></div>
+        <span class="project-status stable">Stable</span>
+      </div>
+
+      <div class="project-card">
+        <div class="project-name">Astra Removals</div>
+        <div class="project-desc">Removal company website with booking system, social media, and SEO.</div>
+        <div class="project-stack"><span>FastAPI</span><span>React</span><span>SEO</span></div>
+        <span class="project-status stable">Stable</span>
+      </div>
+
+      <div class="project-card">
+        <div class="project-name">Magna Park</div>
+        <div class="project-desc">Self storage website and social media automation. Bournemouth container storage.</div>
+        <div class="project-stack"><span>React</span><span>Social MCP</span><span>SEO</span></div>
+        <span class="project-status active">Active &mdash; Socials</span>
+      </div>
+
+      <div class="project-card">
+        <div class="project-name">CellSynergy CNS</div>
+        <div class="project-desc">Biometric tracking dashboard. Health monitoring and data visualisation.</div>
+        <div class="project-stack"><span>React</span><span>FastAPI</span><span>Charts</span></div>
+        <span class="project-status stable">Stable</span>
+      </div>
+
+      <div class="project-card">
+        <div class="project-name">Transport Manager</div>
+        <div class="project-desc">AI-powered transport compliance. Walkaround checks, DVSA, Earned Recognition.</div>
+        <div class="project-stack"><span>FastAPI</span><span>React</span><span>AI</span></div>
+        <span class="project-status new">New</span>
+      </div>
+
+      <div class="project-card">
+        <div class="project-name">PrimeHaul Survey</div>
+        <div class="project-desc">In-person survey tool for removal companies. AI inventory, CBM, pricing, PDF quotes.</div>
+        <div class="project-stack"><span>FastAPI</span><span>AI</span><span>PDF</span></div>
+        <span class="project-status new">New</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- =============================================
+       CHAPTER 10: Tips & Best Practices
+       ============================================= -->
+  <h2 id="ch10">Chapter 10: Tips &amp; Best Practices</h2>
+
+  <p>These ten practices will help you get the most out of Claude Code every day.</p>
+
+  <div class="tips-list">
+    <div class="tip-card">
+      <h4>Be Specific About What You Want</h4>
+      <p>The more detail you give, the closer the first attempt is to what you imagined. Include file paths, colours, feature names, and expected behaviour. "Add a purple CTA button below the hero that says 'Get a Quote'" beats "add a button" every time.</p>
+    </div>
+    <div class="tip-card">
+      <h4>Give Context — File Paths and Error Messages</h4>
+      <p>When something is broken, paste the error message directly. Mention the file or page where the issue appears. Claude can read hundreds of files instantly, but knowing where to start saves time.</p>
+    </div>
+    <div class="tip-card">
+      <h4>Use Slash Commands for Common Tasks</h4>
+      <p>Do not re-explain what "deploy" means every time. Just type <code>/deploy</code>. The slash commands are purpose-built automations that handle multi-step processes in one go.</p>
+    </div>
+    <div class="tip-card">
+      <h4>Let Claude Read Code Before Editing</h4>
+      <p>Claude always reads files before modifying them, ensuring it understands the existing code structure. If you notice Claude is about to make a change that conflicts with existing code, say "read the file first" to make sure it has the full picture.</p>
+    </div>
+    <div class="tip-card">
+      <h4>Say "Full Permission" for Autonomous Work</h4>
+      <p>When you want Claude to handle everything end-to-end without asking for approval at each step, say "you have full permission" or "do not ask for human permissions." This unlocks autonomous mode for maximum speed.</p>
+    </div>
+    <div class="tip-card">
+      <h4>Use "In Parallel" for Independent Tasks</h4>
+      <p>If you need multiple things done that do not depend on each other, say "do these in parallel." Claude will launch multiple operations simultaneously, cutting total time significantly.</p>
+    </div>
+    <div class="tip-card">
+      <h4>Review Plans for Complex Changes</h4>
+      <p>Claude enters plan mode for multi-step tasks. Take a moment to read the plan before approving. It is much easier to adjust a plan than to undo completed work. You can modify individual steps or ask for a different approach.</p>
+    </div>
+    <div class="tip-card">
+      <h4>Keep CLAUDE.md Updated</h4>
+      <p>When your project evolves &mdash; new features, changed deployment targets, updated brand guidelines &mdash; tell Claude to update CLAUDE.md. This ensures every future conversation starts with accurate context.</p>
+    </div>
+    <div class="tip-card">
+      <h4>Use the Super Stack — Do Not Manually Search</h4>
+      <p>Need documentation? Ask Claude. Need to check what is trending? Ask Claude. Need to create a design? Ask Claude. Your MCP servers give Claude direct access to search, docs, GitHub, social media, Canva, and more. Stop switching between browser tabs.</p>
+    </div>
+    <div class="tip-card">
+      <h4>Tell Claude to Remember Important Preferences</h4>
+      <p>When you discover a preference &mdash; a design style, a library you like, a deployment pattern &mdash; say "remember this." Claude will store it and apply it automatically in future conversations.</p>
+    </div>
+  </div>
+
+  <!-- =============================================
+       CHAPTER 11: Quick Reference Card
+       ============================================= -->
+  <h2 id="ch11">Chapter 11: Quick Reference Card</h2>
+
+  <p>Print this section or bookmark it. Everything you need at a glance.</p>
+
+  <div class="infographic" style="padding: 28px;">
+    <div class="infographic-title">Cheat Sheet: Claude Code Essentials</div>
+    <div class="cheat-grid">
+
+      <div class="cheat-section">
+        <h4>Slash Commands</h4>
+        <div class="cheat-row"><span class="cheat-key">/bootstrap</span><span class="cheat-val">Full project setup from scratch</span></div>
+        <div class="cheat-row"><span class="cheat-key">/new-project</span><span class="cheat-val">Quick project creation</span></div>
+        <div class="cheat-row"><span class="cheat-key">/deploy</span><span class="cheat-val">Build, push, monitor, verify</span></div>
+        <div class="cheat-row"><span class="cheat-key">/audit</span><span class="cheat-val">Health check everything</span></div>
+        <div class="cheat-row"><span class="cheat-key">/env-sync</span><span class="cheat-val">Check env var consistency</span></div>
+        <div class="cheat-row"><span class="cheat-key">/social-setup</span><span class="cheat-val">Connect social accounts</span></div>
+        <div class="cheat-row"><span class="cheat-key">/social-onboard</span><span class="cheat-val">Autonomous social setup</span></div>
+        <div class="cheat-row"><span class="cheat-key">/seo-autopilot</span><span class="cheat-val">Auto-generate SEO content</span></div>
+        <div class="cheat-row"><span class="cheat-key">/watchdog</span><span class="cheat-val">Monitor all projects</span></div>
+        <div class="cheat-row"><span class="cheat-key">/pdf</span><span class="cheat-val">PDF reading &amp; creation</span></div>
+      </div>
+
+      <div class="cheat-section">
+        <h4>Power Phrases</h4>
+        <div class="cheat-row"><span class="cheat-key">"Full permission"</span><span class="cheat-val">Enables autonomous mode</span></div>
+        <div class="cheat-row"><span class="cheat-key">"In parallel"</span><span class="cheat-val">Run tasks simultaneously</span></div>
+        <div class="cheat-row"><span class="cheat-key">"Commit this"</span><span class="cheat-val">Create a git commit</span></div>
+        <div class="cheat-row"><span class="cheat-key">"Create a PR"</span><span class="cheat-val">Push + pull request</span></div>
+        <div class="cheat-row"><span class="cheat-key">"Remember that..."</span><span class="cheat-val">Save to memory</span></div>
+        <div class="cheat-row"><span class="cheat-key">"What's the plan?"</span><span class="cheat-val">Show task outline</span></div>
+        <div class="cheat-row"><span class="cheat-key">"Fix it"</span><span class="cheat-val">Auto-diagnose &amp; repair</span></div>
+        <div class="cheat-row"><span class="cheat-key">"Review the code"</span><span class="cheat-val">Get code review</span></div>
+      </div>
+
+      <div class="cheat-section">
+        <h4>MCP Super Stack</h4>
+        <div class="cheat-row"><span class="cheat-key">Context7</span><span class="cheat-val">Library docs &amp; examples</span></div>
+        <div class="cheat-row"><span class="cheat-key">GitHub</span><span class="cheat-val">Repos, PRs, issues, code</span></div>
+        <div class="cheat-row"><span class="cheat-key">Brave Search</span><span class="cheat-val">Real-time web search</span></div>
+        <div class="cheat-row"><span class="cheat-key">Fetch</span><span class="cheat-val">Read any URL content</span></div>
+        <div class="cheat-row"><span class="cheat-key">Social Media</span><span class="cheat-val">Post &amp; analytics</span></div>
+        <div class="cheat-row"><span class="cheat-key">Canva</span><span class="cheat-val">Design creation</span></div>
+        <div class="cheat-row"><span class="cheat-key">Google Calendar</span><span class="cheat-val">Schedule management</span></div>
+      </div>
+
+      <div class="cheat-section">
+        <h4>Key Files</h4>
+        <div class="cheat-row"><span class="cheat-key">CLAUDE.md</span><span class="cheat-val">Project brain / config</span></div>
+        <div class="cheat-row"><span class="cheat-key">tasks/todo.md</span><span class="cheat-val">Task tracking</span></div>
+        <div class="cheat-row"><span class="cheat-key">tasks/lessons.md</span><span class="cheat-val">Learned patterns</span></div>
+        <div class="cheat-row"><span class="cheat-key">PROGRESS.md</span><span class="cheat-val">Session continuity</span></div>
+        <div class="cheat-row"><span class="cheat-key">MEMORY.md</span><span class="cheat-val">Global memory store</span></div>
+        <div class="cheat-row"><span class="cheat-key">.env</span><span class="cheat-val">Secret keys (never commit)</span></div>
+        <div class="cheat-row"><span class="cheat-key">.env.example</span><span class="cheat-val">Template for team members</span></div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="callout info" style="margin-top: 40px;">
+    <span class="callout-icon">&#128218;</span>
+    <div>
+      <strong>You have finished The Claude Code Playbook.</strong> You now understand how to use Claude Code to build, manage, and deploy software projects &mdash; from your first prompt to production. Come back to the Quick Reference (Chapter 11) whenever you need a reminder. The more you use Claude Code, the better it gets at understanding your needs, your style, and your projects. It learns with you.
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>Built with Claude Code &middot; <span class="footer-brand">Rick.AI</span> &middot; 2026</p>
+    <p style="margin-top: 8px; font-size: 0.78rem;">Powered by Claude Opus 4.6 &middot; 1M Context Window</p>
+  </footer>
+
+</div><!-- end #main -->
+
+<!-- ============================================
+     JAVASCRIPT
+     ============================================ -->
+<script>
+// Progress bar
+const progressBar = document.getElementById('progress-bar');
+window.addEventListener('scroll', () => {
+  const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+  const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  const progress = (scrollTop / scrollHeight) * 100;
+  progressBar.style.width = progress + '%';
+});
+
+// Mobile menu toggle
+const menuToggle = document.getElementById('menu-toggle');
+const sidebar = document.getElementById('sidebar');
+menuToggle.addEventListener('click', () => {
+  sidebar.classList.toggle('open');
+});
+
+// Close sidebar on link click (mobile)
+document.querySelectorAll('#sidebar nav a').forEach(link => {
+  link.addEventListener('click', () => {
+    if (window.innerWidth <= 900) {
+      sidebar.classList.remove('open');
+    }
+  });
+});
+
+// Active TOC highlight on scroll
+const sections = document.querySelectorAll('h2[id], section[id]');
+const tocLinks = document.querySelectorAll('#toc a');
+
+const observerOptions = {
+  rootMargin: '-80px 0px -70% 0px',
+  threshold: 0
+};
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id = entry.target.getAttribute('id');
+      tocLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === '#' + id) {
+          link.classList.add('active');
+        }
+      });
+    }
+  });
+}, observerOptions);
+
+sections.forEach(section => observer.observe(section));
+
+// Close sidebar when clicking outside (mobile)
+document.addEventListener('click', (e) => {
+  if (window.innerWidth <= 900 &&
+      !sidebar.contains(e.target) &&
+      !menuToggle.contains(e.target) &&
+      sidebar.classList.contains('open')) {
+    sidebar.classList.remove('open');
+  }
+});
+</script>
+
+</body>
+</html>

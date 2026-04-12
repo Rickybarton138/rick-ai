@@ -1,0 +1,51 @@
+{
+  "bases": [
+    {
+      "name": "Astra CRM",
+      "tables": [
+        {
+          "name": "Social Automation Runs",
+          "description": "Logs every n8n workflow execution",
+          "fields": [
+            "survey_id (Text) — MoveScan survey ID",
+            "customer_name (Text)",
+            "origin_postcode (Text)",
+            "dest_postcode (Text)",
+            "volume_category (Single select: small/medium/large)",
+            "move_date (Date)",
+            "magna_upsell (Checkbox) — Was Magna Park CTA included?",
+            "confidence_score (Number) — Claude confidence 0-1",
+            "fb_post_content (Long text)",
+            "ig_post_content (Long text)",
+            "fb_post_id (Text)",
+            "ig_media_id (Text)",
+            "published_at (Date & time)",
+            "review_sms_sent (Checkbox)",
+            "review_sms_sent_at (Date & time)",
+            "workflow_version (Text)"
+          ]
+        },
+        {
+          "name": "Leads",
+          "description": "All MoveScan leads",
+          "fields": [
+            "survey_id (Text)",
+            "lead_source (Single select: MoveScan/Direct/Referral)",
+            "status (Single select: New/Quoted/Booked/Complete/Lost)",
+            "origin_postcode (Text)",
+            "dest_postcode (Text)",
+            "move_date (Date)",
+            "bedrooms (Number)",
+            "contact_name (Text)",
+            "contact_phone (Phone)",
+            "contact_email (Email)",
+            "magna_upsell_flag (Checkbox)",
+            "social_post_created (Checkbox)",
+            "review_sent (Checkbox)",
+            "notes (Long text)"
+          ]
+        }
+      ]
+    }
+  ]
+}

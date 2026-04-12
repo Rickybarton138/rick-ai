@@ -13,7 +13,7 @@ export function Portfolio() {
         <SectionHeading
           label="Portfolio"
           title="Our Work"
-          description="Real projects we've built — from computer vision to generative AI."
+          description="Real projects we've shipped — from computer vision to generative AI to full business platforms."
         />
 
         <motion.div
@@ -21,29 +21,29 @@ export function Portfolio() {
           initial="hidden"
           animate={controls}
           variants={staggerContainer}
-          className="grid grid-cols-1 md:grid-cols-2 gap-6"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         >
           {portfolio.map((project) => (
             <motion.div key={project.title} variants={fadeInUp}>
-              <div className="group relative bg-bg-card backdrop-blur-sm border border-border-subtle rounded-2xl overflow-hidden hover:border-purple/30 transition-all duration-300">
-                <div className={`h-48 bg-gradient-to-br ${project.gradient} opacity-20 group-hover:opacity-30 transition-opacity duration-300`} />
+              <div className="group relative bg-bg-card backdrop-blur-sm border border-border-subtle rounded-2xl overflow-hidden hover:border-purple/30 transition-all duration-300 h-full flex flex-col">
+                <div className={`h-36 bg-gradient-to-br ${project.gradient} opacity-20 group-hover:opacity-30 transition-opacity duration-300`} />
 
-                <div className="absolute top-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <ExternalLink size={18} className="text-text-muted" />
+                <div className="absolute top-5 right-5 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <ExternalLink size={16} className="text-text-muted" />
                 </div>
 
-                <div className="p-6 -mt-12 relative">
-                  <span className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-purple/10 text-accent border border-purple/20 mb-3">
+                <div className="p-5 -mt-10 relative flex-1 flex flex-col">
+                  <span className="inline-block w-fit px-3 py-1 rounded-full text-xs font-medium bg-purple/10 text-accent border border-purple/20 mb-3">
                     {project.category}
                   </span>
-                  <h3 className="text-xl font-bold mb-2">{project.title}</h3>
-                  <p className="text-text-secondary text-sm leading-relaxed mb-4">{project.description}</p>
+                  <h3 className="text-lg font-bold mb-2">{project.title}</h3>
+                  <p className="text-text-secondary text-sm leading-relaxed mb-4 flex-1">{project.description}</p>
 
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-1.5">
                     {project.tech.map((t) => (
                       <span
                         key={t}
-                        className="px-2.5 py-1 rounded-md text-xs font-medium bg-white/5 text-text-muted border border-border-subtle"
+                        className="px-2 py-0.5 rounded-md text-xs font-medium bg-white/5 text-text-muted border border-border-subtle"
                       >
                         {t}
                       </span>

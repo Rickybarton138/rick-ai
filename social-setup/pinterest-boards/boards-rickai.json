@@ -1,0 +1,22 @@
+[
+  {
+    "name": "AI App Development Tips",
+    "description": "How to build production AI apps — architecture, tech stack, and deployment best practices."
+  },
+  {
+    "name": "Claude AI & LLM Projects",
+    "description": "Projects and tutorials built with Claude, GPT, and other large language models."
+  },
+  {
+    "name": "Computer Vision Builds",
+    "description": "Object detection, player tracking, video analysis — real computer vision projects."
+  },
+  {
+    "name": "Full-Stack AI Architecture",
+    "description": "System design for AI-powered apps. FastAPI, React, Supabase, Railway, Vercel."
+  },
+  {
+    "name": "AI Business Automation",
+    "description": "Automating business workflows with AI — social media, SEO, lead gen, analytics."
+  }
+]

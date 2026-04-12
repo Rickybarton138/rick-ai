@@ -1,0 +1,2255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Social Automation Stack — Rick.AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════════
+   FOUNDATION
+   ═══════════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #03080a;
+  --card:      #0b161c;
+  --border:    #132030;
+  --text:      #cce4f0;
+  --text-dim:  #7a9ab5;
+  --text-bright: #e8f4fc;
+
+  --astra:     #f97316;
+  --magna:     #3b82f6;
+  --primehaul: #10b981;
+  --coach:     #a855f7;
+  --rickai:    #06b6d4;
+
+  --astra-bg:     rgba(249,115,22,0.08);
+  --magna-bg:     rgba(59,130,246,0.08);
+  --primehaul-bg: rgba(16,185,129,0.08);
+  --coach-bg:     rgba(168,85,247,0.08);
+  --rickai-bg:    rgba(6,182,212,0.08);
+
+  --radius: 16px;
+  --radius-sm: 10px;
+  --sidebar-w: 280px;
+  --content-max: 860px;
+}
+
+html { scroll-behavior: smooth; font-size: 17px; }
+
+body {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection { background: rgba(6,182,212,0.3); }
+
+a { color: var(--rickai); text-decoration: none; transition: color .2s; }
+a:hover { color: var(--text-bright); }
+
+code, .code {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.85em;
+  background: rgba(6,182,212,0.1);
+  border: 1px solid rgba(6,182,212,0.15);
+  padding: 2px 7px;
+  border-radius: 5px;
+  color: var(--rickai);
+}
+
+img { max-width: 100%; }
+
+/* ═══════════════════════════════════════════════════════════
+   PROGRESS BAR (top of page)
+   ═══════════════════════════════════════════════════════════ */
+#progress-bar {
+  position: fixed; top: 0; left: 0; height: 3px; z-index: 1000;
+  background: linear-gradient(90deg, var(--astra), var(--magna), var(--coach), var(--primehaul), var(--rickai));
+  width: 0%; transition: width 0.15s;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LAYOUT: sidebar + main
+   ═══════════════════════════════════════════════════════════ */
+.layout { display: flex; min-height: 100vh; }
+
+/* Sidebar / TOC */
+.sidebar {
+  position: fixed; top: 0; left: 0; bottom: 0;
+  width: var(--sidebar-w);
+  background: rgba(11,22,28,0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid var(--border);
+  padding: 28px 20px;
+  overflow-y: auto;
+  z-index: 100;
+  transition: transform .3s;
+}
+
+.sidebar-logo {
+  font-weight: 800; font-size: 1.15rem; letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--rickai), var(--coach));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  margin-bottom: 6px;
+}
+.sidebar-sub { font-size: 0.7rem; color: var(--text-dim); margin-bottom: 28px; text-transform: uppercase; letter-spacing: 0.08em; }
+
+.toc-list { list-style: none; }
+.toc-list li { margin-bottom: 2px; }
+.toc-list a {
+  display: block; padding: 7px 12px; border-radius: 8px;
+  font-size: 0.82rem; color: var(--text-dim); transition: all .2s;
+}
+.toc-list a:hover, .toc-list a.active {
+  color: var(--text-bright); background: rgba(6,182,212,0.08);
+}
+.toc-list a.active { border-left: 3px solid var(--rickai); padding-left: 9px; }
+.toc-list .toc-sub { padding-left: 16px; font-size: 0.76rem; }
+
+.toc-divider { height: 1px; background: var(--border); margin: 12px 0; }
+
+/* Main content area */
+.main {
+  margin-left: var(--sidebar-w);
+  flex: 1; min-width: 0;
+  padding: 40px 48px 100px;
+  max-width: calc(var(--content-max) + 96px + var(--sidebar-w));
+}
+
+/* Mobile toggle */
+.menu-toggle {
+  display: none; position: fixed; top: 14px; left: 14px; z-index: 200;
+  background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+  color: var(--text); padding: 8px 12px; font-size: 1.1rem; cursor: pointer;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   GLASS CARD
+   ═══════════════════════════════════════════════════════════ */
+.glass {
+  background: rgba(11,22,28,0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px 32px;
+  margin-bottom: 24px;
+}
+.glass-sm { padding: 18px 22px; }
+
+/* ═══════════════════════════════════════════════════════════
+   COVER PAGE
+   ═══════════════════════════════════════════════════════════ */
+.cover {
+  min-height: 90vh; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; text-align: center;
+  position: relative; overflow: hidden;
+  margin: -40px -48px 48px; padding: 80px 48px;
+  background: radial-gradient(ellipse at 50% 20%, rgba(6,182,212,0.1) 0%, transparent 60%),
+              radial-gradient(ellipse at 20% 80%, rgba(168,85,247,0.06) 0%, transparent 50%),
+              radial-gradient(ellipse at 80% 80%, rgba(249,115,22,0.06) 0%, transparent 50%);
+}
+.cover::before {
+  content: ''; position: absolute; inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 60px, rgba(19,32,48,0.3) 60px, rgba(19,32,48,0.3) 61px);
+  pointer-events: none;
+}
+.cover-badge {
+  display: inline-block; padding: 6px 18px; border-radius: 999px;
+  background: rgba(6,182,212,0.1); border: 1px solid rgba(6,182,212,0.25);
+  font-size: 0.75rem; color: var(--rickai); text-transform: uppercase;
+  letter-spacing: 0.1em; margin-bottom: 24px; font-weight: 600;
+}
+.cover h1 {
+  font-size: clamp(2.4rem, 5vw, 3.8rem); font-weight: 800;
+  line-height: 1.1; letter-spacing: -0.03em; margin-bottom: 16px;
+  background: linear-gradient(135deg, var(--text-bright) 0%, var(--rickai) 50%, var(--coach) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.cover-sub {
+  font-size: 1.15rem; color: var(--text-dim); max-width: 520px; margin-bottom: 48px;
+}
+.cover-byline { font-size: 0.85rem; color: var(--text-dim); margin-top: 12px; }
+
+/* Cover brand network */
+.brand-network {
+  display: flex; align-items: center; justify-content: center;
+  gap: 12px; flex-wrap: wrap; margin-bottom: 32px; position: relative;
+}
+.brand-node {
+  width: 72px; height: 72px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.05em; color: #fff; position: relative;
+  box-shadow: 0 0 30px rgba(0,0,0,0.3);
+}
+.brand-node.astra     { background: linear-gradient(135deg, var(--astra), #ea580c); }
+.brand-node.magna     { background: linear-gradient(135deg, var(--magna), #2563eb); }
+.brand-node.primehaul { background: linear-gradient(135deg, var(--primehaul), #059669); }
+.brand-node.coach     { background: linear-gradient(135deg, var(--coach), #7c3aed); }
+.brand-node.rickai    { background: linear-gradient(135deg, var(--rickai), #0891b2); width: 88px; height: 88px; font-size: 0.7rem; }
+
+.brand-connector {
+  width: 28px; height: 2px;
+  background: linear-gradient(90deg, rgba(6,182,212,0.4), rgba(168,85,247,0.4));
+  border-radius: 999px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CHAPTER HEADINGS
+   ═══════════════════════════════════════════════════════════ */
+.chapter { margin-bottom: 56px; scroll-margin-top: 24px; }
+
+.chapter-num {
+  display: inline-block; font-size: 0.7rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--rickai); margin-bottom: 6px;
+}
+.chapter h2 {
+  font-size: 1.9rem; font-weight: 800; letter-spacing: -0.02em;
+  color: var(--text-bright); margin-bottom: 8px; line-height: 1.2;
+}
+.chapter-lead {
+  font-size: 1rem; color: var(--text-dim); margin-bottom: 28px;
+  max-width: 640px;
+}
+.chapter h3 {
+  font-size: 1.3rem; font-weight: 700; color: var(--text-bright);
+  margin: 32px 0 12px; letter-spacing: -0.01em;
+}
+.chapter h4 {
+  font-size: 1.05rem; font-weight: 600; color: var(--text);
+  margin: 24px 0 8px;
+}
+
+p { margin-bottom: 14px; }
+
+/* ═══════════════════════════════════════════════════════════
+   INFOGRAPHIC: FLOW DIAGRAM
+   ═══════════════════════════════════════════════════════════ */
+.flow {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 0; margin: 24px 0 28px;
+}
+.flow-step {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 14px 22px;
+  text-align: center; font-size: 0.85rem; max-width: 480px;
+  width: 100%; position: relative;
+}
+.flow-step.highlight {
+  border-color: var(--rickai);
+  box-shadow: 0 0 20px rgba(6,182,212,0.1);
+}
+.flow-arrow {
+  width: 2px; height: 28px;
+  background: linear-gradient(to bottom, var(--border), var(--rickai));
+  position: relative;
+}
+.flow-arrow::after {
+  content: ''; position: absolute; bottom: -4px; left: 50%;
+  transform: translateX(-50%);
+  border-left: 5px solid transparent; border-right: 5px solid transparent;
+  border-top: 6px solid var(--rickai);
+}
+.flow-branch {
+  display: flex; gap: 16px; align-items: flex-start; justify-content: center;
+  width: 100%; max-width: 520px;
+}
+.flow-branch .flow-step { flex: 1; font-size: 0.8rem; }
+.flow-label {
+  font-size: 0.7rem; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.08em; padding: 3px 10px; border-radius: 999px;
+  margin-bottom: 4px; display: inline-block;
+}
+.flow-label.yes { background: rgba(16,185,129,0.15); color: var(--primehaul); }
+.flow-label.no  { background: rgba(249,115,22,0.15); color: var(--astra); }
+.flow-label.info { background: rgba(6,182,212,0.15); color: var(--rickai); }
+
+/* Brand accent on flow steps */
+.flow-step.brand-astra     { border-left: 3px solid var(--astra); }
+.flow-step.brand-magna     { border-left: 3px solid var(--magna); }
+.flow-step.brand-primehaul { border-left: 3px solid var(--primehaul); }
+.flow-step.brand-coach     { border-left: 3px solid var(--coach); }
+.flow-step.brand-rickai    { border-left: 3px solid var(--rickai); }
+
+/* ═══════════════════════════════════════════════════════════
+   BRAND CARDS (grid)
+   ═══════════════════════════════════════════════════════════ */
+.brand-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px; margin: 24px 0;
+}
+.brand-card {
+  border-radius: var(--radius); padding: 22px 24px;
+  border: 1px solid var(--border); position: relative; overflow: hidden;
+}
+.brand-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+}
+.brand-card.astra     { background: var(--astra-bg); }
+.brand-card.astra::before     { background: var(--astra); }
+.brand-card.magna     { background: var(--magna-bg); }
+.brand-card.magna::before     { background: var(--magna); }
+.brand-card.primehaul { background: var(--primehaul-bg); }
+.brand-card.primehaul::before { background: var(--primehaul); }
+.brand-card.coach     { background: var(--coach-bg); }
+.brand-card.coach::before     { background: var(--coach); }
+.brand-card.rickai    { background: var(--rickai-bg); }
+.brand-card.rickai::before    { background: var(--rickai); }
+
+.brand-card-name {
+  font-weight: 700; font-size: 1rem; margin-bottom: 6px;
+}
+.brand-card.astra .brand-card-name     { color: var(--astra); }
+.brand-card.magna .brand-card-name     { color: var(--magna); }
+.brand-card.primehaul .brand-card-name { color: var(--primehaul); }
+.brand-card.coach .brand-card-name     { color: var(--coach); }
+.brand-card.rickai .brand-card-name    { color: var(--rickai); }
+
+.brand-card-platforms { font-size: 0.82rem; color: var(--text-dim); margin-bottom: 4px; }
+.brand-card-stat { font-size: 0.78rem; color: var(--text-dim); }
+.brand-card-stat strong { color: var(--text); }
+
+/* Platform pills */
+.pill {
+  display: inline-block; font-size: 0.68rem; padding: 3px 10px;
+  border-radius: 999px; margin: 2px 3px 2px 0; font-weight: 500;
+  background: rgba(204,228,240,0.06); border: 1px solid var(--border);
+  color: var(--text-dim);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TOOL HUB DIAGRAM
+   ═══════════════════════════════════════════════════════════ */
+.hub-diagram {
+  display: flex; flex-direction: column; align-items: center;
+  margin: 28px 0;
+}
+.hub-center {
+  width: 120px; height: 120px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--rickai), var(--coach));
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 1.2rem; color: #fff;
+  box-shadow: 0 0 40px rgba(6,182,212,0.2);
+  margin-bottom: 16px; position: relative; z-index: 2;
+}
+.hub-spokes {
+  display: flex; flex-wrap: wrap; justify-content: center;
+  gap: 10px; max-width: 560px;
+}
+.hub-spoke {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 10px 16px;
+  font-size: 0.78rem; text-align: center; min-width: 100px;
+}
+.hub-spoke-label { font-weight: 600; color: var(--text-bright); font-size: 0.82rem; }
+.hub-spoke-desc  { color: var(--text-dim); font-size: 0.72rem; margin-top: 2px; }
+
+/* ═══════════════════════════════════════════════════════════
+   TOOL EXPLANATION CARDS
+   ═══════════════════════════════════════════════════════════ */
+.tool-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px; margin: 20px 0;
+}
+.tool-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 20px 22px;
+}
+.tool-card-name {
+  font-weight: 700; font-size: 0.95rem; color: var(--rickai); margin-bottom: 6px;
+}
+.tool-card p { font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0; }
+
+/* ═══════════════════════════════════════════════════════════
+   COLLAPSIBLE SECTIONS
+   ═══════════════════════════════════════════════════════════ */
+.collapsible { margin-bottom: 16px; }
+.collapsible-header {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 16px 22px;
+  cursor: pointer; display: flex; align-items: center;
+  justify-content: space-between; transition: all .2s;
+  user-select: none;
+}
+.collapsible-header:hover { border-color: var(--rickai); }
+.collapsible-header h4 { margin: 0; font-size: 1rem; }
+.collapsible-arrow {
+  font-size: 0.85rem; color: var(--text-dim); transition: transform .3s;
+}
+.collapsible.open .collapsible-arrow { transform: rotate(180deg); }
+.collapsible-body {
+  max-height: 0; overflow: hidden; transition: max-height .4s ease;
+  padding: 0 22px;
+}
+.collapsible.open .collapsible-body {
+  max-height: 5000px; padding: 20px 22px;
+  border: 1px solid var(--border); border-top: none;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  background: rgba(11,22,28,0.4);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TIMELINE (email sequences)
+   ═══════════════════════════════════════════════════════════ */
+.timeline { position: relative; margin: 24px 0 28px 20px; padding-left: 28px; }
+.timeline::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+  width: 2px; background: linear-gradient(to bottom, var(--coach), var(--rickai));
+}
+.timeline-item { position: relative; margin-bottom: 20px; }
+.timeline-dot {
+  position: absolute; left: -34px; top: 4px;
+  width: 12px; height: 12px; border-radius: 50%;
+  background: var(--coach); border: 2px solid var(--bg);
+}
+.timeline-day {
+  font-size: 0.7rem; font-weight: 700; color: var(--coach);
+  text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;
+}
+.timeline-title { font-weight: 600; font-size: 0.9rem; color: var(--text-bright); }
+.timeline-desc  { font-size: 0.82rem; color: var(--text-dim); }
+
+/* ═══════════════════════════════════════════════════════════
+   STATUS LIGHTS
+   ═══════════════════════════════════════════════════════════ */
+.status-grid {
+  display: grid; grid-template-columns: 1fr; gap: 8px; margin: 16px 0;
+}
+.status-row {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 12px 18px;
+  font-size: 0.85rem;
+}
+.status-light {
+  width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+}
+.status-light.green  { background: #22c55e; box-shadow: 0 0 8px rgba(34,197,94,0.4); }
+.status-light.amber  { background: #f59e0b; box-shadow: 0 0 8px rgba(245,158,11,0.4); }
+.status-light.red    { background: #ef4444; box-shadow: 0 0 8px rgba(239,68,68,0.4); }
+
+/* ═══════════════════════════════════════════════════════════
+   PRIORITY LADDER
+   ═══════════════════════════════════════════════════════════ */
+.ladder {
+  display: flex; flex-direction: column-reverse;
+  gap: 8px; margin: 24px 0;
+}
+.ladder-step {
+  display: flex; align-items: center; gap: 16px;
+  padding: 16px 22px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border); position: relative;
+}
+.ladder-num {
+  width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 0.9rem; color: #fff; flex-shrink: 0;
+}
+.ladder-content { flex: 1; }
+.ladder-content strong { color: var(--text-bright); }
+.ladder-content .ladder-desc { font-size: 0.82rem; color: var(--text-dim); }
+
+/* ═══════════════════════════════════════════════════════════
+   TOKEN RANKING
+   ═══════════════════════════════════════════════════════════ */
+.rank-list { margin: 20px 0; }
+.rank-item {
+  display: flex; align-items: center; gap: 16px;
+  padding: 14px 20px; background: var(--card);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+}
+.rank-num {
+  font-weight: 800; font-size: 1.1rem; color: var(--rickai);
+  width: 28px; text-align: center; flex-shrink: 0;
+}
+.rank-bar {
+  height: 6px; border-radius: 999px; flex-shrink: 0;
+}
+.rank-label { font-size: 0.85rem; }
+.rank-difficulty { font-size: 0.72rem; color: var(--text-dim); }
+
+/* ═══════════════════════════════════════════════════════════
+   CODE BLOCKS
+   ═══════════════════════════════════════════════════════════ */
+.code-block {
+  background: #0a1017; border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 18px 22px;
+  font-family: 'Fira Code', monospace; font-size: 0.78rem;
+  overflow-x: auto; margin: 16px 0; line-height: 1.8;
+  color: var(--text-dim);
+}
+.code-block .key { color: var(--rickai); }
+.code-block .comment { color: #4a6a7f; }
+
+/* ═══════════════════════════════════════════════════════════
+   CHECKLIST
+   ═══════════════════════════════════════════════════════════ */
+.checklist { margin: 16px 0; }
+.checklist-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 8px 0; font-size: 0.88rem;
+}
+.check-box {
+  width: 20px; height: 20px; border: 2px solid var(--border);
+  border-radius: 5px; flex-shrink: 0; margin-top: 2px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.7rem; color: transparent; cursor: pointer; transition: all .2s;
+}
+.check-box:hover { border-color: var(--rickai); }
+.check-box.checked { background: var(--primehaul); border-color: var(--primehaul); color: #fff; }
+
+/* ═══════════════════════════════════════════════════════════
+   FAQ ACCORDION
+   ═══════════════════════════════════════════════════════════ */
+.faq-item { margin-bottom: 8px; }
+.faq-q {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 14px 20px;
+  cursor: pointer; font-weight: 600; font-size: 0.9rem;
+  display: flex; justify-content: space-between; align-items: center;
+  transition: all .2s;
+}
+.faq-q:hover { border-color: var(--rickai); }
+.faq-a {
+  max-height: 0; overflow: hidden; transition: max-height .3s ease;
+  padding: 0 20px;
+}
+.faq-item.open .faq-a {
+  max-height: 500px; padding: 16px 20px;
+  border: 1px solid var(--border); border-top: none;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  background: rgba(11,22,28,0.4);
+}
+.faq-item.open .faq-q { border-radius: var(--radius-sm) var(--radius-sm) 0 0; }
+
+/* ═══════════════════════════════════════════════════════════
+   CALLOUT BOXES
+   ═══════════════════════════════════════════════════════════ */
+.callout {
+  border-radius: var(--radius-sm); padding: 18px 22px;
+  margin: 16px 0; font-size: 0.88rem;
+}
+.callout-tip   { background: rgba(16,185,129,0.08); border-left: 3px solid var(--primehaul); }
+.callout-warn  { background: rgba(249,115,22,0.08); border-left: 3px solid var(--astra); }
+.callout-info  { background: rgba(6,182,212,0.08); border-left: 3px solid var(--rickai); }
+.callout-title { font-weight: 700; margin-bottom: 4px; }
+.callout-tip .callout-title   { color: var(--primehaul); }
+.callout-warn .callout-title  { color: var(--astra); }
+.callout-info .callout-title  { color: var(--rickai); }
+
+/* ═══════════════════════════════════════════════════════════
+   STATS ROW
+   ═══════════════════════════════════════════════════════════ */
+.stats-row {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px; margin: 20px 0;
+}
+.stat-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 18px 16px; text-align: center;
+}
+.stat-num {
+  font-size: 1.8rem; font-weight: 800; line-height: 1;
+  background: linear-gradient(135deg, var(--rickai), var(--coach));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.stat-label { font-size: 0.72rem; color: var(--text-dim); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.06em; }
+
+/* ═══════════════════════════════════════════════════════════
+   COST TABLE
+   ═══════════════════════════════════════════════════════════ */
+.cost-table {
+  width: 100%; border-collapse: collapse; margin: 16px 0;
+}
+.cost-table th, .cost-table td {
+  padding: 12px 16px; text-align: left; font-size: 0.85rem;
+  border-bottom: 1px solid var(--border);
+}
+.cost-table th {
+  color: var(--text-dim); font-weight: 600; font-size: 0.75rem;
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+.cost-table td:last-child { text-align: right; font-family: 'Fira Code', monospace; color: var(--rickai); }
+.cost-table tr:last-child td { border-bottom: none; font-weight: 700; }
+
+/* ═══════════════════════════════════════════════════════════
+   FILE TREE
+   ═══════════════════════════════════════════════════════════ */
+.file-tree {
+  background: #0a1017; border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 20px 24px;
+  font-family: 'Fira Code', monospace; font-size: 0.78rem;
+  line-height: 1.9; color: var(--text-dim); margin: 16px 0;
+  overflow-x: auto;
+}
+.file-tree .dir  { color: var(--magna); }
+.file-tree .file { color: var(--text-dim); }
+.file-tree .n8n  { color: var(--astra); }
+.file-tree .env  { color: var(--primehaul); }
+.file-tree .html { color: var(--coach); }
+
+/* ═══════════════════════════════════════════════════════════
+   FOOTER
+   ═══════════════════════════════════════════════════════════ */
+.footer {
+  text-align: center; padding: 48px 0 24px;
+  border-top: 1px solid var(--border); margin-top: 64px;
+  font-size: 0.8rem; color: var(--text-dim);
+}
+.footer-brand {
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--rickai), var(--coach));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════════════ */
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); }
+  .main { margin-left: 0; padding: 24px 20px 80px; }
+  .menu-toggle { display: block; }
+  .cover { margin: -24px -20px 32px; padding: 60px 20px; }
+  .brand-network { gap: 8px; }
+  .brand-node { width: 56px; height: 56px; font-size: 0.5rem; }
+  .brand-node.rickai { width: 68px; height: 68px; }
+  .flow-branch { flex-direction: column; align-items: center; }
+  .hub-spokes { gap: 6px; }
+}
+
+@media (max-width: 480px) {
+  html { font-size: 15px; }
+  .brand-grid { grid-template-columns: 1fr; }
+  .tool-grid { grid-template-columns: 1fr; }
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PRINT
+   ═══════════════════════════════════════════════════════════ */
+@media print {
+  :root { --bg: #fff; --card: #f8f8f8; --border: #ddd; --text: #222; --text-dim: #666; --text-bright: #000; }
+  body { background: #fff; color: #222; font-size: 11pt; }
+  .sidebar, .menu-toggle, #progress-bar { display: none !important; }
+  .main { margin-left: 0; padding: 0; max-width: 100%; }
+  .cover { min-height: auto; padding: 40px 20px; background: none; page-break-after: always; }
+  .cover h1 { -webkit-text-fill-color: #222; background: none; }
+  .glass { backdrop-filter: none; -webkit-backdrop-filter: none; background: #f8f8f8; }
+  .chapter { page-break-inside: avoid; }
+  .collapsible-body { max-height: none !important; padding: 12px !important; overflow: visible; }
+  .faq-a { max-height: none !important; padding: 12px !important; overflow: visible; }
+  .brand-node { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .status-light { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  a { color: #222; }
+  a::after { content: ' (' attr(href) ')'; font-size: 0.8em; color: #666; }
+}
+</style>
+</head>
+<body>
+
+<!-- Progress bar -->
+<div id="progress-bar"></div>
+
+<!-- Mobile menu toggle -->
+<button class="menu-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')" aria-label="Toggle menu">&#9776;</button>
+
+<!-- ═══════════════════════════════════════════
+     SIDEBAR / TABLE OF CONTENTS
+     ═══════════════════════════════════════════ -->
+<div class="layout">
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-logo">Rick.AI</div>
+  <div class="sidebar-sub">Social Automation Stack</div>
+  <ul class="toc-list">
+    <li><a href="#cover">Cover</a></li>
+    <div class="toc-divider"></div>
+    <li><a href="#ch1">1. What Is This Stack?</a></li>
+    <li><a href="#ch2">2. The Tools You'll Need</a></li>
+    <li><a href="#ch3">3. How Each Brand Works</a></li>
+    <li><a href="#ch3a" class="toc-sub">Astra Removals</a></li>
+    <li><a href="#ch3b" class="toc-sub">Magna Park</a></li>
+    <li><a href="#ch3c" class="toc-sub">CoachMentor</a></li>
+    <li><a href="#ch3d" class="toc-sub">Prime Haul / MoveScan</a></li>
+    <li><a href="#ch3e" class="toc-sub">Rick.AI</a></li>
+    <li><a href="#ch4">4. The Email Machine</a></li>
+    <li><a href="#ch5">5. Your Airtable CRM</a></li>
+    <li><a href="#ch6">6. Setup Guide</a></li>
+    <li><a href="#ch6-p1" class="toc-sub">Phase 1: Accounts</a></li>
+    <li><a href="#ch6-p2" class="toc-sub">Phase 2: API Tokens</a></li>
+    <li><a href="#ch6-p3" class="toc-sub">Phase 3: n8n Setup</a></li>
+    <li><a href="#ch6-p4" class="toc-sub">Phase 4: Airtable</a></li>
+    <li><a href="#ch6-p5" class="toc-sub">Phase 5: Go Live</a></li>
+    <li><a href="#ch7">7. Recommended Order</a></li>
+    <li><a href="#ch8">8. Troubleshooting & FAQ</a></li>
+    <li><a href="#ch9">9. Built vs Planned</a></li>
+    <li><a href="#ch10">10. Quick Reference</a></li>
+  </ul>
+</nav>
+
+<!-- ═══════════════════════════════════════════
+     MAIN CONTENT
+     ═══════════════════════════════════════════ -->
+<main class="main">
+
+<!-- ─────────────── COVER ─────────────── -->
+<section class="cover" id="cover">
+  <span class="cover-badge">Rick.AI &middot; 2026 Edition</span>
+  <h1>The Social<br>Automation Stack</h1>
+  <p class="cover-sub">A Complete Guide to Automating Social Media Across 5 Brands &mdash; Without Writing a Single Line of Code</p>
+
+  <div class="brand-network">
+    <div class="brand-node astra">Astra</div>
+    <div class="brand-connector"></div>
+    <div class="brand-node magna">Magna<br>Park</div>
+    <div class="brand-connector"></div>
+    <div class="brand-node rickai">Rick.AI</div>
+    <div class="brand-connector"></div>
+    <div class="brand-node coach">Coach<br>Mentor</div>
+    <div class="brand-connector"></div>
+    <div class="brand-node primehaul">Prime<br>Haul</div>
+  </div>
+
+  <div class="stats-row" style="max-width:600px;">
+    <div class="stat-card">
+      <div class="stat-num">5</div>
+      <div class="stat-label">Brands</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">~50</div>
+      <div class="stat-label">Posts / Week</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">10</div>
+      <div class="stat-label">Platforms</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">0</div>
+      <div class="stat-label">Manual Posts</div>
+    </div>
+  </div>
+
+  <p class="cover-byline">By Ricky Barton &middot; Rick.AI &middot; March 2026</p>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     CHAPTER 1: WHAT IS THIS STACK?
+     ═══════════════════════════════════════════════════════════ -->
+<section class="chapter" id="ch1">
+  <span class="chapter-num">Chapter 1</span>
+  <h2>What Is This Stack?</h2>
+  <p class="chapter-lead">The plain English version of what you've built and why it matters.</p>
+
+  <div class="glass">
+    <p>You've built an automation system that <strong>creates social media posts, sends them to the right platforms at the right times, tracks results, and even sends review requests</strong> &mdash; all without you lifting a finger.</p>
+    <p>Think of it like hiring a social media team that works 24/7, never takes a holiday, and costs less than a tenner a month to run. The "team" is made up of software tools that talk to each other automatically.</p>
+    <p>Here's the deal: you own 5 different brands. Each one needs a social media presence. Posting manually to 10+ platforms across 5 brands would take hours every day. Instead, you've built a pipeline where <strong>events in your business automatically trigger social media posts</strong>.</p>
+  </div>
+
+  <h3>The Big Picture</h3>
+  <p>Here's what happens every time something important occurs in one of your businesses:</p>
+
+  <div class="flow">
+    <div class="flow-step highlight">
+      <span class="flow-label info">Trigger</span><br>
+      Something happens &mdash; a new lead comes in, a survey is completed, or a scheduled timer fires
+    </div>
+    <div class="flow-arrow"></div>
+    <div class="flow-step">
+      <span class="flow-label info">Catch</span><br>
+      n8n (your automation engine) catches the event via a webhook or timer
+    </div>
+    <div class="flow-arrow"></div>
+    <div class="flow-step">
+      <span class="flow-label info">Create</span><br>
+      Claude AI writes the perfect post, tailored to each platform's style and audience
+    </div>
+    <div class="flow-arrow"></div>
+    <div class="flow-step">
+      <span class="flow-label info">Check</span><br>
+      Quality gate &mdash; is the post good enough? Claude scores its own work 0&ndash;100
+    </div>
+    <div class="flow-arrow"></div>
+    <div class="flow-branch">
+      <div class="flow-step" style="border-color: var(--primehaul);">
+        <span class="flow-label yes">Score 75+</span><br>
+        Publish automatically to FB, IG, LinkedIn, X, Pinterest, YouTube, TikTok
+      </div>
+      <div class="flow-step" style="border-color: var(--astra);">
+        <span class="flow-label no">Below 75</span><br>
+        Sent to your Slack for manual review &mdash; you approve or reject
+      </div>
+    </div>
+    <div class="flow-arrow"></div>
+    <div class="flow-step">
+      Results tracked in Airtable &mdash; every post, every metric, every lead
+    </div>
+  </div>
+
+  <h3>Your 5 Brands at a Glance</h3>
+
+  <div class="brand-grid">
+    <div class="brand-card astra">
+      <div class="brand-card-name">Astra Removals</div>
+      <div class="brand-card-platforms">
+        <span class="pill">Facebook</span><span class="pill">Instagram</span><span class="pill">GMB</span>
+      </div>
+      <div class="brand-card-stat"><strong>~12 posts/week</strong> &middot; Removal company in Dorset</div>
+    </div>
+    <div class="brand-card magna">
+      <div class="brand-card-name">Magna Park Self Storage</div>
+      <div class="brand-card-platforms">
+        <span class="pill">Facebook</span><span class="pill">Instagram</span><span class="pill">LinkedIn</span><span class="pill">GMB</span>
+      </div>
+      <div class="brand-card-stat"><strong>~8 posts/week</strong> &middot; Container storage, Bournemouth</div>
+    </div>
+    <div class="brand-card coach">
+      <div class="brand-card-name">CoachMentor</div>
+      <div class="brand-card-platforms">
+        <span class="pill">TikTok</span><span class="pill">YouTube</span><span class="pill">Instagram</span><span class="pill">X</span><span class="pill">Facebook</span><span class="pill">Pinterest</span>
+      </div>
+      <div class="brand-card-stat"><strong>~14 posts/week</strong> &middot; AI coaching education platform</div>
+    </div>
+    <div class="brand-card primehaul">
+      <div class="brand-card-name">Prime Haul / MoveScan</div>
+      <div class="brand-card-platforms">
+        <span class="pill">Facebook</span><span class="pill">Instagram</span><span class="pill">TikTok</span><span class="pill">Pinterest</span>
+      </div>
+      <div class="brand-card-stat"><strong>~10 posts/week</strong> &middot; Lead gen for removal companies</div>
+    </div>
+    <div class="brand-card rickai">
+      <div class="brand-card-name">Rick.AI</div>
+      <div class="brand-card-platforms">
+        <span class="pill">X</span><span class="pill">LinkedIn</span><span class="pill">Instagram</span><span class="pill">Facebook</span><span class="pill">Pinterest</span>
+      </div>
+      <div class="brand-card-stat"><strong>~6 posts/week</strong> &middot; Your personal AI brand</div>
+    </div>
+  </div>
+
+  <div class="callout callout-info">
+    <div class="callout-title">The Maths</div>
+    That's roughly <strong>50 posts per week</strong> across all brands. If each post takes 15 minutes to write, schedule, and publish manually, that's over <strong>12 hours of work per week</strong> you're saving. Per month, that's nearly 50 hours &mdash; more than a full working week.
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     CHAPTER 2: THE TOOLS
+     ═══════════════════════════════════════════════════════════ -->
+<section class="chapter" id="ch2">
+  <span class="chapter-num">Chapter 2</span>
+  <h2>The Tools You'll Need</h2>
+  <p class="chapter-lead">Every tool in the stack explained in plain English, with what it costs and why it's there.</p>
+
+  <h3>The Hub &amp; Spoke</h3>
+  <p>Everything connects through one central brain &mdash; n8n. Every other tool plugs into it.</p>
+
+  <div class="hub-diagram">
+    <div class="hub-center">n8n</div>
+    <div class="hub-spokes">
+      <div class="hub-spoke">
+        <div class="hub-spoke-label">Claude AI</div>
+        <div class="hub-spoke-desc">Writes content</div>
+      </div>
+      <div class="hub-spoke">
+        <div class="hub-spoke-label">Airtable</div>
+        <div class="hub-spoke-desc">Tracks everything</div>
+      </div>
+      <div class="hub-spoke">
+        <div class="hub-spoke-label">Twilio</div>
+        <div class="hub-spoke-desc">Sends SMS</div>
+      </div>
+      <div class="hub-spoke">
+        <div class="hub-spoke-label">Slack</div>
+        <div class="hub-spoke-desc">Review alerts</div>
+      </div>
+      <div class="hub-spoke">
+        <div class="hub-spoke-label">Meta API</div>
+        <div class="hub-spoke-desc">FB + IG</div>
+      </div>
+      <div class="hub-spoke">
+        <div class="hub-spoke-label">LinkedIn</div>
+        <div class="hub-spoke-desc">B2B posts</div>
+      </div>
+      <div class="hub-spoke">
+        <div class="hub-spoke-label">X / Twitter</div>
+        <div class="hub-spoke-desc">Threads + posts</div>
+      </div>
+      <div class="hub-spoke">
+        <div class="hub-spoke-label">Pinterest</div>
+        <div class="hub-spoke-desc">Pins + boards</div>
+      </div>
+      <div class="hub-spoke">
+        <div class="hub-spoke-label">YouTube</div>
+        <div class="hub-spoke-desc">Video + Shorts</div>
+      </div>
+      <div class="hub-spoke">
+        <div class="hub-spoke-label">TikTok</div>
+        <div class="hub-spoke-desc">Short video</div>
+      </div>
+      <div class="hub-spoke">
+        <div class="hub-spoke-label">Google Business</div>
+        <div class="hub-spoke-desc">GMB posts</div>
+      </div>
+    </div>
+  </div>
+
+  <h3>What Each Tool Does</h3>
+
+  <div class="tool-grid">
+    <div class="tool-card">
+      <div class="tool-card-name">n8n &mdash; The Brain</div>
+      <p>The automation engine. Think of it as your robot assistant that runs workflows 24/7. It listens for events (like a new lead), then runs a series of steps automatically. Self-hosted means you own the data and there are no per-task fees.</p>
+    </div>
+    <div class="tool-card">
+      <div class="tool-card-name">Claude AI &mdash; The Writer</div>
+      <p>Writes all your social media posts. You give it context &mdash; what happened, which brand, which platform &mdash; and it creates content that sounds human and matches each platform's style. A LinkedIn post reads differently from a TikTok caption, and Claude handles that automatically.</p>
+    </div>
+    <div class="tool-card">
+      <div class="tool-card-name">Airtable &mdash; The Database</div>
+      <p>Your CRM and tracking system. Every post, every lead, every result gets logged here. Think of it as a really smart spreadsheet that the automation can read from and write to. You can open it anytime to see what's been posted and how it performed.</p>
+    </div>
+    <div class="tool-card">
+      <div class="tool-card-name">Twilio &mdash; The SMS Sender</div>
+      <p>Sends text messages. Used for Astra Removals to request Google reviews after a move is completed. A customer finishes their move, and 48 hours later they get a friendly SMS asking for a review. Costs about 2p per message.</p>
+    </div>
+    <div class="tool-card">
+      <div class="tool-card-name">Slack &mdash; The Alert System</div>
+      <p>Where you get notified if a post needs human review. When Claude writes something it isn't fully confident about (score below 75), it sends you a message in Slack so you can approve, edit, or reject it before it goes live.</p>
+    </div>
+    <div class="tool-card">
+      <div class="tool-card-name">Meta Graph API &mdash; FB + IG Publishing</div>
+      <p>The official way to publish posts to Facebook and Instagram automatically. One API handles both platforms because Meta owns them both. You'll need a Facebook Page and a linked Instagram Business account for each brand that uses them.</p>
+    </div>
+    <div class="tool-card">
+      <div class="tool-card-name">LinkedIn API &mdash; B2B Content</div>
+      <p>Publishes posts and articles to LinkedIn company pages. Mainly used for Magna Park (B2B storage marketing) and Rick.AI (thought leadership). Requires admin access to each company page.</p>
+    </div>
+    <div class="tool-card">
+      <div class="tool-card-name">X / Twitter API &mdash; Threads + Posts</div>
+      <p>Publishes tweets and threads. Used for CoachMentor (match day threads) and Rick.AI (build logs). Needs 5 separate API keys &mdash; it's the fiddliest setup of all the platforms.</p>
+    </div>
+    <div class="tool-card">
+      <div class="tool-card-name">Pinterest API &mdash; Pins + Boards</div>
+      <p>The easiest platform API of all. Publishes pins to themed boards. Great for Prime Haul (moving tips), CoachMentor (coaching drills), and Rick.AI (tech infographics). Pins have the longest content lifespan of any platform &mdash; they keep getting traffic for months.</p>
+    </div>
+    <div class="tool-card">
+      <div class="tool-card-name">YouTube Data API &mdash; Video Publishing</div>
+      <p>Uploads videos and manages your YouTube channels. Used for CoachMentor coaching content. Set up through Google Cloud Console using OAuth.</p>
+    </div>
+    <div class="tool-card">
+      <div class="tool-card-name">TikTok API &mdash; Short Video</div>
+      <p>Publishes short-form video content. Used for CoachMentor and Prime Haul. The API requires an application review that takes 1&ndash;2 weeks, so apply early. Until approved, you'll post manually using saved captions.</p>
+    </div>
+    <div class="tool-card">
+      <div class="tool-card-name">Google Business Profile &mdash; Local SEO</div>
+      <p>Publishes posts to your Google Business listing &mdash; the box that shows up when someone searches for your business. Used for Astra Removals and Magna Park. Needs verification (postcard or phone call from Google).</p>
+    </div>
+  </div>
+
+  <h3>What You'll Need Accounts For</h3>
+
+  <div class="glass glass-sm">
+    <table class="cost-table">
+      <thead>
+        <tr><th>Tool</th><th>What For</th><th>Cost</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>n8n Cloud</td><td>Runs all automation workflows</td><td>$20/mo</td></tr>
+        <tr><td>Claude API (Anthropic)</td><td>AI writes all content</td><td>~$5-15/mo</td></tr>
+        <tr><td>Airtable</td><td>CRM / tracking database</td><td>Free tier</td></tr>
+        <tr><td>Twilio</td><td>SMS review requests (Astra)</td><td>~$2/mo</td></tr>
+        <tr><td>Slack</td><td>Review notifications</td><td>Free</td></tr>
+        <tr><td>Meta Developer</td><td>Facebook + Instagram APIs</td><td>Free</td></tr>
+        <tr><td>Google Cloud Console</td><td>YouTube + GMB APIs</td><td>Free</td></tr>
+        <tr><td>X Developer Portal</td><td>Twitter/X API</td><td>Free (Basic)</td></tr>
+        <tr><td>Pinterest Developer</td><td>Pinterest API</td><td>Free</td></tr>
+        <tr><td>TikTok Developer</td><td>TikTok API</td><td>Free</td></tr>
+        <tr><td colspan="2" style="font-weight:700; color:var(--text-bright)">Estimated Monthly Total</td><td>~$27-37</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout callout-tip">
+    <div class="callout-title">Self-Hosted Alternative</div>
+    If you self-host n8n on a cheap VPS (like Hetzner at ~$5/mo), you drop the cost to roughly <strong>$7&ndash;22 per month</strong> total. The trade-off is you need to maintain the server &mdash; but Claude Code can help you with that too.
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     CHAPTER 3: HOW EACH BRAND WORKS
+     ═══════════════════════════════════════════════════════════ -->
+<section class="chapter" id="ch3">
+  <span class="chapter-num">Chapter 3</span>
+  <h2>How Each Brand's Automation Works</h2>
+  <p class="chapter-lead">The detailed workflow for every brand &mdash; what triggers, what happens, and where it ends up.</p>
+
+  <!-- ── 3a: ASTRA REMOVALS ── -->
+  <div id="ch3a" style="scroll-margin-top:24px;">
+    <h3 style="color:var(--astra);">3a. Astra Removals</h3>
+    <p>Astra is the simplest and most mature workflow. When a customer completes a MoveScan survey (your online removal quote tool), the automation kicks in automatically.</p>
+
+    <h4>The Complete Workflow</h4>
+    <div class="flow">
+      <div class="flow-step brand-astra">
+        <span class="flow-label info">Trigger</span><br>
+        MoveScan survey completed &mdash; customer has requested a removal quote
+      </div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step brand-astra">
+        n8n webhook fires &rarr; extract lead details (name, moving from, moving to, date)
+      </div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step brand-astra">
+        <span class="flow-label info">Smart Check</span><br>
+        Is the postcode in Dorset? (BH, DT, SP postcodes)
+      </div>
+      <div class="flow-arrow"></div>
+      <div class="flow-branch">
+        <div class="flow-step" style="border-color:var(--magna);">
+          <span class="flow-label yes">Dorset? Yes</span><br>
+          Mention Magna Park storage in the post &mdash; cross-brand promotion
+        </div>
+        <div class="flow-step" style="border-color:var(--astra);">
+          <span class="flow-label no">Dorset? No</span><br>
+          Standard Astra post without storage mention
+        </div>
+      </div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step brand-astra">
+        Claude writes Facebook + Instagram posts tailored to each platform
+      </div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step brand-astra">
+        <span class="flow-label info">Quality Gate</span><br>
+        Confidence score check &mdash; is it 75 or above?
+      </div>
+      <div class="flow-arrow"></div>
+      <div class="flow-branch">
+        <div class="flow-step" style="border-color:var(--primehaul);">
+          <span class="flow-label yes">75+ Score</span><br>
+          Schedule for best time: Tue&ndash;Thu 7:30pm or Sat 10am
+        </div>
+        <div class="flow-step" style="border-color:var(--astra);">
+          <span class="flow-label no">Below 75</span><br>
+          Send to Slack for your manual review
+        </div>
+      </div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step brand-astra">
+        Publish to Facebook + Instagram automatically
+      </div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step brand-astra">
+        Wait 48 hours after the move date &rarr; send Google review request via Twilio SMS
+      </div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step brand-astra">
+        Log everything to Airtable &mdash; post content, publish time, scores, review sent
+      </div>
+    </div>
+
+    <div class="callout callout-info">
+      <div class="callout-title">Cross-Brand Magic</div>
+      If someone is moving in Dorset, the post automatically mentions Magna Park storage. One lead, two businesses promoted. This is the <code>astra-magna-workflow.n8n.json</code> file &mdash; a single workflow that serves both brands.
+    </div>
+
+    <div class="callout callout-tip">
+      <div class="callout-title">The Confidence Gate</div>
+      Claude scores its own work 0&ndash;100. Think of it like a self-review. Below 75 means "I'm not fully sure this is great" &mdash; it sends the post to your Slack for you to approve, edit, or reject. Above 75, it publishes automatically. This means you only see posts that need attention.
+    </div>
+
+    <div class="callout callout-tip">
+      <div class="callout-title">Smart Scheduling</div>
+      Posts don't go out immediately. Research shows removal-related content performs best on Tuesday to Thursday evenings (around 7:30pm) and Saturday mornings (around 10am). The system queues posts for these windows.
+    </div>
+  </div>
+
+  <!-- ── 3b: MAGNA PARK ── -->
+  <div id="ch3b" style="scroll-margin-top:24px; margin-top:48px;">
+    <h3 style="color:var(--magna);">3b. Magna Park Self Storage</h3>
+    <p>Magna Park piggybacks on the Astra workflow for cross-brand promotion. When someone in Dorset uses MoveScan, the Astra post mentions Magna Park storage &mdash; that's free marketing from your other business.</p>
+
+    <h4>What's Built</h4>
+    <div class="glass glass-sm">
+      <ul style="list-style:none; font-size:0.9rem;">
+        <li style="margin-bottom:8px;"><span style="color:var(--primehaul);">&#10003;</span> Cross-brand node in the Astra workflow (auto-mentions Magna Park for Dorset leads)</li>
+        <li style="margin-bottom:8px;"><span style="color:var(--primehaul);">&#10003;</span> Airtable schema: unit availability, enquiries, seasonal campaigns</li>
+        <li style="margin-bottom:8px;"><span style="color:var(--primehaul);">&#10003;</span> Env template with all required API tokens mapped out</li>
+        <li style="margin-bottom:8px;"><span style="color:var(--primehaul);">&#10003;</span> Pinterest board configuration</li>
+      </ul>
+    </div>
+
+    <h4>What's Planned (Not Yet Built as n8n Workflow)</h4>
+    <div class="glass glass-sm">
+      <ul style="list-style:none; font-size:0.9rem;">
+        <li style="margin-bottom:8px;"><span style="color:var(--astra);">&#9679;</span> Standalone weekly content workflow: B2B LinkedIn articles, GMB posts, seasonal campaigns (January = new year declutter, Summer = student storage, etc.)</li>
+        <li style="margin-bottom:8px;"><span style="color:var(--astra);">&#9679;</span> Facebook Messenger enquiry bot: auto-respond to "How much is a unit?" messages</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-info">
+      <div class="callout-title">Why Magna Park Is Different</div>
+      Magna Park doesn't have event-triggered content like Astra (nobody fills in a form that triggers a post). Instead, it needs <strong>scheduled content</strong> &mdash; regular posts about storage tips, seasonal offers, and B2B partnerships. The Astra cross-brand feature gives it passive content in the meantime.
+    </div>
+  </div>
+
+  <!-- ── 3c: COACHMENTOR ── -->
+  <div id="ch3c" style="scroll-margin-top:24px; margin-top:48px;">
+    <h3 style="color:var(--coach);">3c. CoachMentor</h3>
+    <p>CoachMentor is the most sophisticated automation. It runs 3 separate workflows covering weekly content planning, subscriber funnels, and match day content. It also has the strictest quality controls because it deals with FA coaching content.</p>
+
+    <h4>Workflow A &mdash; Weekly Content Engine</h4>
+    <p style="font-size:0.88rem; color:var(--text-dim); margin-bottom:16px;">Runs every Monday at 7am. Plans and queues the entire week.</p>
+
+    <div class="flow">
+      <div class="flow-step brand-coach">
+        <span class="flow-label info">Monday 7am</span><br>
+        Timer fires &rarr; search this week's coaching trends + upcoming fixtures
+      </div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step brand-coach">
+        Claude plans the whole week: TikTok x3, YouTube x3, IG x3, X x3, FB x1, Pinterest x1
+      </div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step brand-coach">
+        <span class="flow-label info">Copyright Check</span><br>
+        &ge;80% originality score &mdash; protects against accidentally using FA/UEFA licensed content
+      </div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step brand-coach">
+        Queue all posts for the week with optimal time slots for each platform
+      </div>
+    </div>
+
+    <h4>Workflow B &mdash; Subscriber Funnel</h4>
+    <p style="font-size:0.88rem; color:var(--text-dim); margin-bottom:16px;">Runs every 6 hours. Turns social engagement into paying subscribers.</p>
+
+    <div class="flow">
+      <div class="flow-step brand-coach">
+        <span class="flow-label info">Every 6 Hours</span><br>
+        Check TikTok + Instagram engagement on recent posts
+      </div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step brand-coach">
+        Anyone hit 300 views or 3+ comments? Flag them as high-engagement
+      </div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step brand-coach">
+        <span class="flow-label info">AI Classification</span><br>
+        Claude classifies each person: are they a coach, a parent, or a player?
+      </div>
+      <div class="flow-arrow"></div>
+      <div class="flow-branch">
+        <div class="flow-step" style="border-color:var(--coach);">
+          <span class="flow-label yes">Coach</span><br>
+          Send personalised DM about free 7-day trial
+        </div>
+        <div class="flow-step" style="border-color:var(--magna);">
+          <span class="flow-label info">Parent</span><br>
+          Add to lookalike audience for ads
+        </div>
+        <div class="flow-step" style="border-color:var(--text-dim);">
+          <span class="flow-label info">Player</span><br>
+          Tag them &mdash; no direct outreach
+        </div>
+      </div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step brand-coach">
+        Wait 48 hours &rarr; check if they signed up for the free trial
+      </div>
+    </div>
+
+    <h4>Workflow C &mdash; Match Day Content</h4>
+    <p style="font-size:0.88rem; color:var(--text-dim); margin-bottom:16px;">Runs Friday at 3pm. Creates weekend football content.</p>
+
+    <div class="flow">
+      <div class="flow-step brand-coach">
+        <span class="flow-label info">Friday 3pm</span><br>
+        Search for weekend fixtures across relevant leagues
+      </div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step brand-coach">
+        Claude writes match-day content for X threads and IG stories
+      </div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step brand-coach">
+        Saturday 7:30am &rarr; post pre-match thread on X
+      </div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step brand-coach">
+        Sunday 6pm &rarr; post coaching reflection question ("What did you notice about the press in today's game?")
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <div class="callout-title">Copyright Guard &mdash; Why 80%?</div>
+      CoachMentor teaches FA coaching badges, which means there's a risk of accidentally reproducing FA or UEFA licensed materials. The copyright originality threshold is set to <strong>80%</strong> &mdash; stricter than the 75% confidence gate used by other brands. If content looks too close to existing copyrighted material, it gets flagged for your review.
+    </div>
+
+    <div class="callout callout-info">
+      <div class="callout-title">The DM Funnel Logic</div>
+      Not everyone who engages is a potential customer. Claude analyses profiles and engagement patterns to work out if someone is a <strong>coach</strong> (worth a direct message), a <strong>parent</strong> (add to ad audience), or a <strong>player</strong> (just tag and move on). Only coaches get the direct outreach &mdash; no spamming random people.
+    </div>
+  </div>
+
+  <!-- ── 3d: PRIME HAUL / MOVESCAN ── -->
+  <div id="ch3d" style="scroll-margin-top:24px; margin-top:48px;">
+    <h3 style="color:var(--primehaul);">3d. Prime Haul / MoveScan</h3>
+    <p>Prime Haul generates leads for removal companies. When someone uses MoveScan to survey their home, the automation creates social posts showcasing the service. This drives more people to use MoveScan, which generates more leads for removal companies &mdash; a virtuous cycle.</p>
+
+    <h4>The Complete Workflow</h4>
+    <div class="flow">
+      <div class="flow-step brand-primehaul">
+        <span class="flow-label info">Trigger</span><br>
+        MoveScan survey completed &rarr; n8n webhook fires
+      </div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step brand-primehaul">
+        Extract survey data: CBM volume, number of quotes sent, companies matched
+      </div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step brand-primehaul">
+        Claude writes 4 platform-specific posts: Facebook, Instagram, Pinterest, TikTok
+      </div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step brand-primehaul">
+        <span class="flow-label info">Quality Gate</span><br>
+        Confidence check &ge;75%
+      </div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step brand-primehaul">
+        Schedule: weekday leads &rarr; evening 7pm &middot; weekend leads &rarr; Monday 8am
+      </div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step brand-primehaul">
+        Publish to Facebook + Instagram + Pinterest automatically
+      </div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step brand-primehaul" style="border-color:var(--astra);">
+        TikTok: save caption for manual posting (API approval pending)
+      </div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step brand-primehaul">
+        Log everything to Airtable: survey ID, content, platforms, scores
+      </div>
+    </div>
+
+    <div class="callout callout-tip">
+      <div class="callout-title">Pinterest Is Your Secret Weapon</div>
+      Pinterest has the best API of all the platforms &mdash; 95% of the process is automated. It's also perfect for home and moving content because people actively search Pinterest for moving tips, home organisation, and packing ideas. Each pin includes UTM tracking parameters, so you know exactly which pins drive traffic back to MoveScan. Pins also have the longest lifespan &mdash; they keep appearing in search results for months.
+    </div>
+
+    <div class="callout callout-warn">
+      <div class="callout-title">TikTok Situation</div>
+      TikTok's Business API requires an application review that takes 1&ndash;2 weeks. Until it's approved, the system saves the caption and hashtags so you can post manually. Once approved, it switches to fully automatic. Apply for TikTok API access early &mdash; do it while setting up other platforms.
+    </div>
+  </div>
+
+  <!-- ── 3e: RICK.AI ── -->
+  <div id="ch3e" style="scroll-margin-top:24px; margin-top:48px;">
+    <h3 style="color:var(--rickai);">3e. Rick.AI (Your Personal Brand)</h3>
+    <p>Your personal brand showcases what you're building with AI. It's the lowest volume (6 posts/week) but arguably the most important for attracting freelance clients and establishing thought leadership.</p>
+
+    <h4>Workflow A &mdash; Weekly Thought Leadership</h4>
+    <p style="font-size:0.88rem; color:var(--text-dim); margin-bottom:16px;">Runs Monday at 6am. Plans the whole week.</p>
+
+    <div class="flow">
+      <div class="flow-step brand-rickai">
+        <span class="flow-label info">Monday 6am</span><br>
+        Search AI/dev trends + Claude/Anthropic news + your recent project activity
+      </div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step brand-rickai">
+        Claude plans 6 days of content, one post per day:
+      </div>
+    </div>
+
+    <div class="brand-grid" style="margin-top:8px;">
+      <div class="brand-card rickai" style="padding:14px 18px;">
+        <div class="brand-card-name" style="font-size:0.85rem;">Monday</div>
+        <div class="brand-card-stat">X thread &mdash; build log of what you shipped this week</div>
+      </div>
+      <div class="brand-card rickai" style="padding:14px 18px;">
+        <div class="brand-card-name" style="font-size:0.85rem;">Tuesday</div>
+        <div class="brand-card-stat">LinkedIn article &mdash; AI tutorial or industry insight</div>
+      </div>
+      <div class="brand-card rickai" style="padding:14px 18px;">
+        <div class="brand-card-name" style="font-size:0.85rem;">Wednesday</div>
+        <div class="brand-card-stat">Instagram post &mdash; project showcase or behind-the-scenes</div>
+      </div>
+      <div class="brand-card rickai" style="padding:14px 18px;">
+        <div class="brand-card-name" style="font-size:0.85rem;">Thursday</div>
+        <div class="brand-card-stat">Short-form video script &mdash; saved for manual recording</div>
+      </div>
+      <div class="brand-card rickai" style="padding:14px 18px;">
+        <div class="brand-card-name" style="font-size:0.85rem;">Friday</div>
+        <div class="brand-card-stat">Facebook post &mdash; industry insight or hot take</div>
+      </div>
+      <div class="brand-card rickai" style="padding:14px 18px;">
+        <div class="brand-card-name" style="font-size:0.85rem;">Saturday</div>
+        <div class="brand-card-stat">Pinterest pin &mdash; tech infographic or AI tool comparison</div>
+      </div>
+    </div>
+
+    <h4>Workflow B &mdash; Lead Capture</h4>
+    <p style="font-size:0.88rem; color:var(--text-dim); margin-bottom:16px;">Runs every 8 hours. Monitors engagement and spots opportunities.</p>
+
+    <div class="flow">
+      <div class="flow-step brand-rickai">
+        <span class="flow-label info">Every 8 Hours</span><br>
+        Check X mentions, replies, and engagement on recent posts
+      </div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step brand-rickai">
+        <span class="flow-label info">AI Classification</span><br>
+        Claude classifies each interaction: lead, question, praise, or spam?
+      </div>
+      <div class="flow-arrow"></div>
+      <div class="flow-branch">
+        <div class="flow-step" style="border-color:var(--primehaul);">
+          <span class="flow-label yes">Lead</span><br>
+          Log to Airtable + alert in Slack immediately
+        </div>
+        <div class="flow-step" style="border-color:var(--rickai);">
+          <span class="flow-label info">Question</span><br>
+          Draft a helpful reply for your review
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     CHAPTER 4: EMAIL MACHINE
+     ═══════════════════════════════════════════════════════════ -->
+<section class="chapter" id="ch4">
+  <span class="chapter-num">Chapter 4</span>
+  <h2>The Email Machine (CoachMentor)</h2>
+  <p class="chapter-lead">Two automated email sequences that turn free trial users into paying subscribers.</p>
+
+  <p>CoachMentor has a free 7-day trial. When someone signs up, they enter the <strong>Trial Onboarding</strong> sequence &mdash; 6 carefully timed emails designed to show them the value and convert them to a paid plan. If they subscribe, they immediately switch to the <strong>Welcome</strong> sequence.</p>
+
+  <h3>Trial Onboarding Sequence (6 emails over 7 days)</h3>
+
+  <div class="timeline">
+    <div class="timeline-item">
+      <div class="timeline-dot" style="background:var(--coach);"></div>
+      <div class="timeline-day">Day 0</div>
+      <div class="timeline-title">Welcome &mdash; Here's What You Unlocked</div>
+      <div class="timeline-desc">First impression. Show them exactly what they have access to during the trial. Make it feel premium immediately.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot" style="background:var(--coach);"></div>
+      <div class="timeline-day">Day 1</div>
+      <div class="timeline-title">Your First Drill &mdash; "3v2 Pressing Trigger"</div>
+      <div class="timeline-desc">Give them a free coaching drill they can use in their next session. Immediate practical value &mdash; they'll use this tonight.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot" style="background:var(--coach);"></div>
+      <div class="timeline-day">Day 3</div>
+      <div class="timeline-title">Social Proof &mdash; What Other Coaches Say</div>
+      <div class="timeline-desc">Testimonials and case studies from coaches who've used CoachMentor. "I planned my Level 2 session in 4 minutes instead of 45."</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot" style="background:var(--coach);"></div>
+      <div class="timeline-day">Day 5</div>
+      <div class="timeline-title">AI Mentor Deep-Dive &mdash; Show the Magic</div>
+      <div class="timeline-desc">Walk them through the AI mentoring feature. This is the wow moment &mdash; ask a coaching question, get an expert answer instantly.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot" style="background:var(--astra);"></div>
+      <div class="timeline-day">Day 6</div>
+      <div class="timeline-title">48 Hours Left &mdash; Checklist Comparison</div>
+      <div class="timeline-desc">Side-by-side comparison: what you get on the free tier vs. paid. Create gentle urgency without being pushy.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot" style="background:var(--astra);"></div>
+      <div class="timeline-day">Day 7</div>
+      <div class="timeline-title">Founder's Honest Pitch &mdash; "27p a Day"</div>
+      <div class="timeline-desc">Personal message from you. Frame the price as 27p per day. Honest, no hard sell. Include a direct subscribe link.</div>
+    </div>
+  </div>
+
+  <div class="callout callout-info">
+    <div class="callout-title">Stop Condition</div>
+    If they subscribe at any point during the trial, the onboarding sequence <strong>stops immediately</strong> and they switch to the Welcome sequence. No more "subscribe now" emails after they've already subscribed.
+  </div>
+
+  <h3>Subscriber Welcome Sequence (4 emails over 30 days)</h3>
+
+  <div class="timeline">
+    <div class="timeline-item">
+      <div class="timeline-dot" style="background:var(--primehaul);"></div>
+      <div class="timeline-day">Day 0</div>
+      <div class="timeline-title">Congrats &mdash; Here's Everything You've Unlocked</div>
+      <div class="timeline-desc">Celebration email. Full list of features now available. Links to get started.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot" style="background:var(--primehaul);"></div>
+      <div class="timeline-day">Day 2</div>
+      <div class="timeline-title">Quick Start &mdash; Plan Your First Session in 5 Minutes</div>
+      <div class="timeline-desc">Step-by-step guide to planning a full coaching session using the AI. Reduce time-to-value.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot" style="background:var(--primehaul);"></div>
+      <div class="timeline-day">Day 7</div>
+      <div class="timeline-title">Community &mdash; 150+ Coaches, Share Your Story</div>
+      <div class="timeline-desc">Invite them to the community. Social proof + belonging. Makes them less likely to cancel.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot" style="background:var(--primehaul);"></div>
+      <div class="timeline-day">Day 30</div>
+      <div class="timeline-title">Your Stats &mdash; Sessions Planned, Time Saved, Refer a Friend</div>
+      <div class="timeline-desc">Personalised stats showing how much time they've saved. Include the referral offer: refer a coach, get 1 month free.</div>
+    </div>
+  </div>
+
+  <h3>Conversion Strategy</h3>
+  <div class="glass glass-sm">
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-num">25%</div>
+        <div class="stat-label">Industry Average</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" style="background:linear-gradient(135deg,var(--primehaul),var(--rickai));-webkit-background-clip:text;">45%</div>
+        <div class="stat-label">Your Target</div>
+      </div>
+    </div>
+    <p style="font-size:0.88rem; margin-top:12px;">Each email builds on the last: <strong>value</strong> (Day 0&ndash;1), <strong>proof</strong> (Day 3), <strong>wow</strong> (Day 5), <strong>gentle urgency</strong> (Day 6), <strong>honest ask</strong> (Day 7). The sequence is designed to nearly double the industry average trial-to-paid rate.</p>
+  </div>
+
+  <h4>Retention Levers</h4>
+  <div class="glass glass-sm">
+    <ul style="list-style:none; font-size:0.88rem;">
+      <li style="margin-bottom:10px;"><strong style="color:var(--coach);">Referral:</strong> Refer a coach, get 1 month free. Refer 3, get a year free.</li>
+      <li style="margin-bottom:10px;"><strong style="color:var(--coach);">Cancel Flow:</strong> When someone tries to cancel, offer a "pause for 1 month" option first. Many people don't actually want to cancel &mdash; they just need a break.</li>
+      <li style="margin-bottom:10px;"><strong style="color:var(--coach);">Win-Back:</strong> If someone cancels, wait 60 days then offer 20% off to come back.</li>
+      <li style="margin-bottom:10px;"><strong style="color:var(--coach);">Annual Offer:</strong> At the 3-month mark, offer annual billing at 2 months free (save ~17%).</li>
+    </ul>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     CHAPTER 5: AIRTABLE CRM
+     ═══════════════════════════════════════════════════════════ -->
+<section class="chapter" id="ch5">
+  <span class="chapter-num">Chapter 5</span>
+  <h2>Your Airtable CRM</h2>
+  <p class="chapter-lead">Every brand has its own Airtable base. Here's what each one tracks and why it matters.</p>
+
+  <p>Airtable is where all the data lives. Every time a workflow runs, it writes a record to Airtable. You can open any base and instantly see what's been posted, which leads came in, and how things are performing. Think of it as the "memory" of the whole system.</p>
+
+  <div class="brand-grid" style="grid-template-columns: 1fr;">
+    <!-- Astra -->
+    <div class="brand-card astra">
+      <div class="brand-card-name">Astra Removals</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px;">
+        <div class="glass glass-sm" style="margin:0; padding:14px 16px;">
+          <strong style="font-size:0.85rem;">Social Automation Runs</strong>
+          <p style="font-size:0.78rem; color:var(--text-dim); margin:4px 0 0;">Every post that's been created, its confidence score, which platforms it went to, and when it was published.</p>
+        </div>
+        <div class="glass glass-sm" style="margin:0; padding:14px 16px;">
+          <strong style="font-size:0.85rem;">Leads</strong>
+          <p style="font-size:0.78rem; color:var(--text-dim); margin:4px 0 0;">Customer details from MoveScan: name, from/to addresses, date, CBM volume, whether a review SMS was sent.</p>
+        </div>
+      </div>
+      <p style="font-size:0.8rem; color:var(--text-dim); margin-top:10px;">Schema file: <code>airtable-schemas/airtable-schema-astra.json</code></p>
+    </div>
+
+    <!-- Magna -->
+    <div class="brand-card magna">
+      <div class="brand-card-name">Magna Park Self Storage</div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px,1fr)); gap:12px; margin-top:12px;">
+        <div class="glass glass-sm" style="margin:0; padding:14px 16px;">
+          <strong style="font-size:0.85rem;">Social Automation Runs</strong>
+          <p style="font-size:0.78rem; color:var(--text-dim); margin:4px 0 0;">Post tracking, same as Astra.</p>
+        </div>
+        <div class="glass glass-sm" style="margin:0; padding:14px 16px;">
+          <strong style="font-size:0.85rem;">Unit Availability</strong>
+          <p style="font-size:0.78rem; color:var(--text-dim); margin:4px 0 0;">Which storage units are free, occupied, or reserved. Size, price, availability date.</p>
+        </div>
+        <div class="glass glass-sm" style="margin:0; padding:14px 16px;">
+          <strong style="font-size:0.85rem;">Enquiries</strong>
+          <p style="font-size:0.78rem; color:var(--text-dim); margin:4px 0 0;">Potential customers who've asked about storage. Source, unit size needed, follow-up status.</p>
+        </div>
+        <div class="glass glass-sm" style="margin:0; padding:14px 16px;">
+          <strong style="font-size:0.85rem;">Seasonal Campaigns</strong>
+          <p style="font-size:0.78rem; color:var(--text-dim); margin:4px 0 0;">Pre-planned campaigns: January declutter, student summer storage, Christmas overflow, etc.</p>
+        </div>
+      </div>
+      <p style="font-size:0.8rem; color:var(--text-dim); margin-top:10px;">Schema file: <code>airtable-schemas/airtable-schema-magna.json</code></p>
+    </div>
+
+    <!-- CoachMentor -->
+    <div class="brand-card coach">
+      <div class="brand-card-name">CoachMentor</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-top:12px;">
+        <div class="glass glass-sm" style="margin:0; padding:14px 16px;">
+          <strong style="font-size:0.85rem;">Social Automation Runs</strong>
+          <p style="font-size:0.78rem; color:var(--text-dim); margin:4px 0 0;">Post tracking across 6 platforms.</p>
+        </div>
+        <div class="glass glass-sm" style="margin:0; padding:14px 16px;">
+          <strong style="font-size:0.85rem;">Subscribers</strong>
+          <p style="font-size:0.78rem; color:var(--text-dim); margin:4px 0 0;">Trial and paid users. Status, start date, plan, email sequence position.</p>
+        </div>
+        <div class="glass glass-sm" style="margin:0; padding:14px 16px;">
+          <strong style="font-size:0.85rem;">Content Calendar</strong>
+          <p style="font-size:0.78rem; color:var(--text-dim); margin:4px 0 0;">Week-by-week content plan generated by the Monday workflow.</p>
+        </div>
+      </div>
+      <p style="font-size:0.8rem; color:var(--text-dim); margin-top:10px;">Schema file: <code>airtable-schemas/airtable-schema-coachmentor.json</code></p>
+    </div>
+
+    <!-- Prime Haul -->
+    <div class="brand-card primehaul">
+      <div class="brand-card-name">Prime Haul / MoveScan</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-top:12px;">
+        <div class="glass glass-sm" style="margin:0; padding:14px 16px;">
+          <strong style="font-size:0.85rem;">Social Automation Runs</strong>
+          <p style="font-size:0.78rem; color:var(--text-dim); margin:4px 0 0;">Post tracking with UTM parameters for Pinterest attribution.</p>
+        </div>
+        <div class="glass glass-sm" style="margin:0; padding:14px 16px;">
+          <strong style="font-size:0.85rem;">Surveys</strong>
+          <p style="font-size:0.78rem; color:var(--text-dim); margin:4px 0 0;">Every MoveScan completion: CBM volume, items, quotes generated, companies matched.</p>
+        </div>
+        <div class="glass glass-sm" style="margin:0; padding:14px 16px;">
+          <strong style="font-size:0.85rem;">Removal Companies</strong>
+          <p style="font-size:0.78rem; color:var(--text-dim); margin:4px 0 0;">Marketplace partners: company name, coverage area, rating, leads received.</p>
+        </div>
+      </div>
+      <p style="font-size:0.8rem; color:var(--text-dim); margin-top:10px;">Schema file: <code>airtable-schemas/airtable-schema-primhaul.json</code></p>
+    </div>
+
+    <!-- Rick.AI -->
+    <div class="brand-card rickai">
+      <div class="brand-card-name">Rick.AI</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px;">
+        <div class="glass glass-sm" style="margin:0; padding:14px 16px;">
+          <strong style="font-size:0.85rem;">Content Log</strong>
+          <p style="font-size:0.78rem; color:var(--text-dim); margin:4px 0 0;">Every post and thread: platform, content, engagement metrics, lead classification.</p>
+        </div>
+        <div class="glass glass-sm" style="margin:0; padding:14px 16px;">
+          <strong style="font-size:0.85rem;">Leads</strong>
+          <p style="font-size:0.78rem; color:var(--text-dim); margin:4px 0 0;">Potential freelance clients flagged by the lead capture workflow. Source, status, follow-up.</p>
+        </div>
+      </div>
+      <p style="font-size:0.8rem; color:var(--text-dim); margin-top:10px;">Schema file: <code>airtable-schemas/airtable-schema-rickai.json</code></p>
+    </div>
+  </div>
+
+  <div class="callout callout-tip">
+    <div class="callout-title">How n8n Writes to Airtable</div>
+    Every n8n workflow has an Airtable node at the end. When a post is created and published, the workflow automatically creates a new row in the relevant Airtable base with: the post content, which platforms it went to, the confidence score, whether it was auto-published or manually reviewed, and the timestamp. You never need to update Airtable manually &mdash; it happens automatically.
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     CHAPTER 6: SETUP GUIDE
+     ═══════════════════════════════════════════════════════════ -->
+<section class="chapter" id="ch6">
+  <span class="chapter-num">Chapter 6</span>
+  <h2>Setup Guide &mdash; Getting It All Running</h2>
+  <p class="chapter-lead">Five phases to go from zero to fully automated. Most of the waiting time is verification &mdash; the active work is about 5&ndash;6 hours total.</p>
+
+  <!-- Phase 1 -->
+  <div id="ch6-p1" style="scroll-margin-top:24px;">
+    <h3>Phase 1: Accounts &amp; Verification</h3>
+    <p><strong>Active time:</strong> ~1 hour &nbsp;|&nbsp; <strong>Waiting time:</strong> up to 2 weeks (TikTok, GMB)</p>
+
+    <p>You need accounts on each platform for each brand that uses it. Here's what each platform requires:</p>
+
+    <div class="glass glass-sm" style="overflow-x:auto;">
+      <table class="cost-table">
+        <thead>
+          <tr><th>Platform</th><th>What's Needed</th><th>Difficulty</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Facebook</strong></td><td>Personal account (you have this) &rarr; Create a Page for each brand</td><td style="color:var(--primehaul);">Easy</td></tr>
+          <tr><td><strong>Instagram</strong></td><td>Create account &rarr; Switch to Business &rarr; Link to FB Page (2 manual steps in app)</td><td style="color:var(--primehaul);">Easy</td></tr>
+          <tr><td><strong>Google Business</strong></td><td>Claim your listing &rarr; Verify by postcard or phone (can take days)</td><td style="color:var(--astra);">Medium</td></tr>
+          <tr><td><strong>Pinterest</strong></td><td>Just sign up with email. Create a Business account. Easiest of all.</td><td style="color:var(--primehaul);">Easiest</td></tr>
+          <tr><td><strong>YouTube</strong></td><td>Create a channel (uses your Google account). No approval needed.</td><td style="color:var(--primehaul);">Easy</td></tr>
+          <tr><td><strong>X / Twitter</strong></td><td>Sign up &rarr; Verify phone number &rarr; Apply for Developer account</td><td style="color:var(--astra);">Medium</td></tr>
+          <tr><td><strong>LinkedIn</strong></td><td>Need admin access to a Company Page. Create one if it doesn't exist.</td><td style="color:var(--primehaul);">Easy</td></tr>
+          <tr><td><strong>TikTok</strong></td><td>Sign up &rarr; Verify phone &rarr; Apply for Business API (1&ndash;2 weeks review)</td><td style="color:#ef4444;">Hardest</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-warn">
+      <div class="callout-title">Start TikTok &amp; GMB First</div>
+      These two have the longest verification wait times. Apply for TikTok API and claim your Google Business listings on Day 1, then set up everything else while you wait.
+    </div>
+  </div>
+
+  <!-- Phase 2 -->
+  <div id="ch6-p2" style="scroll-margin-top:24px; margin-top:40px;">
+    <h3>Phase 2: API Tokens</h3>
+    <p><strong>Active time:</strong> ~2 hours</p>
+
+    <p>Each platform needs API tokens &mdash; think of these as passwords that let n8n post on your behalf. Some are easy to get, others are fiddly. Here they are ranked from easiest to hardest:</p>
+
+    <div class="rank-list">
+      <div class="rank-item">
+        <div class="rank-num">1</div>
+        <div style="flex:1;">
+          <div class="rank-label"><strong>Pinterest</strong></div>
+          <div class="rank-difficulty">Just generate a token in the Developer Portal. One click. Done.</div>
+        </div>
+        <div class="rank-bar" style="width:40px; background:var(--primehaul);"></div>
+      </div>
+      <div class="rank-item">
+        <div class="rank-num">2</div>
+        <div style="flex:1;">
+          <div class="rank-label"><strong>YouTube / Google</strong></div>
+          <div class="rank-difficulty">OAuth flow in Google Cloud Console. Create a project, enable the API, generate credentials. About 15 minutes.</div>
+        </div>
+        <div class="rank-bar" style="width:60px; background:var(--magna);"></div>
+      </div>
+      <div class="rank-item">
+        <div class="rank-num">3</div>
+        <div style="flex:1;">
+          <div class="rank-label"><strong>Facebook / Instagram</strong></div>
+          <div class="rank-difficulty">Create a Meta Developer App &rarr; Generate a short-lived token &rarr; Exchange for a long-lived token (lasts 60 days) &rarr; Exchange again for a permanent page token. About 20 minutes.</div>
+        </div>
+        <div class="rank-bar" style="width:80px; background:var(--astra);"></div>
+      </div>
+      <div class="rank-item">
+        <div class="rank-num">4</div>
+        <div style="flex:1;">
+          <div class="rank-label"><strong>LinkedIn</strong></div>
+          <div class="rank-difficulty">Create an app in LinkedIn Developer Portal, then go through an OAuth flow. The token lasts 60 days and needs refreshing.</div>
+        </div>
+        <div class="rank-bar" style="width:90px; background:var(--astra);"></div>
+      </div>
+      <div class="rank-item">
+        <div class="rank-num">5</div>
+        <div style="flex:1;">
+          <div class="rank-label"><strong>X / Twitter</strong></div>
+          <div class="rank-difficulty">You need FIVE separate keys: Bearer Token, API Key, API Secret, Access Token, Access Secret. All generated in the Developer Portal but it's the most keys of any platform.</div>
+        </div>
+        <div class="rank-bar" style="width:110px; background:#ef4444;"></div>
+      </div>
+      <div class="rank-item">
+        <div class="rank-num">6</div>
+        <div style="flex:1;">
+          <div class="rank-label"><strong>TikTok</strong></div>
+          <div class="rank-difficulty">Application review required (1&ndash;2 weeks). You can't generate tokens until approved. Apply early and work on other platforms while waiting.</div>
+        </div>
+        <div class="rank-bar" style="width:130px; background:#ef4444;"></div>
+      </div>
+    </div>
+
+    <h4>Where Do Tokens Go?</h4>
+    <p>Each brand has an env template file that lists every token it needs. These are in <code>social-setup/env-templates/</code>:</p>
+
+    <div class="code-block">
+<span class="dir">env-templates/</span>
+  <span class="env">env-template-astra.env</span>        <span class="comment"># FB, IG, GMB, Twilio, Airtable</span>
+  <span class="env">env-template-coachmentor.env</span>   <span class="comment"># FB, IG, TikTok, YouTube, X, Airtable, ManyChat</span>
+  <span class="env">env-template-magna.env</span>         <span class="comment"># FB, IG, LinkedIn, GMB, Airtable</span>
+  <span class="env">env-template-primhaul.env</span>      <span class="comment"># FB, IG, TikTok, Pinterest, Airtable</span>
+  <span class="env">env-template-rickai.env</span>        <span class="comment"># X, LinkedIn, IG, FB, Pinterest, Airtable</span>
+    </div>
+
+    <p>Open each file, fill in the values, and paste them into n8n's Environment Variables settings (Settings &rarr; Environment Variables in n8n). The comments in each file explain where to find each value.</p>
+
+    <div class="callout callout-tip">
+      <div class="callout-title">Pro Tip: The Anthropic Key is Shared</div>
+      The <code>ANTHROPIC_API_KEY</code> (for Claude AI) and <code>AIRTABLE_API_TOKEN</code> are the same across all brands. You only need to set them once.
+    </div>
+  </div>
+
+  <!-- Phase 3 -->
+  <div id="ch6-p3" style="scroll-margin-top:24px; margin-top:40px;">
+    <h3>Phase 3: n8n Setup</h3>
+    <p><strong>Active time:</strong> ~1 hour</p>
+
+    <h4>Step 1: Choose Your n8n Setup</h4>
+    <div class="brand-grid" style="grid-template-columns: 1fr 1fr;">
+      <div class="glass glass-sm" style="border-color:var(--primehaul);">
+        <h4 style="color:var(--primehaul); margin-top:0;">n8n Cloud (Recommended)</h4>
+        <ul style="font-size:0.85rem; padding-left:18px; color:var(--text-dim);">
+          <li>$20/month</li>
+          <li>No server maintenance</li>
+          <li>Automatic updates</li>
+          <li>Built-in monitoring</li>
+          <li>Best for getting started fast</li>
+        </ul>
+        <p style="font-size:0.82rem; margin-top:8px;">Sign up at <strong>n8n.io/cloud</strong></p>
+      </div>
+      <div class="glass glass-sm" style="border-color:var(--magna);">
+        <h4 style="color:var(--magna); margin-top:0;">Self-Hosted (Advanced)</h4>
+        <ul style="font-size:0.85rem; padding-left:18px; color:var(--text-dim);">
+          <li>Free (just pay for VPS ~$5/mo)</li>
+          <li>Full control over data</li>
+          <li>No execution limits</li>
+          <li>You manage updates + uptime</li>
+          <li>Claude Code can help set this up</li>
+        </ul>
+        <p style="font-size:0.82rem; margin-top:8px;">Use Hetzner, DigitalOcean, or Railway</p>
+      </div>
+    </div>
+
+    <h4>Step 2: Import Your Workflows</h4>
+    <p>You have 4 workflow files ready to import. In n8n:</p>
+    <ol style="font-size:0.88rem; padding-left:22px; margin-bottom:16px;">
+      <li style="margin-bottom:8px;">Go to <strong>Workflows</strong> in the sidebar</li>
+      <li style="margin-bottom:8px;">Click <strong>Add Workflow</strong> &rarr; <strong>Import from File</strong></li>
+      <li style="margin-bottom:8px;">Select one of your <code>.n8n.json</code> files</li>
+      <li style="margin-bottom:8px;">The entire workflow appears with all nodes connected</li>
+      <li style="margin-bottom:8px;">Add your credentials (tokens) to each node that needs them</li>
+      <li style="margin-bottom:8px;">Click <strong>Activate</strong> to turn it on</li>
+    </ol>
+
+    <h4>Step 3: Add Credentials</h4>
+    <p>Each workflow has nodes that connect to external services (Facebook, Airtable, Claude, etc.). Click on any node, and if it needs credentials, you'll see a dropdown. Create new credentials by pasting in the API tokens from your env template.</p>
+
+    <h4>Step 4: Test with Sample Data</h4>
+    <p>Before going live, test each workflow manually:</p>
+    <ol style="font-size:0.88rem; padding-left:22px;">
+      <li style="margin-bottom:8px;">Click <strong>Execute Workflow</strong> in n8n</li>
+      <li style="margin-bottom:8px;">If it uses a webhook, send a test request (n8n gives you a test URL)</li>
+      <li style="margin-bottom:8px;">Watch each node execute &mdash; green = success, red = error</li>
+      <li style="margin-bottom:8px;">Check the output of each node to confirm the data flows correctly</li>
+    </ol>
+  </div>
+
+  <!-- Phase 4 -->
+  <div id="ch6-p4" style="scroll-margin-top:24px; margin-top:40px;">
+    <h3>Phase 4: Airtable Setup</h3>
+    <p><strong>Active time:</strong> ~1 hour</p>
+
+    <ol style="font-size:0.88rem; padding-left:22px;">
+      <li style="margin-bottom:10px;"><strong>Create a free Airtable account</strong> at airtable.com</li>
+      <li style="margin-bottom:10px;"><strong>Create 5 bases</strong> (one per brand): Astra Removals, Magna Park, CoachMentor, Prime Haul, Rick.AI</li>
+      <li style="margin-bottom:10px;"><strong>Add tables using the schema files</strong> &mdash; each JSON file in <code>airtable-schemas/</code> lists the exact table names, column names, and field types you need</li>
+      <li style="margin-bottom:10px;"><strong>Generate an API token</strong> at airtable.com/create/tokens &mdash; give it read/write access to all 5 bases</li>
+      <li style="margin-bottom:10px;"><strong>Copy each base ID</strong> from the Airtable URL (it looks like <code>appXXXXXXXXXXXX</code>) into your env templates</li>
+    </ol>
+
+    <div class="callout callout-info">
+      <div class="callout-title">What Are Schema Files?</div>
+      The schema files don't create the tables automatically &mdash; they're a blueprint showing you exactly what to create. Open the JSON file, and you'll see each table name and its fields listed. Create them manually in Airtable by clicking "Add Table" and "Add Field". It takes about 10&ndash;15 minutes per brand.
+    </div>
+  </div>
+
+  <!-- Phase 5 -->
+  <div id="ch6-p5" style="scroll-margin-top:24px; margin-top:40px;">
+    <h3>Phase 5: Go Live Checklist</h3>
+
+    <div class="callout callout-warn">
+      <div class="callout-title">Your First Week</div>
+      Don't activate all 5 brands at once. Start with Astra (simplest), make sure it works for a full week, then add the next brand.
+    </div>
+
+    <div class="flow">
+      <div class="flow-step highlight">
+        <span class="flow-label info">Day 1</span><br>
+        Activate Astra workflow. Send a test webhook. Check Slack for review notification. Check Airtable for the logged record.
+      </div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step">
+        <span class="flow-label info">Day 2&ndash;3</span><br>
+        Watch the first real posts go through. Check Facebook and Instagram to confirm they appeared. Read the content &mdash; is it good?
+      </div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step">
+        <span class="flow-label info">Day 4&ndash;5</span><br>
+        Check Airtable &mdash; are records being created? Check Slack &mdash; are low-confidence posts being flagged? Adjust the confidence threshold if needed.
+      </div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step">
+        <span class="flow-label info">Day 6&ndash;7</span><br>
+        If Astra is running smoothly, activate Magna Park (it's part of the same workflow). Start setting up CoachMentor.
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     CHAPTER 7: RECOMMENDED ORDER
+     ═══════════════════════════════════════════════════════════ -->
+<section class="chapter" id="ch7">
+  <span class="chapter-num">Chapter 7</span>
+  <h2>The Recommended Order</h2>
+  <p class="chapter-lead">Don't try to do everything at once. Here's the smartest sequence.</p>
+
+  <div class="ladder">
+    <div class="ladder-step" style="background:var(--rickai-bg);">
+      <div class="ladder-num" style="background:var(--rickai);">5</div>
+      <div class="ladder-content">
+        <strong style="color:var(--rickai);">Rick.AI</strong> &mdash; Personal brand, lowest urgency
+        <div class="ladder-desc">~2 hours setup. 5 platforms. Set this up last &mdash; your business brands make money, your personal brand builds reputation. It can wait.</div>
+      </div>
+    </div>
+    <div class="ladder-step" style="background:var(--primehaul-bg);">
+      <div class="ladder-num" style="background:var(--primehaul);">4</div>
+      <div class="ladder-content">
+        <strong style="color:var(--primehaul);">Prime Haul / MoveScan</strong> &mdash; 4 platforms
+        <div class="ladder-desc">~2.5 hours setup. Needs its own content strategy beyond lead-triggered posts. Pinterest will be your best performer here.</div>
+      </div>
+    </div>
+    <div class="ladder-step" style="background:var(--coach-bg);">
+      <div class="ladder-num" style="background:var(--coach);">3</div>
+      <div class="ladder-content">
+        <strong style="color:var(--coach);">CoachMentor</strong> &mdash; Most complex, 6 platforms + emails
+        <div class="ladder-desc">~4 hours setup. 3 sub-workflows, email sequences, DM funnels, copyright checks. The most powerful but also the most to configure.</div>
+      </div>
+    </div>
+    <div class="ladder-step" style="background:var(--magna-bg);">
+      <div class="ladder-num" style="background:var(--magna);">2</div>
+      <div class="ladder-content">
+        <strong style="color:var(--magna);">Magna Park</strong> &mdash; Piggybacks off Astra
+        <div class="ladder-desc">~30 minutes extra (mostly just creating the Airtable base). The cross-brand node is already in the Astra workflow, so most of this comes free.</div>
+      </div>
+    </div>
+    <div class="ladder-step" style="background:var(--astra-bg); border-color:var(--astra);">
+      <div class="ladder-num" style="background:var(--astra);">1</div>
+      <div class="ladder-content">
+        <strong style="color:var(--astra);">Astra Removals</strong> &mdash; Start here. Simplest, 3 platforms.
+        <div class="ladder-desc">~2 hours setup. Facebook, Instagram, GMB. The simplest workflow with clear triggers (MoveScan surveys). Perfect for learning how the system works.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout callout-tip">
+    <div class="callout-title">What You Can Do in Parallel</div>
+    While setting up Astra (Day 1), immediately apply for TikTok API access and claim your Google Business listings. These have the longest wait times. By the time you're ready for CoachMentor and Prime Haul, TikTok should be approved.
+  </div>
+
+  <h4>Estimated Total Time</h4>
+  <div class="glass glass-sm">
+    <table class="cost-table">
+      <thead>
+        <tr><th>Brand</th><th>Active Time</th><th>Waiting Time</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Astra Removals</td><td>~2 hours</td><td>GMB verification (days)</td></tr>
+        <tr><td>Magna Park</td><td>~30 minutes</td><td>Same GMB wait</td></tr>
+        <tr><td>CoachMentor</td><td>~4 hours</td><td>TikTok API (1&ndash;2 weeks)</td></tr>
+        <tr><td>Prime Haul</td><td>~2.5 hours</td><td>TikTok API (shared wait)</td></tr>
+        <tr><td>Rick.AI</td><td>~2 hours</td><td>None</td></tr>
+        <tr><td colspan="2" style="font-weight:700; color:var(--text-bright);">Total Active Time</td><td>~11 hours</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     CHAPTER 8: TROUBLESHOOTING & FAQ
+     ═══════════════════════════════════════════════════════════ -->
+<section class="chapter" id="ch8">
+  <span class="chapter-num">Chapter 8</span>
+  <h2>Troubleshooting &amp; FAQ</h2>
+  <p class="chapter-lead">Common problems, their solutions, and answers to the questions you're probably asking.</p>
+
+  <h3>Common Issues</h3>
+
+  <div class="collapsible" onclick="this.classList.toggle('open')">
+    <div class="collapsible-header">
+      <h4>"My post didn't go live"</h4>
+      <span class="collapsible-arrow">&#9660;</span>
+    </div>
+    <div class="collapsible-body">
+      <p><strong>Most likely cause:</strong> The confidence score was below 75, so it was sent to Slack for your review instead of publishing automatically.</p>
+      <p><strong>Check:</strong> Open Slack and look for a message from n8n with the post content and an Approve/Reject option.</p>
+      <p><strong>Other causes:</strong></p>
+      <ul style="font-size:0.88rem; padding-left:20px;">
+        <li>The API token expired (Meta tokens expire every 60 days)</li>
+        <li>The platform's API rate limit was hit (rare, but possible with high volume)</li>
+        <li>The workflow is paused/inactive in n8n</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="collapsible" onclick="this.classList.toggle('open')">
+    <div class="collapsible-header">
+      <h4>"n8n workflow failed with a red error"</h4>
+      <span class="collapsible-arrow">&#9660;</span>
+    </div>
+    <div class="collapsible-body">
+      <p><strong>First step:</strong> Click on the red node to see the error message. Common errors:</p>
+      <ul style="font-size:0.88rem; padding-left:20px;">
+        <li><strong>"401 Unauthorized"</strong> &mdash; Your API token is wrong or expired. Regenerate it.</li>
+        <li><strong>"429 Too Many Requests"</strong> &mdash; You've hit the platform's rate limit. The workflow will retry automatically.</li>
+        <li><strong>"400 Bad Request"</strong> &mdash; The data format is wrong. Check the input to the failing node.</li>
+      </ul>
+      <p>If you can't work it out, copy the error message and ask Claude Code to diagnose it.</p>
+    </div>
+  </div>
+
+  <div class="collapsible" onclick="this.classList.toggle('open')">
+    <div class="collapsible-header">
+      <h4>"Token expired" error</h4>
+      <span class="collapsible-arrow">&#9660;</span>
+    </div>
+    <div class="collapsible-body">
+      <p><strong>Meta (Facebook/Instagram) tokens</strong> expire every 60 days. You need to exchange them for a new long-lived token. The process:</p>
+      <ol style="font-size:0.88rem; padding-left:20px;">
+        <li>Go to the Meta Graph API Explorer</li>
+        <li>Generate a new short-lived User Token</li>
+        <li>Exchange it for a long-lived token using the API</li>
+        <li>Then exchange that for a permanent Page Token</li>
+        <li>Update the token in your n8n credentials</li>
+      </ol>
+      <p>Ask Claude Code to walk you through this &mdash; it can do the API calls for you.</p>
+      <p><strong>LinkedIn tokens</strong> also expire every 60 days. Refresh via the LinkedIn Developer Portal.</p>
+      <p><strong>Pinterest, X, and YouTube tokens</strong> don't expire (or auto-refresh).</p>
+    </div>
+  </div>
+
+  <div class="collapsible" onclick="this.classList.toggle('open')">
+    <div class="collapsible-header">
+      <h4>"TikTok isn't posting"</h4>
+      <span class="collapsible-arrow">&#9660;</span>
+    </div>
+    <div class="collapsible-body">
+      <p>TikTok API approval takes 1&ndash;2 weeks. Until approved, the workflow saves the caption and hashtags to Airtable so you can post manually. Check your TikTok Developer Portal for approval status.</p>
+      <p>Once approved, update your env variables with the TikTok tokens and the workflow will start posting automatically.</p>
+    </div>
+  </div>
+
+  <div class="collapsible" onclick="this.classList.toggle('open')">
+    <div class="collapsible-header">
+      <h4>"The content doesn't sound right"</h4>
+      <span class="collapsible-arrow">&#9660;</span>
+    </div>
+    <div class="collapsible-body">
+      <p>The quality of the content depends on the system prompt given to Claude. Each workflow has a "Generate Content" node with detailed instructions about tone, style, and brand voice.</p>
+      <p>To adjust: open the workflow in n8n, find the Claude/AI node, and edit the system message. You can also ask Claude Code to refine the prompt for you.</p>
+    </div>
+  </div>
+
+  <h3 style="margin-top:36px;">Frequently Asked Questions</h3>
+
+  <div class="faq-item" onclick="this.classList.toggle('open')">
+    <div class="faq-q">Can I edit posts before they go live? <span>&#9660;</span></div>
+    <div class="faq-a">
+      <p>Yes. Posts with a confidence score below 75 are sent to your Slack workspace for review. You can approve them as-is, edit the text, or reject them entirely. You can also raise the threshold to see more posts before they publish (e.g., set it to 90 to review almost everything).</p>
+    </div>
+  </div>
+
+  <div class="faq-item" onclick="this.classList.toggle('open')">
+    <div class="faq-q">What if I want to pause automation for a brand? <span>&#9660;</span></div>
+    <div class="faq-a">
+      <p>In n8n, each workflow has an on/off toggle. Click it to deactivate. The workflow stops running immediately. Click again to reactivate. No data is lost &mdash; it just pauses.</p>
+    </div>
+  </div>
+
+  <div class="faq-item" onclick="this.classList.toggle('open')">
+    <div class="faq-q">How much will this cost to run monthly? <span>&#9660;</span></div>
+    <div class="faq-a">
+      <table class="cost-table">
+        <tbody>
+          <tr><td>n8n Cloud</td><td>$20/mo (or $5/mo self-hosted VPS)</td></tr>
+          <tr><td>Claude API (Anthropic)</td><td>~$5&ndash;15/mo (depends on volume)</td></tr>
+          <tr><td>Twilio SMS</td><td>~$2/mo</td></tr>
+          <tr><td>Airtable</td><td>Free tier</td></tr>
+          <tr><td>Slack</td><td>Free</td></tr>
+          <tr><td>All platform APIs</td><td>Free</td></tr>
+          <tr><td colspan="1" style="font-weight:700; color:var(--text-bright);">Total</td><td style="font-weight:700;">~$27&ndash;37/mo (Cloud) or ~$12&ndash;22/mo (self-hosted)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="faq-item" onclick="this.classList.toggle('open')">
+    <div class="faq-q">Can I add a new brand later? <span>&#9660;</span></div>
+    <div class="faq-a">
+      <p>Absolutely. Copy an existing workflow (e.g., the Prime Haul workflow), rename it, update the brand-specific details (prompts, tokens, Airtable base), and activate. The architecture is designed to be duplicated.</p>
+    </div>
+  </div>
+
+  <div class="faq-item" onclick="this.classList.toggle('open')">
+    <div class="faq-q">What about images in posts? <span>&#9660;</span></div>
+    <div class="faq-a">
+      <p>Currently the system creates text-only posts. Image generation is planned using fal.ai (AI-generated images) and the Canva API (branded templates). The env templates already include slots for <code>FAL_AI_API_KEY</code> and <code>CANVA_ACCESS_TOKEN</code> &mdash; these are ready to plug in when you want to add images.</p>
+    </div>
+  </div>
+
+  <div class="faq-item" onclick="this.classList.toggle('open')">
+    <div class="faq-q">What happens if the internet goes down? <span>&#9660;</span></div>
+    <div class="faq-a">
+      <p>If you're using n8n Cloud, it runs on their servers (not your computer), so your internet doesn't matter. If self-hosted, the VPS runs independently. Workflows queue up and retry if a platform is temporarily unreachable.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     CHAPTER 9: BUILT VS PLANNED
+     ═══════════════════════════════════════════════════════════ -->
+<section class="chapter" id="ch9">
+  <span class="chapter-num">Chapter 9</span>
+  <h2>What's Built vs What's Planned</h2>
+  <p class="chapter-lead">A honest look at what's ready to use, what's partially done, and what still needs your input.</p>
+
+  <h3 style="margin-bottom:16px;">
+    <span style="display:inline-block; width:12px; height:12px; border-radius:50%; background:#22c55e; margin-right:8px; box-shadow:0 0 8px rgba(34,197,94,0.4);"></span>
+    Built &amp; Ready
+  </h3>
+  <div class="status-grid">
+    <div class="status-row"><div class="status-light green"></div>Astra + Magna Park combined n8n workflow (<code>astra-magna-workflow.n8n.json</code>)</div>
+    <div class="status-row"><div class="status-light green"></div>CoachMentor n8n workflow with 3 sub-workflows (<code>coachmentor-workflow.n8n.json</code>)</div>
+    <div class="status-row"><div class="status-light green"></div>Prime Haul n8n workflow (<code>primehaul-workflow.n8n.json</code>)</div>
+    <div class="status-row"><div class="status-light green"></div>Rick.AI n8n workflow (<code>rickai-workflow.n8n.json</code>)</div>
+    <div class="status-row"><div class="status-light green"></div>All 5 Airtable schemas (JSON blueprints for every table)</div>
+    <div class="status-row"><div class="status-light green"></div>CoachMentor email sequences &mdash; trial onboarding + subscriber welcome</div>
+    <div class="status-row"><div class="status-light green"></div>Interactive HTML dashboards (4 files)</div>
+    <div class="status-row"><div class="status-light green"></div>Setup checklists for all 5 brands</div>
+    <div class="status-row"><div class="status-light green"></div>Env templates for all 5 brands (every token mapped)</div>
+    <div class="status-row"><div class="status-light green"></div>Pinterest board configurations for all 5 brands</div>
+  </div>
+
+  <h3 style="margin-top:28px; margin-bottom:16px;">
+    <span style="display:inline-block; width:12px; height:12px; border-radius:50%; background:#f59e0b; margin-right:8px; box-shadow:0 0 8px rgba(245,158,11,0.4);"></span>
+    Described / Partially Built
+  </h3>
+  <div class="status-grid">
+    <div class="status-row"><div class="status-light amber"></div>Magna Park standalone weekly content workflow (planned in docs, not yet an importable n8n file)</div>
+    <div class="status-row"><div class="status-light amber"></div>Magna Park Facebook Messenger enquiry bot</div>
+    <div class="status-row"><div class="status-light amber"></div>MoveScan TikTok content engine (waiting on API approval)</div>
+    <div class="status-row"><div class="status-light amber"></div>Error handler sub-workflows (referenced in main workflows but not created as separate files)</div>
+    <div class="status-row"><div class="status-light amber"></div>Setup scripts (<code>setup-orchestrator.js</code>, <code>setup-api-tokens.js</code>) &mdash; files exist but are scaffolds</div>
+  </div>
+
+  <h3 style="margin-top:28px; margin-bottom:16px;">
+    <span style="display:inline-block; width:12px; height:12px; border-radius:50%; background:#ef4444; margin-right:8px; box-shadow:0 0 8px rgba(239,68,68,0.4);"></span>
+    Not Started &mdash; Needs You
+  </h3>
+  <div class="status-grid">
+    <div class="status-row"><div class="status-light red"></div>All platform accounts (Facebook Pages, IG Business, X, LinkedIn, etc.)</div>
+    <div class="status-row"><div class="status-light red"></div>All API tokens (you need to generate these in each platform's developer portal)</div>
+    <div class="status-row"><div class="status-light red"></div>n8n hosting (Cloud signup or VPS deployment)</div>
+    <div class="status-row"><div class="status-light red"></div>Airtable bases (schemas are ready, but the actual databases need creating)</div>
+    <div class="status-row"><div class="status-light red"></div>Email provider setup (Mailchimp or SendGrid for CoachMentor sequences)</div>
+    <div class="status-row"><div class="status-light red"></div>Content images and videos (text automation is ready; visual content is manual for now)</div>
+  </div>
+
+  <div class="callout callout-info">
+    <div class="callout-title">The Bottom Line</div>
+    All the "thinking" work is done &mdash; the workflows, the schemas, the templates, the strategy. What's left is the "doing" work &mdash; creating accounts, generating tokens, and pressing "activate". Claude Code can help you through every step of the doing work.
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     CHAPTER 10: QUICK REFERENCE
+     ═══════════════════════════════════════════════════════════ -->
+<section class="chapter" id="ch10">
+  <span class="chapter-num">Chapter 10</span>
+  <h2>Quick Reference</h2>
+  <p class="chapter-lead">Everything you need at a glance. Bookmark this chapter.</p>
+
+  <h3>Platform API Cheat Sheet</h3>
+  <div class="glass glass-sm" style="overflow-x:auto;">
+    <table class="cost-table">
+      <thead>
+        <tr><th>Platform</th><th>Developer Portal</th><th>Token Lifespan</th><th>Keys Needed</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Facebook/IG</td><td>developers.facebook.com</td><td>60 days (exchange for permanent)</td><td>Page Access Token + App ID</td></tr>
+        <tr><td>X / Twitter</td><td>developer.twitter.com</td><td>Permanent</td><td>5 keys (Bearer, Key, Secret, Access, Access Secret)</td></tr>
+        <tr><td>LinkedIn</td><td>developer.linkedin.com</td><td>60 days</td><td>Client ID + Client Secret + OAuth token</td></tr>
+        <tr><td>Pinterest</td><td>developers.pinterest.com</td><td>Permanent</td><td>Access Token only</td></tr>
+        <tr><td>YouTube</td><td>console.cloud.google.com</td><td>Auto-refreshes</td><td>Client ID + Client Secret + Refresh Token</td></tr>
+        <tr><td>TikTok</td><td>developers.tiktok.com</td><td>Varies</td><td>Access Token + Open ID</td></tr>
+        <tr><td>Google Business</td><td>console.cloud.google.com</td><td>Auto-refreshes</td><td>OAuth 2.0 Token + Location ID</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>n8n Workflow File Index</h3>
+  <div class="code-block">
+<span class="n8n">astra-magna-workflow.n8n.json</span>     <span class="comment"># Astra Removals + Magna Park cross-brand</span>
+<span class="n8n">coachmentor-workflow.n8n.json</span>      <span class="comment"># CoachMentor (3 sub-workflows)</span>
+<span class="n8n">primehaul-workflow.n8n.json</span>        <span class="comment"># Prime Haul / MoveScan</span>
+<span class="n8n">rickai-workflow.n8n.json</span>           <span class="comment"># Rick.AI personal brand</span>
+  </div>
+
+  <h3>Airtable Schema File Index</h3>
+  <div class="code-block">
+<span class="file">airtable-schemas/airtable-schema-astra.json</span>
+<span class="file">airtable-schemas/airtable-schema-magna.json</span>
+<span class="file">airtable-schemas/airtable-schema-coachmentor.json</span>
+<span class="file">airtable-schemas/airtable-schema-primhaul.json</span>
+<span class="file">airtable-schemas/airtable-schema-rickai.json</span>
+  </div>
+
+  <h3>Env Variable Templates</h3>
+  <div class="code-block">
+<span class="env">env-templates/env-template-astra.env</span>         <span class="comment"># 12 variables</span>
+<span class="env">env-templates/env-template-coachmentor.env</span>    <span class="comment"># 18 variables</span>
+<span class="env">env-templates/env-template-magna.env</span>          <span class="comment"># 10 variables</span>
+<span class="env">env-templates/env-template-primhaul.env</span>       <span class="comment"># 11 variables</span>
+<span class="env">env-templates/env-template-rickai.env</span>         <span class="comment"># 14 variables</span>
+  </div>
+
+  <h3>Interactive Dashboards</h3>
+  <div class="code-block">
+<span class="html">astra-workflow-viz.html</span>                <span class="comment"># Astra workflow visualiser</span>
+<span class="html">coachmentor-workflow.html</span>              <span class="comment"># CoachMentor workflow dashboard</span>
+<span class="html">coachmentor-emails.html</span>                <span class="comment"># Email sequence preview</span>
+<span class="html">coachmentor-welcome-sequence.html</span>      <span class="comment"># Welcome sequence preview</span>
+<span class="html">magna-movescan-setup-hub.html</span>          <span class="comment"># Magna Park + MoveScan setup hub</span>
+<span class="html">master-setup-guide.html</span>                <span class="comment"># Master setup guide (all brands)</span>
+<span class="html">social-agent-hub.html</span>                  <span class="comment"># Central social agent dashboard</span>
+  </div>
+
+  <h3>Your Complete File Tree</h3>
+  <div class="file-tree">
+<span class="dir">social-setup/</span>
+├── <span class="n8n">astra-magna-workflow.n8n.json</span>
+├── <span class="n8n">coachmentor-workflow.n8n.json</span>
+├── <span class="n8n">primehaul-workflow.n8n.json</span>
+├── <span class="n8n">rickai-workflow.n8n.json</span>
+├── <span class="env">.env</span>
+├── <span class="env">.env.example</span>
+├── <span class="file">package.json</span>
+├── <span class="file">settings.json</span>
+├── <span class="file">setup-orchestrator.js</span>
+├── <span class="file">setup-api-tokens.js</span>
+├── <span class="html">astra-workflow-viz.html</span>
+├── <span class="html">coachmentor-workflow.html</span>
+├── <span class="html">coachmentor-emails.html</span>
+├── <span class="html">coachmentor-welcome-sequence.html</span>
+├── <span class="html">magna-movescan-setup-hub.html</span>
+├── <span class="html">master-setup-guide.html</span>
+├── <span class="html">social-agent-hub.html</span>
+├── <span class="file">CONVERSATION-SUMMARY.md</span>
+├── <span class="file">README.md</span>
+│
+├── <span class="dir">airtable-schemas/</span>
+│   ├── <span class="file">airtable-schema-astra.json</span>
+│   ├── <span class="file">airtable-schema-coachmentor.json</span>
+│   ├── <span class="file">airtable-schema-magna.json</span>
+│   ├── <span class="file">airtable-schema-primhaul.json</span>
+│   └── <span class="file">airtable-schema-rickai.json</span>
+│
+├── <span class="dir">checklists/</span>
+│   ├── <span class="file">setup-checklist-astra.txt</span>
+│   ├── <span class="file">setup-checklist-coachmentor.txt</span>
+│   ├── <span class="file">setup-checklist-magna.txt</span>
+│   ├── <span class="file">setup-checklist-primhaul.txt</span>
+│   └── <span class="file">setup-checklist-rickai.txt</span>
+│
+├── <span class="dir">env-templates/</span>
+│   ├── <span class="env">env-template-astra.env</span>
+│   ├── <span class="env">env-template-coachmentor.env</span>
+│   ├── <span class="env">env-template-magna.env</span>
+│   ├── <span class="env">env-template-primhaul.env</span>
+│   └── <span class="env">env-template-rickai.env</span>
+│
+├── <span class="dir">pinterest-boards/</span>
+│   ├── <span class="file">boards-astra.json</span>
+│   ├── <span class="file">boards-coachmentor.json</span>
+│   ├── <span class="file">boards-magna.json</span>
+│   ├── <span class="file">boards-primhaul.json</span>
+│   └── <span class="file">boards-rickai.json</span>
+│
+└── <span class="dir">setup-logs/</span>
+    └── <span class="comment">(logs generated during setup)</span>
+  </div>
+
+  <h3>Key Commands for Claude Code</h3>
+  <p>When you need help with any of this, just tell Claude Code what you need:</p>
+  <div class="code-block">
+<span class="comment"># Check your social media connections</span>
+<span class="key">/social-setup</span>
+
+<span class="comment"># Run a full project audit</span>
+<span class="key">/audit</span>
+
+<span class="comment"># Check all your deployed projects are healthy</span>
+<span class="key">/watchdog</span>
+
+<span class="comment"># Sync environment variables</span>
+<span class="key">/env-sync</span>
+  </div>
+</section>
+
+
+<!-- ─────────────── FOOTER ─────────────── -->
+<div class="footer">
+  <p>Built with Claude Code &middot; <span class="footer-brand">Rick.AI Social Automation Stack</span> &middot; 2026</p>
+  <p style="margin-top:6px; font-size:0.72rem;">This guide was generated from your actual project files in <code>social-setup/</code></p>
+</div>
+
+</main>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     JAVASCRIPT
+     ═══════════════════════════════════════════════════════════ -->
+<script>
+// ── Progress bar ──
+window.addEventListener('scroll', () => {
+  const h = document.documentElement;
+  const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+  document.getElementById('progress-bar').style.width = pct + '%';
+});
+
+// ── Active TOC link ──
+const tocLinks = document.querySelectorAll('.toc-list a');
+const sections = [];
+tocLinks.forEach(a => {
+  const id = a.getAttribute('href')?.slice(1);
+  if (id) {
+    const el = document.getElementById(id);
+    if (el) sections.push({ el, a });
+  }
+});
+
+function updateTOC() {
+  let current = sections[0];
+  for (const s of sections) {
+    if (s.el.getBoundingClientRect().top <= 120) current = s;
+  }
+  tocLinks.forEach(a => a.classList.remove('active'));
+  if (current) current.a.classList.add('active');
+}
+window.addEventListener('scroll', updateTOC);
+updateTOC();
+
+// ── Close sidebar on mobile link click ──
+tocLinks.forEach(a => {
+  a.addEventListener('click', () => {
+    if (window.innerWidth <= 900) {
+      document.querySelector('.sidebar').classList.remove('open');
+    }
+  });
+});
+
+// ── Interactive checkboxes ──
+document.querySelectorAll('.check-box').forEach(box => {
+  box.addEventListener('click', e => {
+    e.stopPropagation();
+    box.classList.toggle('checked');
+    box.textContent = box.classList.contains('checked') ? '✓' : '';
+  });
+});
+</script>
+
+</body>
+</html>

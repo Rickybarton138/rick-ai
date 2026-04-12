@@ -1,0 +1,77 @@
+{
+  "bases": [
+    {
+      "name": "Prime Haul CRM",
+      "tables": [
+        {
+          "name": "Social Automation Runs",
+          "description": "Logs every n8n workflow execution for Prime Haul social proof posts",
+          "fields": [
+            "survey_id (Text) — MoveScan survey ID",
+            "customer_first_name (Text)",
+            "origin_postcode (Text)",
+            "dest_postcode (Text)",
+            "volume_category (Single select: small/medium/large)",
+            "bedrooms (Number)",
+            "move_date (Date)",
+            "quotes_sent (Number) — How many removal companies received the lead",
+            "matched_companies (Text) — Comma-separated list of matched companies",
+            "confidence_score (Number) — Claude confidence 0-1",
+            "fb_post_content (Long text)",
+            "ig_post_content (Long text)",
+            "pinterest_desc (Long text)",
+            "tiktok_caption (Long text)",
+            "fb_post_id (Text)",
+            "ig_media_id (Text)",
+            "pinterest_pin_id (Text)",
+            "tiktok_status (Text) — API pending / Published / Manual",
+            "published_at (Date & time)",
+            "impressions_48h (Number)",
+            "engagements_48h (Number)",
+            "link_clicks_48h (Number)",
+            "workflow_version (Text)"
+          ]
+        },
+        {
+          "name": "Surveys",
+          "description": "All MoveScan survey completions and their lead status",
+          "fields": [
+            "survey_id (Text)",
+            "customer_name (Text)",
+            "customer_email (Email)",
+            "customer_phone (Phone)",
+            "origin_postcode (Text)",
+            "dest_postcode (Text)",
+            "move_date (Date)",
+            "bedrooms (Number)",
+            "cbm_volume (Number) — Cubic metres estimated by MoveScan",
+            "quotes_sent (Number)",
+            "matched_companies (Text)",
+            "status (Single select: Survey Complete/Quotes Sent/Booked/Complete/Cancelled)",
+            "social_post_created (Checkbox)",
+            "created_at (Date & time)",
+            "notes (Long text)"
+          ]
+        },
+        {
+          "name": "Removal Companies",
+          "description": "Vetted removal companies in the Prime Haul marketplace",
+          "fields": [
+            "company_name (Text)",
+            "contact_name (Text)",
+            "contact_email (Email)",
+            "contact_phone (Phone)",
+            "coverage_postcodes (Text) — Comma-separated postcode prefixes",
+            "max_volume (Single select: small/medium/large/any)",
+            "status (Single select: Active/Paused/Removed)",
+            "leads_received (Number)",
+            "leads_converted (Number)",
+            "avg_rating (Number) — 1-5 stars",
+            "joined_at (Date)",
+            "notes (Long text)"
+          ]
+        }
+      ]
+    }
+  ]
+}
