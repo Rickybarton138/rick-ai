@@ -52,12 +52,10 @@ def generate_video(
     # Input is a best-effort superset of common fields. The actor ignores
     # unknown fields, and the exact schema isn't documented on the public
     # page (JS-rendered). Adjust after the first successful run.
+    # Actor only requires "topic" — confirmed via input schema probe.
+    # All other fields are ignored.
     input_payload = {
         "topic": topic or script_text[:200],
-        "script": script_text,
-        "duration": duration,
-        "style": style,
-        "language": "en",
     }
 
     try:

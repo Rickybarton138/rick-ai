@@ -61,11 +61,16 @@ HEYGEN_API_KEY=        # existing
 OPENAI_API_KEY=        # existing (used by script_generator)
 ```
 
-## Known unknowns
+## Known issues
 
-1. **Actor input schema:** Apify's page for `wedo_software~wedo-ai-video` is JS-rendered so WebFetch couldn't read the real input fields. The `generate_video()` function passes a best-effort superset (`topic`, `script`, `duration`, `style`, `language`). First real test will confirm the correct shape — if the run fails with a schema error, check the actor's Input tab on Apify and adjust the `input_payload` dict in `apify_video_generator.py::generate_video`.
+1. **YouTube Autopilot actor is BROKEN (as of 2026-04-14).** Test run `pmH0i5xNZcmwZIi20` ran for 4 minutes, charged $1.90, but failed internally. Root cause: the actor maintainer's Google Cloud service account has expired credentials (`invalid_grant: Invalid JWT Signature`). All image, voice, and video generation steps failed. This is an actor-side problem, not our integration.
+   - **Refund:** Email support@apify.com with run ID `pmH0i5xNZcmwZIi20`
+   - **Report:** Comment on https://apify.com/wedo_software/wedo-ai-video about expired Google creds
+   - **Alternative:** Consider `powerai/veo3-video-generator` as replacement, or stick with existing HeyGen pipeline
 
-2. **Pricing:** Video generation actors can be expensive per run. Set a monthly cap in the Apify console before hitting this in any cron job.
+2. **Input schema confirmed:** Actor only requires `{"topic": "..."}`. Our `apify_video_generator.py` was passing extra fields that the actor would have ignored — updated to match.
+
+3. **Pricing:** $1.90-$2.80 per dataset item (per video). Set a monthly cap in Apify console before any production use.
 
 ## IMPORTANT — uncommitted WIP in rick-ai
 
